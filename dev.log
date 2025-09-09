@@ -1,0 +1,9 @@
+• Packages in scope: @v1/analytics, @v1/app, @v1/email, @v1/firebase, @v1/functions, @v1/jobs, @v1/kv, @v1/logger, @v1/typescript, @v1/ui, @v1/web
+• Running dev in 11 packages
+• Remote caching disabled
+@v1/web:dev: cache bypass, force executing 4cb39c8f2245f94f
+@v1/web:dev: $ next dev -p 3001
+@v1/app:dev: cache bypass, force executing 7decebc20338256f
+@v1/app:dev: $ next dev -p 3000
+@v1/email:dev: cache bypass, force executing e11de2469e8a6e68
+@v1/email:dev: $ email dev -p 3003

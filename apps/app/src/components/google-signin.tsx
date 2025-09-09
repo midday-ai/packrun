@@ -1,19 +1,28 @@
 "use client";
 
-import { createClient } from "@v1/supabase/client";
+import { auth } from "@v1/firebase";
 import { Button } from "@v1/ui/button";
+import { useSignInWithGoogle } from "react-firebase-hooks/auth";
 
 export function GoogleSignin() {
-  const supabase = createClient();
+  const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(auth);
 
   const handleSignin = () => {
-    supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    });
+    signInWithGoogle();
   };
+
+  if (error) {
+    // You can render some error UI here
+    console.error(error);
+  }
+
+  if (loading) {
+    return (
+        <Button variant="outline" className="font-mono" disabled>
+            Signing in...
+        </Button>
+    );
+  }
 
   return (
     <Button onClick={handleSignin} variant="outline" className="font-mono">

@@ -1,0 +1,5 @@
+• Packages in scope: @v1/app
+• Running dev in 1 packages
+• Remote caching disabled
+@v1/app:dev: cache bypass, force executing 7fe395f54b8e4ce4
+@v1/app:dev: $ next dev -p 3000

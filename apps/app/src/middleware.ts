@@ -1,6 +1,5 @@
-import { updateSession } from "@v1/supabase/middleware";
 import { createI18nMiddleware } from "next-international/middleware";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 
 const I18nMiddleware = createI18nMiddleware({
   locales: ["en", "fr"],
@@ -8,17 +7,8 @@ const I18nMiddleware = createI18nMiddleware({
   urlMappingStrategy: "rewrite",
 });
 
-export async function middleware(request: NextRequest) {
-  const { response, user } = await updateSession(
-    request,
-    I18nMiddleware(request),
-  );
-
-  if (!request.nextUrl.pathname.endsWith("/login") && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  return response;
+export function middleware(request: NextRequest) {
+  return I18nMiddleware(request);
 }
 
 export const config = {
