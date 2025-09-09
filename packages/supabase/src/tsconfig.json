@@ -1,5 +1,0 @@
-{
-  "extends": "@v1/typescript/base.json",
-  "include": ["src", "."],
-  "exclude": ["node_modules"]
-}

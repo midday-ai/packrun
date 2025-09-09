@@ -12,7 +12,7 @@
     "dev:app": "turbo dev --filter=@v1/app",
     "start:web": "turbo start --filter=@v1/web",
     "start:app": "turbo start --filter=@v1/app",
-    "test": "turbo test --parallel",
+    "test": "vitest run --config ./vitest.config.ts",
     "format": "biome format --write .",
     "lint": "turbo lint && bun lint:repo",
     "lint:repo": "bunx sherif@latest",

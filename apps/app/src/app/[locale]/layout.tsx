@@ -4,6 +4,7 @@ import { cn } from "@v1/ui/cn";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import { AuthProvider } from "@/components/auth-provider";
 import { ThemeProvider } from "next-themes";
 
 export const metadata: Metadata = {
@@ -37,7 +38,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
 
           <Footer />
         </ThemeProvider>

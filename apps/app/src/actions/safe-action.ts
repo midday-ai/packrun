@@ -2,13 +2,12 @@ import * as Sentry from "@sentry/nextjs";
 import { setupAnalytics } from "@v1/analytics/server";
 import { ratelimit } from "@v1/kv/ratelimit";
 import { logger } from "@v1/logger";
-import { getUser } from "@v1/supabase/queries";
-import { createClient } from "@v1/supabase/server";
+import { adminAuth } from "@v1/functions/src/admin";
 import {
   DEFAULT_SERVER_ERROR_MESSAGE,
   createSafeActionClient,
 } from "next-safe-action";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { z } from "zod";
 
 const handleServerError = (e: Error) => {
@@ -74,30 +73,28 @@ export const authActionClient = actionClientWithMeta
     });
   })
   .use(async ({ next, metadata }) => {
-    const {
-      data: { user },
-    } = await getUser();
-    const supabase = createClient();
-
-    if (!user) {
-      throw new Error("Unauthorized");
+    const sessionCookie = cookies().get("session")?.value;
+    if (!sessionCookie) {
+      throw new Error("Unauthorized: No session cookie");
     }
 
-    if (metadata) {
-      const analytics = await setupAnalytics({
-        userId: user.id,
-      });
+    const decodedToken = await adminAuth.verifySessionCookie(sessionCookie, true);
 
-      if (metadata.track) {
-        analytics.track(metadata.track);
-      }
+    if (!decodedToken) {
+      throw new Error("Unauthorized: Invalid session cookie");
+    }
+
+    if (metadata.track) {
+      const analytics = await setupAnalytics({
+        userId: decodedToken.uid,
+      });
+      analytics.track(metadata.track);
     }
 
     return Sentry.withServerActionInstrumentation(metadata.name, async () => {
       return next({
         ctx: {
-          supabase,
-          user,
+          user: decodedToken,
         },
       });
     });

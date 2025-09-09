@@ -1,0 +1,18 @@
+{
+  "name": "@v1/firebase",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules",
+    "lint": "biome lint",
+    "format": "biome format --write ."
+  },
+  "dependencies": {
+    "firebase": "^10.12.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
