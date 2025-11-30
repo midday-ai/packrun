@@ -26,7 +26,7 @@ Everything you need to build a production ready SaaS, it's a opinionated stack b
 [TailwindCSS](https://tailwindcss.com/) - Styling<br>
 [Shadcn](https://ui.shadcn.com/) - UI components<br>
 [TypeScript](https://www.typescriptlang.org/) - Type safety<br>
-[Supabase]([https://supabase.com/](https://go.midday.ai/K7GwMoQ)) - Authentication, database, storage<br>
+[Supabase](https://go.midday.ai/K7GwMoQ) - Authentication, database, storage<br>
 [Upstash](https://upstash.com/) - Cache and rate limiting<br>
 [React Email](https://react.email/) - Email templates<br>
 [Resend](https://resend.com/) - Email delivery<br>
