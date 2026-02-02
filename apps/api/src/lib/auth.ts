@@ -35,11 +35,22 @@ export const auth = db
         },
       },
 
-      // Default redirect after sign-in (used when callbackURL not specified)
+      // Session and cookie configuration for cross-subdomain auth
       session: {
         cookieCache: {
           enabled: true,
           maxAge: 60 * 5, // 5 minutes
+        },
+      },
+
+      advanced: {
+        crossSubDomainCookies: {
+          enabled: true,
+          domain: ".v1.run", // Share cookies across api.v1.run and v1.run
+        },
+        defaultCookieAttributes: {
+          secure: true,
+          sameSite: "none", // Required for cross-origin requests
         },
       },
     })
