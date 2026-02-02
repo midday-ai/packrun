@@ -145,7 +145,42 @@ export function createBackfillWorker() {
     console.error("[Backfill] Worker error:", error);
   });
 
+  // Check for pending backfill on startup
+  checkAndScheduleBackfill();
+
   return worker;
+}
+
+/**
+ * Check if there's a running backfill and schedule a tick if needed.
+ * Called on worker startup to resume any pending backfills.
+ */
+export async function checkAndScheduleBackfill(): Promise<void> {
+  try {
+    const state = await getBackfillState();
+
+    if (state.status === "running") {
+      const queue = getBackfillQueue();
+      const jobCounts = await queue.getJobCounts("waiting", "active", "delayed");
+      const pendingJobs =
+        (jobCounts.waiting || 0) + (jobCounts.active || 0) + (jobCounts.delayed || 0);
+
+      if (pendingJobs === 0) {
+        console.log("[Backfill] Found running backfill with no pending ticks, scheduling...");
+        await queue.add(
+          "tick",
+          { action: "tick" },
+          {
+            jobId: `backfill-tick-${Date.now()}`,
+          },
+        );
+      } else {
+        console.log(`[Backfill] Found running backfill with ${pendingJobs} pending tick(s)`);
+      }
+    }
+  } catch (error) {
+    console.error("[Backfill] Error checking backfill state:", error);
+  }
 }
 
 /**

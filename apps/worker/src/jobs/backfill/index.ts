@@ -5,6 +5,7 @@
  */
 
 export {
+  checkAndScheduleBackfill,
   createBackfillWorker,
   getBackfillQueue,
   getBackfillStatus,
