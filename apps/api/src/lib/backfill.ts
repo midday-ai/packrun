@@ -5,11 +5,13 @@
  * and processed by the worker.
  */
 
+import { getQueue } from "@v1/queue";
 import {
   BACKFILL_REDIS_KEYS,
   type BackfillState,
   DEFAULT_BACKFILL_STATE,
 } from "@v1/queue/backfill";
+import { NPM_BULK_SYNC_QUEUE } from "@v1/queue/npm-sync";
 import Redis from "ioredis";
 
 let redis: Redis | null = null;
@@ -101,22 +103,51 @@ export async function resetBackfill(): Promise<BackfillState> {
 }
 
 /**
- * Get backfill status with formatted info
+ * Get backfill status with formatted info and queue stats
  */
 export async function getBackfillStatus() {
   const state = await getBackfillState();
 
-  const progress = state.total > 0 ? ((state.offset / state.total) * 100).toFixed(2) : "0";
+  // Get bulk sync queue stats
+  const bulkQueue = getQueue({ name: NPM_BULK_SYNC_QUEUE });
+  const jobCounts = await bulkQueue.getJobCounts("waiting", "active", "completed", "failed");
+
+  const waiting = jobCounts.waiting || 0;
+  const active = jobCounts.active || 0;
+  const completed = jobCounts.completed || 0;
+  const failed = jobCounts.failed || 0;
+  const totalJobs = waiting + active + completed + failed;
+
+  // Each job processes 50 packages
+  const packagesPerJob = 50;
+  const processedPackages = completed * packagesPerJob;
+  const processingProgress =
+    state.total > 0 ? ((processedPackages / state.total) * 100).toFixed(2) : "0";
 
   const elapsed = state.startedAt ? (Date.now() - state.startedAt) / 1000 : 0;
-  const eta = state.rate > 0 ? (state.total - state.offset) / state.rate : 0;
+
+  // Calculate rate based on completed jobs
+  const rate = elapsed > 0 ? processedPackages / elapsed : 0;
+  const remainingPackages = state.total - processedPackages;
+  const eta = rate > 0 ? remainingPackages / rate : 0;
 
   return {
     ...state,
-    progress: `${progress}%`,
+    // Queue stats
+    queue: {
+      waiting,
+      active,
+      completed,
+      failed,
+      totalJobs,
+    },
+    // Processing progress (actual synced packages)
+    processed: processedPackages,
+    processingProgress: `${processingProgress}%`,
+    processingRate: `${rate.toFixed(1)} pkg/s`,
     elapsed: formatDuration(elapsed),
     eta: formatDuration(eta),
-    remaining: state.total - state.offset,
+    remaining: remainingPackages,
   };
 }
 
