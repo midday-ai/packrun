@@ -5,8 +5,14 @@
  * Falls back to npm registry if package not in Typesense, then queues for sync.
  */
 
-import { fetchGitHubDataForPackage, type GitHubData } from "../lib/clients/github";
 import {
+  fetchGitHubDataForPackage,
+  fetchGitHubReadme,
+  parseGitHubUrl,
+  type GitHubData,
+} from "../lib/clients/github";
+import {
+  fetchReadmeFromCdn,
   getLatestVersion,
   getPackage as getNpmPackage,
   hasTypes as npmHasTypes,
@@ -46,6 +52,7 @@ export interface PackageHealthResponse {
   version: string;
   description?: string;
   category?: string;
+  readme?: string;
 
   health: HealthAssessment;
 
@@ -149,16 +156,18 @@ export interface PackageHealthResponse {
 
 /**
  * Get comprehensive package health
+ *
+ * Note: We don't cache the full health response in LRU because:
+ * 1. Cloudflare handles edge caching
+ * 2. Adding new fields would require cache invalidation
+ * 3. Intermediate data (GitHub, npms) is still cached to reduce external API calls
  */
 export async function getPackageHealth(name: string): Promise<PackageHealthResponse | null> {
-  // 1. Check full health cache first
-  const healthCacheKey = CacheKey.health(name);
-  const cached = await cache.get<PackageHealthResponse>(healthCacheKey);
-  if (cached) return cached;
 
   // 2. Get core data from Typesense
   let pkg = await getPackage(name);
   let fromNpm = false;
+  let readme: string | undefined;
 
   // 3. If not in Typesense, fallback to npm registry
   if (!pkg) {
@@ -172,7 +181,12 @@ export async function getPackageHealth(name: string): Promise<PackageHealthRespo
 
     // Convert npm data to PackageDocument format
     pkg = npmToPackageDocument(npmPkg);
+    readme = npmPkg.readme;
     fromNpm = true;
+  } else {
+    // Fetch readme from npm for packages in Typesense
+    const npmPkg = await getNpmPackage(name);
+    readme = npmPkg?.readme;
   }
 
   // 4. Fetch enriched data in parallel
@@ -183,6 +197,21 @@ export async function getPackageHealth(name: string): Promise<PackageHealthRespo
     getDownloadTrend(name),
     pkg.repository ? fetchGitHubDataForPackage(name, pkg.repository) : null,
   ]);
+
+  // 4b. Fetch README if npm packument doesn't have one
+  // Priority: 1) npm packument, 2) jsdelivr CDN (tarball), 3) GitHub
+  if (!readme) {
+    // Try jsdelivr CDN first (serves files from npm tarball)
+    readme = (await fetchReadmeFromCdn(name, pkg.version)) || undefined;
+
+    // Fallback to GitHub if still no readme
+    if (!readme && pkg.repository) {
+      const parsed = parseGitHubUrl(pkg.repository);
+      if (parsed) {
+        readme = (await fetchGitHubReadme(parsed.owner, parsed.repo)) || undefined;
+      }
+    }
+  }
 
   // 5. Get alternatives by category (skip if from npm - no category data)
   let alternatives: PackageDocument[] = [];
@@ -207,10 +236,8 @@ export async function getPackageHealth(name: string): Promise<PackageHealthRespo
     github,
     alternatives,
     replacement,
+    readme,
   );
-
-  // 9. Cache for 1 hour (shorter if from npm since it will be updated after sync)
-  await cache.set(healthCacheKey, response, fromNpm ? TTL.HEALTH / 4 : TTL.HEALTH);
 
   return response;
 }
@@ -307,6 +334,7 @@ function buildHealthResponse(
   github: GitHubData | null,
   alternatives: PackageDocument[],
   replacement: ReplacementInfo | null,
+  readme: string | undefined,
 ): PackageHealthResponse {
   const daysSinceUpdate = Math.floor((Date.now() - pkg.updated) / (1000 * 60 * 60 * 24));
 
@@ -354,6 +382,7 @@ function buildHealthResponse(
     version: pkg.version,
     description: pkg.description,
     category: pkg.inferredCategory,
+    readme,
 
     health,
 

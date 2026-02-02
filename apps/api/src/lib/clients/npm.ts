@@ -18,6 +18,7 @@ export {
   fetchDownloadsBatch,
   fetchPackageMetadata,
   fetchPackageMetadata as getPackage,
+  fetchReadmeFromCdn,
   getAuthorName,
   getDeprecationMessage,
   getLatestVersion,

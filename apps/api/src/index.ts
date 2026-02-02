@@ -12,6 +12,7 @@ import { logger } from "hono/logger";
 import { z } from "zod";
 import { searchPackages as typesenseSearch } from "./lib/clients/typesense";
 import { getReplacementStats, initReplacements } from "./lib/replacements";
+import { getWeeklyDownloads } from "./tools/downloads";
 import { getPackageHealth } from "./tools/health";
 import {
   checkDeprecated,
@@ -450,6 +451,22 @@ app.get("/api/package/:name", async (c) => {
       return c.json({ error: "Package not found" }, 404);
     }
     c.header("Cache-Control", CACHE.LONG); // 24 hours
+    return c.json(result);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
+  }
+});
+
+// Weekly downloads with sparkline data
+app.get("/api/package/:name/downloads", async (c) => {
+  try {
+    const name = decodeURIComponent(c.req.param("name"));
+    const weeks = Math.min(Number.parseInt(c.req.query("weeks") || "52"), 104);
+    const result = await getWeeklyDownloads(name, weeks);
+    if (!result) {
+      return c.json({ error: "Package not found or no download data" }, 404);
+    }
+    c.header("Cache-Control", CACHE.MEDIUM); // 6 hours (downloads update daily)
     return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);

@@ -1,19 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSearch } from "@/lib/hooks";
 import { formatDownloads } from "@/lib/api";
-
-const ASCII_LOGO = `
-██╗   ██╗ ██╗    ██████╗ ██╗   ██╗███╗   ██╗
-██║   ██║███║    ██╔══██╗██║   ██║████╗  ██║
-██║   ██║╚██║    ██████╔╝██║   ██║██╔██╗ ██║
-╚██╗ ██╔╝ ██║    ██╔══██╗██║   ██║██║╚██╗██║
- ╚████╔╝  ██║ ██╗██║  ██║╚██████╔╝██║ ╚████║
-  ╚═══╝   ╚═╝ ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
-`.trim();
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -170,10 +162,15 @@ export default function Home() {
       <div className="relative z-5 h-full flex flex-col p-6 lg:p-10">
         {/* Main content - centered */}
         <div className="flex-1 flex flex-col items-center justify-center -mt-8">
-          {/* ASCII Logo */}
-          <pre className="text-neutral-700 text-[8px] sm:text-[12px] lg:text-[16px] xl:text-[20px] leading-tight mb-10 select-none">
-            {ASCII_LOGO}
-          </pre>
+          {/* Logo */}
+          <Image
+            src="/logo.svg"
+            alt="V1"
+            width={129}
+            height={91}
+            className="w-20 sm:w-24 lg:w-28 h-auto mb-10 select-none"
+            priority
+          />
 
           {/* Tagline */}
           <div className="text-center mb-8">
@@ -287,8 +284,8 @@ export default function Home() {
               </>
             ) : (
               <>
-                <span className="text-neutral-500">/</span> focus ·{" "}
-                <span className="text-neutral-500">enter</span> search · try{" "}
+                <span className="text-neutral-500">⌘K</span> search ·{" "}
+                <span className="text-neutral-500">enter</span> go · try{" "}
                 <span className="text-neutral-400">react</span>,{" "}
                 <span className="text-neutral-400">next</span>,{" "}
                 <span className="text-neutral-400">zod</span>

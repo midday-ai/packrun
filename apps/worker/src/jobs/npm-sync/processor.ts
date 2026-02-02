@@ -148,9 +148,12 @@ function getModuleFormat(
 /**
  * Classify license type for filtering
  */
-function classifyLicense(license: string | undefined): string {
+function classifyLicense(license: string | { type?: string } | undefined): string {
   if (!license) return "unknown";
-  const upper = license.toUpperCase();
+  // Handle license as object (e.g., { type: "MIT", url: "..." })
+  const licenseStr = typeof license === "string" ? license : license.type;
+  if (!licenseStr) return "unknown";
+  const upper = licenseStr.toUpperCase();
   // Permissive licenses
   if (/^(MIT|ISC|BSD|APACHE|UNLICENSE|CC0|WTFPL|0BSD)/i.test(upper)) {
     return "permissive";

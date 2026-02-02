@@ -7,6 +7,7 @@
 
 const GITHUB_API = "https://api.github.com";
 const UNGH_API = "https://ungh.cc"; // Unauthenticated proxy
+const JSDELIVR_API = "https://cdn.jsdelivr.net/npm";
 
 /**
  * GitHub repository data
@@ -218,6 +219,31 @@ export async function fetchGitHubStarsBatch(
   }
 
   return results;
+}
+
+/**
+ * Fetch README content from GitHub repository
+ */
+export async function fetchGitHubReadme(owner: string, repo: string): Promise<string | null> {
+  try {
+    // GitHub's special README endpoint that auto-detects README.md, readme.md, etc.
+    const response = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/readme`, {
+      headers: {
+        Accept: "application/vnd.github.raw+json", // Get raw content directly
+        "User-Agent": "v1.run",
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`[GitHub] README not found for ${owner}/${repo}: ${response.status}`);
+      return null;
+    }
+
+    return response.text();
+  } catch (error) {
+    console.error(`[GitHub] Error fetching README for ${owner}/${repo}:`, error);
+    return null;
+  }
 }
 
 /**

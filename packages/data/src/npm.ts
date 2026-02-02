@@ -6,6 +6,10 @@
 
 const REGISTRY_URL = "https://registry.npmjs.org";
 const DOWNLOADS_URL = "https://api.npmjs.org/downloads";
+const JSDELIVR_URL = "https://cdn.jsdelivr.net/npm";
+
+/** Standard README filenames to try (case-sensitive) */
+const README_FILENAMES = ["README.md", "readme.md", "Readme.md", "README", "readme"];
 
 /**
  * npm package metadata from registry
@@ -265,4 +269,30 @@ function chunkArray<T>(array: T[], size: number): T[][] {
     chunks.push(array.slice(i, i + size));
   }
   return chunks;
+}
+
+/**
+ * Fetch README from jsdelivr CDN (serves files from npm tarball).
+ * This works even when npm packument doesn't include readme field.
+ * Tries multiple common README filenames.
+ */
+export async function fetchReadmeFromCdn(
+  packageName: string,
+  version?: string,
+): Promise<string | null> {
+  const versionSuffix = version ? `@${version}` : "";
+
+  for (const filename of README_FILENAMES) {
+    try {
+      const url = `${JSDELIVR_URL}/${packageName}${versionSuffix}/${filename}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        return response.text();
+      }
+    } catch {
+      // Try next filename
+    }
+  }
+
+  return null;
 }

@@ -4,11 +4,11 @@
  * Uses @v1/data/github with Redis caching layer.
  */
 
-import { fetchGitHubRepoBasic, parseGitHubUrl } from "@v1/data/github";
+import { fetchGitHubRepoBasic, fetchGitHubReadme, parseGitHubUrl } from "@v1/data/github";
 import { CacheKey, cache, TTL } from "../cache";
 
 // Re-export types and utilities
-export { type GitHubRepoData, parseGitHubUrl } from "@v1/data/github";
+export { type GitHubRepoData, parseGitHubUrl, fetchGitHubReadme } from "@v1/data/github";
 
 /**
  * Simplified GitHub data for API responses

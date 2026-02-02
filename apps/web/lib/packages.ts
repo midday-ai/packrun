@@ -5,7 +5,6 @@
  * Caching is handled by Next.js ISR and Cloudflare CDN.
  */
 
-import { fetchAndRenderReadme } from "@v1/readme-renderer";
 import { fetchPackageHealth, type PackageHealthResponse } from "./api";
 
 /**
@@ -63,53 +62,43 @@ export interface PackageData {
 export type CachedPackage = PackageData;
 
 /**
- * Fetch readme from npm and render it
- */
-async function fetchReadme(name: string, version?: string): Promise<string | undefined> {
-  try {
-    const npmRes = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, {
-      headers: { Accept: "application/json" },
-      next: { revalidate: 86400 }, // 24 hours (on-demand invalidation handles updates)
-    });
-    if (!npmRes.ok) return undefined;
-
-    const npmData = await npmRes.json();
-    const versionData = version ? npmData.versions?.[version] : null;
-
-    return (
-      (await fetchAndRenderReadme({
-        name,
-        readme: npmData.readme,
-        readmeFilename: npmData.readmeFilename,
-        repository: versionData?.repository,
-        "dist-tags": npmData["dist-tags"],
-      })) || undefined
-    );
-  } catch {
-    return undefined;
-  }
-}
-
-/**
  * Get package data by name.
- * Fetches health from API and readme from npm in parallel.
+ * Fetches everything from API (cached via Cloudflare).
  */
 export async function getPackage(name: string): Promise<PackageData | null> {
-  // Fetch health and readme in parallel
-  const [health, readmeHtml] = await Promise.all([
-    fetchPackageHealth(name),
-    fetchReadme(name),
-  ]);
+  const health = await fetchPackageHealth(name);
 
   if (health) {
     const pkg = healthToPackageData(health);
-    pkg.readmeHtml = readmeHtml;
+    // Render readme from API response
+    if (health.readme) {
+      pkg.readmeHtml = await renderReadme(health.readme, name, health.links.repository);
+    }
     return pkg;
   }
 
   // Fallback to direct npm fetch (includes readme)
   console.log(`[packages] API miss for ${name}, falling back to npm`);
   return getPackageFromNpm(name);
+}
+
+/**
+ * Render markdown readme to HTML
+ */
+async function renderReadme(
+  readme: string,
+  packageName: string,
+  repository?: string,
+): Promise<string | undefined> {
+  try {
+    const { renderReadmeHtml, parseRepositoryInfo } = await import("@v1/readme-renderer");
+    const repoInfo = parseRepositoryInfo(repository);
+    const result = await renderReadmeHtml(readme, packageName, repoInfo);
+    return result.html || undefined;
+  } catch (error) {
+    console.error(`[packages] Failed to render readme for ${packageName}:`, error);
+    return undefined;
+  }
 }
 
 /**
@@ -158,6 +147,7 @@ async function getPackageFromNpm(name: string): Promise<PackageData | null> {
       headers: {
         Accept: "application/json",
       },
+      next: { revalidate: 86400 }, // 24h - warning for >2MB packages is expected
     });
 
     if (!response.ok) {
@@ -238,19 +228,9 @@ async function getPackageFromNpm(name: string): Promise<PackageData | null> {
     const updated = timeData[latestVersion] ? new Date(timeData[latestVersion]).getTime() : 0;
 
     // Render README HTML
-    let readmeHtml: string | undefined;
-    try {
-      readmeHtml =
-        (await fetchAndRenderReadme({
-          name: versionData.name || name,
-          readme: data.readme,
-          readmeFilename: data.readmeFilename,
-          repository: versionData.repository,
-          "dist-tags": data["dist-tags"],
-        })) || undefined;
-    } catch (error) {
-      console.error(`Failed to render README for ${name}:`, error);
-    }
+    const readmeHtml = data.readme
+      ? await renderReadme(data.readme, versionData.name || name, repository)
+      : undefined;
 
     // Check for install scripts (security concern)
     const scripts = versionData.scripts || {};

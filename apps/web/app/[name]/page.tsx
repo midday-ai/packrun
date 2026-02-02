@@ -1,9 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { HeaderSearch } from "@/components/header-search";
+import { SearchTrigger } from "@/components/command-search";
 import { InstallTabs } from "@/components/install-tabs";
 import { TimeAgo } from "@/components/time-ago";
+import { WeeklyDownloads } from "@/components/weekly-downloads";
 import { formatBytes, formatNumber, getPackage } from "@/lib/packages";
 import { getStaticPackages } from "@/lib/popular-packages";
 
@@ -66,15 +68,11 @@ export default async function PackagePage({ params }: PageProps) {
         {/* Header */}
         <header className="border-b border-[#333]">
           <div className="container-page flex py-3 items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm uppercase tracking-widest text-white hover:text-[#888] transition-colors shrink-0"
-            >
-              v1.run
+            <Link href="/" className="shrink-0 hover:opacity-80 transition-opacity">
+              <Image src="/logo.svg" alt="V1" width={32} height={22} />
             </Link>
-            <div className="flex-1 flex justify-center">
-              <HeaderSearch />
-            </div>
+            <SearchTrigger />
+            <div className="flex-1" />
             <div className="flex items-center gap-4 text-xs uppercase tracking-wider shrink-0">
               <Link
                 href={`https://www.npmjs.com/package/${pkg.name}`}
@@ -242,6 +240,55 @@ export default async function PackagePage({ params }: PageProps) {
 
             {/* Right: Sidebar */}
             <aside className="w-full lg:w-64 shrink-0 lg:pl-6">
+              {/* Downloads with Sparkline */}
+              <div className="border-b border-[#333] py-4">
+                <WeeklyDownloads packageName={pkg.name} initialWeeklyDownloads={pkg.downloads} />
+              </div>
+
+              {/* Version */}
+              <div className="border-b border-[#333] py-4">
+                <h3 className="text-xs uppercase tracking-widest text-[#666] mb-2">latest</h3>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-white font-bold tabular-nums">{pkg.version}</span>
+                  {pkg.updated > 0 && (
+                    <span className="text-xs text-[#666]">
+                      <TimeAgo timestamp={pkg.updated} />
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Module */}
+              <div className="border-b border-[#333] py-4">
+                <h3 className="text-xs uppercase tracking-widest text-[#666] mb-3">module</h3>
+                <div className="flex flex-wrap gap-2">
+                  {pkg.hasTypes && (
+                    <span className="text-xs border border-white text-white px-2 py-0.5">TS</span>
+                  )}
+                  {!pkg.hasTypes && pkg.typesPackage && (
+                    <Link
+                      href={`/${encodeURIComponent(pkg.typesPackage)}`}
+                      className="text-xs border border-blue-400/50 text-blue-400 px-2 py-0.5 hover:border-blue-400 transition-colors"
+                    >
+                      @types
+                    </Link>
+                  )}
+                  {pkg.isESM && (
+                    <span className="text-xs border border-[#666] text-[#888] px-2 py-0.5">
+                      ESM
+                    </span>
+                  )}
+                  {pkg.isCJS && (
+                    <span className="text-xs border border-[#666] text-[#888] px-2 py-0.5">
+                      CJS
+                    </span>
+                  )}
+                  {!pkg.hasTypes && !pkg.typesPackage && !pkg.isESM && !pkg.isCJS && (
+                    <span className="text-xs text-[#444]">—</span>
+                  )}
+                </div>
+              </div>
+
               {/* Health Score */}
               {pkg.health && (
                 <div className="border-b border-[#333] py-4">
@@ -250,7 +297,8 @@ export default async function PackagePage({ params }: PageProps) {
                   </h3>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`text-2xl font-bold ${getGradeColor(pkg.health.health.grade)}`}
+                      className="text-2xl font-bold"
+                      style={{ color: getGradeColor(pkg.health.health.grade) }}
                     >
                       {pkg.health.health.grade}
                     </span>
@@ -316,16 +364,6 @@ export default async function PackagePage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* Downloads */}
-              <div className="border-b border-[#333] py-4">
-                <h3 className="text-xs uppercase tracking-widest text-[#666] mb-2">
-                  weekly downloads
-                </h3>
-                <div className="text-xl font-bold tabular-nums">
-                  {pkg.downloads.toLocaleString()}
-                </div>
-              </div>
-
               {/* Compatibility */}
               {pkg.nodeVersion && (
                 <div className="border-b border-[#333] py-4">
@@ -333,50 +371,6 @@ export default async function PackagePage({ params }: PageProps) {
                   <div className="text-sm text-[#888]">{pkg.nodeVersion}</div>
                 </div>
               )}
-
-              {/* Module */}
-              <div className="border-b border-[#333] py-4">
-                <h3 className="text-xs uppercase tracking-widest text-[#666] mb-3">module</h3>
-                <div className="flex flex-wrap gap-2">
-                  {pkg.hasTypes && (
-                    <span className="text-xs border border-white text-white px-2 py-0.5">TS</span>
-                  )}
-                  {!pkg.hasTypes && pkg.typesPackage && (
-                    <Link
-                      href={`/${encodeURIComponent(pkg.typesPackage)}`}
-                      className="text-xs border border-blue-400/50 text-blue-400 px-2 py-0.5 hover:border-blue-400 transition-colors"
-                    >
-                      @types
-                    </Link>
-                  )}
-                  {pkg.isESM && (
-                    <span className="text-xs border border-[#666] text-[#888] px-2 py-0.5">
-                      ESM
-                    </span>
-                  )}
-                  {pkg.isCJS && (
-                    <span className="text-xs border border-[#666] text-[#888] px-2 py-0.5">
-                      CJS
-                    </span>
-                  )}
-                  {!pkg.hasTypes && !pkg.typesPackage && !pkg.isESM && !pkg.isCJS && (
-                    <span className="text-xs text-[#444]">—</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Version */}
-              <div className="border-b border-[#333] py-4">
-                <h3 className="text-xs uppercase tracking-widest text-[#666] mb-2">latest</h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-white font-bold tabular-nums">{pkg.version}</span>
-                  {pkg.updated > 0 && (
-                    <span className="text-xs text-[#666]">
-                      <TimeAgo timestamp={pkg.updated} />
-                    </span>
-                  )}
-                </div>
-              </div>
 
               {/* Links */}
               <div className="py-4">
@@ -452,7 +446,7 @@ function HealthScoreCell({ score, grade }: { score: number; grade: string }) {
   return (
     <div className="flex-1 min-w-[100px] px-4 py-3">
       <div className="text-[10px] uppercase tracking-widest text-[#666]">health</div>
-      <div className={`text-sm font-medium ${getGradeColor(grade)}`}>
+      <div className="text-sm font-medium" style={{ color: getGradeColor(grade) }}>
         {grade} ({score})
       </div>
     </div>
@@ -462,17 +456,17 @@ function HealthScoreCell({ score, grade }: { score: number; grade: string }) {
 function getGradeColor(grade: string): string {
   switch (grade) {
     case "A":
-      return "text-green-400";
+      return "#0fff50"; // laser green
     case "B":
-      return "text-lime-400";
+      return "#39ff14"; // neon lime
     case "C":
-      return "text-yellow-400";
+      return "#dfff00"; // electric yellow
     case "D":
-      return "text-orange-400";
+      return "#ff6700"; // blazing orange
     case "F":
-      return "text-red-400";
+      return "#ff003c"; // laser red
     default:
-      return "text-white";
+      return "#ffffff";
   }
 }
 

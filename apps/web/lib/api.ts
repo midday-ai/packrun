@@ -35,6 +35,7 @@ export interface PackageHealthResponse {
   name: string;
   version: string;
   description?: string;
+  readme?: string;
   author?: { name?: string; email?: string };
   links: {
     npm?: string;
