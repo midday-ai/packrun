@@ -2,7 +2,7 @@
  * npm Changes Listener
  *
  * Polls changes from the npm registry replication API.
- * 
+ *
  * Note: As of 2025, npm deprecated continuous streaming feeds.
  * We now use manual pagination via the `since` parameter.
  * See: https://github.com/orgs/community/discussions/152515
@@ -35,14 +35,17 @@ export async function getCurrentSeq(): Promise<string> {
   if (!response.ok) {
     throw new Error(`Failed to get registry info: ${response.status}`);
   }
-  const data = await response.json() as { update_seq: string | number };
+  const data = (await response.json()) as { update_seq: string | number };
   return String(data.update_seq);
 }
 
 /**
  * Fetch a batch of changes from npm registry
  */
-export async function fetchChanges(since: string, limit = 1000): Promise<{
+export async function fetchChanges(
+  since: string,
+  limit = 1000,
+): Promise<{
   changes: NpmChange[];
   lastSeq: string;
 }> {
@@ -55,7 +58,7 @@ export async function fetchChanges(since: string, limit = 1000): Promise<{
     throw new Error(`Failed to fetch changes: HTTP ${response.status} - ${text.slice(0, 200)}`);
   }
 
-  const data = await response.json() as ChangesResponse;
+  const data = (await response.json()) as ChangesResponse;
 
   const changes: NpmChange[] = data.results.map((result) => ({
     seq: String(result.seq),
@@ -71,7 +74,7 @@ export async function fetchChanges(since: string, limit = 1000): Promise<{
 
 /**
  * Poll for changes continuously
- * 
+ *
  * @param since - Starting sequence number
  * @param onChanges - Callback for each batch of changes
  * @param pollInterval - How often to poll when caught up (ms)
@@ -92,7 +95,7 @@ export async function pollChanges(
         await onChanges(changes);
         currentSeq = lastSeq;
         consecutiveEmpty = 0;
-        
+
         // If we got a full batch, immediately fetch more
         if (changes.length >= 1000) {
           continue;

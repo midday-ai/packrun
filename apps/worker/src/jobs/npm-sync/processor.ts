@@ -4,17 +4,19 @@
  * Job processing logic for npm package sync.
  */
 
+import { inferCategory } from "@v1/decisions";
 import type { Job } from "bullmq";
 import {
-  fetchPackageMetadata,
-  fetchDownloads,
   deletePackage,
-  upsertPackages,
-  type PackageDocument,
+  fetchDownloads,
+  fetchPackageMetadata,
   type NpmPackageMetadata,
+  type NpmVersionData,
+  type PackageDocument,
+  upsertPackages,
 } from "../../clients";
 import { extractCompatibility } from "../../lib/compatibility";
-import type { SyncJobData, BulkSyncJobData } from "./types";
+import type { BulkSyncJobData, SyncJobData } from "./types";
 
 /**
  * Transform npm metadata to Typesense document
@@ -76,6 +78,18 @@ export function transformToDocument(metadata: NpmPackageMetadata, downloads = 0)
     }
   }
 
+  // NEW: Extract fields for search/filter
+  const inferredCategory = metadata.keywords ? inferCategory(metadata.keywords) : null;
+  const moduleFormat = getModuleFormat(versionData, compatibility);
+  const bin = versionData?.bin;
+  const hasBin = Boolean(bin && Object.keys(bin).length > 0);
+  const licenseType = classifyLicense(metadata.license);
+  const dist = versionData?.dist;
+  const hasProvenance = Boolean(dist?.attestations);
+  const unpackedSize = dist?.unpackedSize;
+  const isStable = isVersionStable(latestVersion);
+  const authorGithub = extractGithubUsername(repository);
+
   return {
     id: metadata.name,
     name: metadata.name,
@@ -98,11 +112,76 @@ export function transformToDocument(metadata: NpmPackageMetadata, downloads = 0)
     peerDependencies: Object.keys(peerDeps).length > 0 ? JSON.stringify(peerDeps) : undefined,
     directDependencies: Object.keys(directDeps).length > 0 ? JSON.stringify(directDeps) : undefined,
     deprecated: Boolean(metadata.deprecated),
-    deprecatedMessage: metadata.deprecated || undefined,
+    deprecatedMessage: typeof metadata.deprecated === "string" ? metadata.deprecated : undefined,
     maintenanceScore: maintenanceScore > 0 ? Math.round(maintenanceScore * 100) / 100 : undefined,
     hasInstallScripts: hasInstallScripts || undefined,
     funding,
+
+    // NEW: Fields for search/filter
+    inferredCategory: inferredCategory || undefined,
+    moduleFormat,
+    hasBin: hasBin || undefined,
+    licenseType,
+    hasProvenance: hasProvenance || undefined,
+    unpackedSize,
+    isStable,
+    authorGithub,
   };
+}
+
+/**
+ * Determine module format from package data
+ */
+function getModuleFormat(
+  versionData: NpmVersionData | undefined,
+  compatibility: { isESM: boolean; isCJS: boolean },
+): string {
+  if (compatibility.isESM && compatibility.isCJS) return "dual";
+  if (compatibility.isESM) return "esm";
+  if (compatibility.isCJS) return "cjs";
+  // Check type field as fallback
+  if (versionData?.type === "module") return "esm";
+  if (versionData?.type === "commonjs") return "cjs";
+  return "unknown";
+}
+
+/**
+ * Classify license type for filtering
+ */
+function classifyLicense(license: string | undefined): string {
+  if (!license) return "unknown";
+  const upper = license.toUpperCase();
+  // Permissive licenses
+  if (/^(MIT|ISC|BSD|APACHE|UNLICENSE|CC0|WTFPL|0BSD)/i.test(upper)) {
+    return "permissive";
+  }
+  // Copyleft licenses
+  if (/^(GPL|LGPL|AGPL|MPL|EPL|EUPL|CDDL)/i.test(upper)) {
+    return "copyleft";
+  }
+  // Proprietary/commercial
+  if (/^(PROPRIETARY|COMMERCIAL|SEE LICENSE|UNLICENSED)/i.test(upper)) {
+    return "proprietary";
+  }
+  return "unknown";
+}
+
+/**
+ * Check if version is stable (>= 1.0.0)
+ */
+function isVersionStable(version: string): boolean {
+  const match = version.match(/^(\d+)\./);
+  if (!match || !match[1]) return false;
+  return parseInt(match[1], 10) >= 1;
+}
+
+/**
+ * Extract GitHub org/username from repository URL
+ */
+function extractGithubUsername(repoUrl: string | undefined): string | undefined {
+  if (!repoUrl) return undefined;
+  const match = repoUrl.match(/github\.com\/([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : undefined;
 }
 
 /**
@@ -145,14 +224,14 @@ export async function processSyncJob(job: Job<SyncJobData>): Promise<void> {
 export async function processBulkSyncJob(job: Job<BulkSyncJobData>): Promise<void> {
   const { names, phase } = job.data;
 
-  console.log(`[${job.id}] Processing bulk sync: ${names.length} packages (phase ${phase || "N/A"})`);
+  console.log(
+    `[${job.id}] Processing bulk sync: ${names.length} packages (phase ${phase || "N/A"})`,
+  );
 
   const metadataPromises = names.map((name) => fetchPackageMetadata(name));
   const metadataResults = await Promise.all(metadataPromises);
 
-  const validPackages = metadataResults.filter(
-    (m): m is NonNullable<typeof m> => m !== null,
-  );
+  const validPackages = metadataResults.filter((m): m is NonNullable<typeof m> => m !== null);
 
   if (validPackages.length === 0) {
     console.log(`[${job.id}] No valid packages in batch`);

@@ -5,9 +5,9 @@
  * Run with: bun run src/worker.ts
  */
 
-import { config } from "./config";
-import { connection } from "./lib/redis";
+import { getConnectionInfo } from "@v1/queue";
 import { ensureCollection } from "./clients/typesense";
+import { config } from "./config";
 import { createWorkers, getQueueStats } from "./jobs";
 
 let workers: ReturnType<typeof createWorkers> | null = null;
@@ -36,9 +36,14 @@ process.on("SIGTERM", shutdown);
 
 async function main() {
   console.log("Worker Processor starting...");
-  console.log(`Typesense: ${config.typesense.nearestNode.host}:${config.typesense.nearestNode.port}`);
-  console.log(`Typesense API Key: ${config.typesense.apiKey ? `${config.typesense.apiKey.slice(0, 4)}...${config.typesense.apiKey.slice(-4)}` : "(empty)"}`);
-  console.log(`Redis: ${connection.host}:${connection.port}`);
+  console.log(
+    `Typesense: ${config.typesense.nearestNode.host}:${config.typesense.nearestNode.port}`,
+  );
+  console.log(
+    `Typesense API Key: ${config.typesense.apiKey ? `${config.typesense.apiKey.slice(0, 4)}...${config.typesense.apiKey.slice(-4)}` : "(empty)"}`,
+  );
+  const redisInfo = getConnectionInfo();
+  console.log(`Redis: ${redisInfo.host}:${redisInfo.port}`);
 
   // Ensure Typesense collection exists
   await ensureCollection();

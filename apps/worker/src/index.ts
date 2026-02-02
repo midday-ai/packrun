@@ -5,16 +5,16 @@
  * Run with: bun run src/index.ts
  */
 
+import { getConnectionInfo } from "@v1/queue";
 import { config } from "./config";
-import { connection } from "./lib/redis";
-import { pollChanges, getCurrentSeq, type NpmChange } from "./listeners/npm-changes";
-import { queuePackageSync, getQueueStats } from "./jobs/npm-sync";
+import { getCombinedStats, queuePackageSync } from "./jobs/npm-sync";
+import { getCurrentSeq, type NpmChange, pollChanges } from "./listeners/npm-changes";
 
 let jobsQueued = 0;
 let lastStatsTime = Date.now();
 
 async function logStats() {
-  const stats = await getQueueStats();
+  const stats = await getCombinedStats();
   const elapsed = (Date.now() - lastStatsTime) / 1000;
   const rate = jobsQueued / elapsed;
 
@@ -39,7 +39,9 @@ async function processChanges(changes: NpmChange[]): Promise<void> {
   }
 
   if (changes.length > 0) {
-    console.log(`[Listener] Queued ${changes.length} changes (last seq: ${changes[changes.length - 1]?.seq})`);
+    console.log(
+      `[Listener] Queued ${changes.length} changes (last seq: ${changes[changes.length - 1]?.seq})`,
+    );
   }
 }
 
@@ -66,8 +68,11 @@ process.on("SIGTERM", shutdown);
 
 async function main() {
   console.log("Worker Listener starting...");
-  console.log(`Typesense: ${config.typesense.nearestNode.host}:${config.typesense.nearestNode.port}`);
-  console.log(`Redis: ${connection.host}:${connection.port}`);
+  console.log(
+    `Typesense: ${config.typesense.nearestNode.host}:${config.typesense.nearestNode.port}`,
+  );
+  const redisInfo = getConnectionInfo();
+  console.log(`Redis: ${redisInfo.host}:${redisInfo.port}`);
 
   setInterval(logStats, 30000);
 

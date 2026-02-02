@@ -1,91 +1,44 @@
 /**
- * npm Sync Queue
- *
- * BullMQ queue configuration for npm package sync jobs.
+ * npm Sync Queue Instances
  */
 
-import { Queue } from "bullmq";
-import { connection } from "../../lib/redis";
-import type { SyncJobData, BulkSyncJobData } from "./types";
+import { getQueue, getQueueStats, JOB_PRESETS, type Queue, type QueueStats } from "@v1/queue";
+import {
+  type BulkSyncJobData,
+  NPM_BULK_SYNC_QUEUE,
+  NPM_SYNC_QUEUE,
+  type SyncJobData,
+} from "@v1/queue/npm-sync";
 
-export const QUEUE_NAME = "npm-sync";
-export const BULK_QUEUE_NAME = "npm-bulk-sync";
+export { NPM_BULK_SYNC_QUEUE, NPM_SYNC_QUEUE, type BulkSyncJobData, type SyncJobData };
 
-// Main sync queue for npm changes
-export const syncQueue = new Queue<SyncJobData>(QUEUE_NAME, {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 2000, // 2s, 4s, 8s
-    },
-    removeOnComplete: {
-      count: 1000, // Keep last 1000 completed jobs
-    },
-    removeOnFail: {
-      count: 5000, // Keep last 5000 failed jobs for review
-    },
-  },
-});
+let syncQueue: Queue<SyncJobData> | null = null;
+let bulkSyncQueue: Queue<BulkSyncJobData> | null = null;
 
-// Bulk sync queue for initial/priority sync
-export const bulkSyncQueue = new Queue<BulkSyncJobData>(BULK_QUEUE_NAME, {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 5000, // 5s, 10s, 20s (longer for bulk)
-    },
-    removeOnComplete: {
-      count: 100,
-    },
-    removeOnFail: {
-      count: 1000,
-    },
-  },
-});
+export function getSyncQueue(): Queue<SyncJobData> {
+  if (!syncQueue) {
+    syncQueue = getQueue<SyncJobData>({
+      name: NPM_SYNC_QUEUE,
+      defaultJobOptions: JOB_PRESETS.standard,
+    });
+  }
+  return syncQueue;
+}
 
-// Queue error handlers
-syncQueue.on("error", (error: Error) => {
-  console.error("Sync queue error:", error);
-});
+export function getBulkSyncQueue(): Queue<BulkSyncJobData> {
+  if (!bulkSyncQueue) {
+    bulkSyncQueue = getQueue<BulkSyncJobData>({
+      name: NPM_BULK_SYNC_QUEUE,
+      defaultJobOptions: JOB_PRESETS.bulk,
+    });
+  }
+  return bulkSyncQueue;
+}
 
-bulkSyncQueue.on("error", (error: Error) => {
-  console.error("Bulk sync queue error:", error);
-});
-
-/**
- * Get queue statistics
- */
-export async function getQueueStats() {
-  const [syncWaiting, syncActive, syncCompleted, syncFailed] = await Promise.all([
-    syncQueue.getWaitingCount(),
-    syncQueue.getActiveCount(),
-    syncQueue.getCompletedCount(),
-    syncQueue.getFailedCount(),
+export async function getCombinedStats(): Promise<{ sync: QueueStats; bulk: QueueStats }> {
+  const [sync, bulk] = await Promise.all([
+    getQueueStats(getSyncQueue()),
+    getQueueStats(getBulkSyncQueue()),
   ]);
-
-  const [bulkWaiting, bulkActive, bulkCompleted, bulkFailed] = await Promise.all([
-    bulkSyncQueue.getWaitingCount(),
-    bulkSyncQueue.getActiveCount(),
-    bulkSyncQueue.getCompletedCount(),
-    bulkSyncQueue.getFailedCount(),
-  ]);
-
-  return {
-    sync: {
-      waiting: syncWaiting,
-      active: syncActive,
-      completed: syncCompleted,
-      failed: syncFailed,
-    },
-    bulk: {
-      waiting: bulkWaiting,
-      active: bulkActive,
-      completed: bulkCompleted,
-      failed: bulkFailed,
-    },
-  };
+  return { sync, bulk };
 }

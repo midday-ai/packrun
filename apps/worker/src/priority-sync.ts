@@ -13,15 +13,15 @@
  *   bun run bulk:phase3       # + Long tail (millions)
  */
 
-import { config } from "./config";
 import {
+  ensureCollection,
   fetchDownloads,
   fetchPackageMetadata,
-  ensureCollection,
-  upsertPackages,
   type PackageDocument,
+  upsertPackages,
 } from "./clients";
 import { fetchVulnerabilities } from "./clients/osv";
+import { config } from "./config";
 import { transformToDocument } from "./jobs/npm-sync/processor";
 
 // Phase 1: Curated list of most important packages

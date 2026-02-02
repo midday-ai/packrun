@@ -1,0 +1,26 @@
+{
+  "name": "api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@v1/data": "workspace:*",
+    "@v1/decisions": "workspace:*",
+    "@v1/queue": "workspace:*",
+    "hono": "^4.11.7",
+    "module-replacements": "^2.11.0",
+    "typesense": "^2.1.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@v1/typescript-config": "workspace:*",
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  }
+}

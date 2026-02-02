@@ -1,50 +1,29 @@
 /**
  * Job Registry
- *
- * Registers all job processors with BullMQ workers.
  */
 
-import { Worker } from "bullmq";
-import { connection } from "../lib/redis";
+import { createWorker } from "@v1/queue";
 import {
-  QUEUE_NAME,
-  BULK_QUEUE_NAME,
-  processSyncJob,
-  processBulkSyncJob,
-  getQueueStats,
-  type SyncJobData,
   type BulkSyncJobData,
-} from "./npm-sync";
+  NPM_BULK_SYNC_QUEUE,
+  NPM_SYNC_QUEUE,
+  type SyncJobData,
+} from "@v1/queue/npm-sync";
+import { processBulkSyncJob, processSyncJob } from "./npm-sync";
 
-// Re-export for convenience
-export { getQueueStats } from "./npm-sync";
-export type { SyncJobData, BulkSyncJobData } from "./npm-sync";
+export { getCombinedStats as getQueueStats } from "./npm-sync";
 
-/**
- * Create and start all job workers
- */
 export function createWorkers() {
-  // npm sync worker
-  const syncWorker = new Worker<SyncJobData>(QUEUE_NAME, processSyncJob, {
-    connection,
+  const syncWorker = createWorker<SyncJobData>(NPM_SYNC_QUEUE, processSyncJob, {
     concurrency: 5,
-    limiter: {
-      max: 100,
-      duration: 60000,
-    },
+    limiter: { max: 100, duration: 60000 },
   });
 
-  // Bulk sync worker
-  const bulkSyncWorker = new Worker<BulkSyncJobData>(BULK_QUEUE_NAME, processBulkSyncJob, {
-    connection,
+  const bulkSyncWorker = createWorker<BulkSyncJobData>(NPM_BULK_SYNC_QUEUE, processBulkSyncJob, {
     concurrency: 2,
-    limiter: {
-      max: 20,
-      duration: 60000,
-    },
+    limiter: { max: 20, duration: 60000 },
   });
 
-  // Event handlers
   syncWorker.on("failed", (job, error) => {
     console.error(`[${job?.id}] Failed:`, error.message);
   });

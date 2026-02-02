@@ -6,15 +6,15 @@
  * Usage: bun run bulk
  */
 
-import { config } from "./config";
 import {
+  ensureCollection,
   fetchDownloads,
   fetchPackageMetadata,
-  ensureCollection,
   getDocument,
-  upsertPackages,
   type PackageDocument,
+  upsertPackages,
 } from "./clients";
+import { config } from "./config";
 import { transformToDocument } from "./jobs/npm-sync/processor";
 
 const BATCH_SIZE = 100;

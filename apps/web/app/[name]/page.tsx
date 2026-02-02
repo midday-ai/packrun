@@ -149,12 +149,19 @@ export default async function PackagePage({ params }: PageProps) {
               <StatCell label="license" value={pkg.license || "—"} />
               <StatCell label="deps" value={String(pkg.dependencyCount)} />
               {pkg.unpackedSize && <StatCell label="size" value={formatBytes(pkg.unpackedSize)} />}
-              <Suspense fallback={<StatCell label="vulns" value="—" />}>
-                <VulnStatCell packageName={pkg.name} version={pkg.version} />
-              </Suspense>
+              {pkg.health ? (
+                <VulnStatCellFromHealth vulns={pkg.health.security.vulnerabilities.total} />
+              ) : (
+                <Suspense fallback={<StatCell label="vulns" value="—" />}>
+                  <VulnStatCell packageName={pkg.name} version={pkg.version} />
+                </Suspense>
+              )}
               <StatCell label="downloads" value={`${formatNumber(pkg.downloads)}/wk`} />
               {pkg.stars !== undefined && pkg.stars > 0 && (
                 <StatCell label="stars" value={formatNumber(pkg.stars)} />
+              )}
+              {pkg.health && (
+                <HealthScoreCell score={pkg.health.health.score} grade={pkg.health.health.grade} />
               )}
               {pkg.updated > 0 && (
                 <StatCell label="updated" value={<TimeAgo timestamp={pkg.updated} />} />
@@ -162,6 +169,31 @@ export default async function PackagePage({ params }: PageProps) {
             </div>
           </div>
         </div>
+
+        {/* Replacement Warning */}
+        {pkg.health?.replacement && pkg.health.replacement.type !== "none" && (
+          <div className="border-b border-[#333] bg-[#0a1a0a]">
+            <div className="container-page py-3">
+              <span className="text-xs uppercase tracking-wider text-green-400">
+                {pkg.health.replacement.type === "native"
+                  ? "native alternative"
+                  : "better alternative"}
+              </span>
+              {pkg.health.replacement.useInstead && (
+                <span className="ml-3 text-sm text-[#888]">
+                  Consider using{" "}
+                  <Link
+                    href={`/${encodeURIComponent(pkg.health.replacement.useInstead)}`}
+                    className="text-green-400 hover:text-green-300"
+                  >
+                    {pkg.health.replacement.useInstead}
+                  </Link>
+                  {pkg.health.replacement.reason && ` — ${pkg.health.replacement.reason}`}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <div className="container-page">
@@ -210,6 +242,47 @@ export default async function PackagePage({ params }: PageProps) {
 
             {/* Right: Sidebar */}
             <aside className="w-full lg:w-64 shrink-0 lg:pl-6">
+              {/* Health Score */}
+              {pkg.health && (
+                <div className="border-b border-[#333] py-4">
+                  <h3 className="text-xs uppercase tracking-widest text-[#666] mb-3">
+                    health score
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`text-2xl font-bold ${getGradeColor(pkg.health.health.grade)}`}
+                    >
+                      {pkg.health.health.grade}
+                    </span>
+                    <span className="text-sm text-[#888]">{pkg.health.health.score}/100</span>
+                  </div>
+                  <div className="text-xs text-[#666] mt-1">{pkg.health.health.status}</div>
+                </div>
+              )}
+
+              {/* Alternatives */}
+              {pkg.health?.alternatives && pkg.health.alternatives.length > 0 && (
+                <div className="border-b border-[#333] py-4">
+                  <h3 className="text-xs uppercase tracking-widest text-[#666] mb-3">
+                    alternatives
+                  </h3>
+                  <div className="space-y-2">
+                    {pkg.health.alternatives.slice(0, 5).map((alt) => (
+                      <Link
+                        key={alt.name}
+                        href={`/${encodeURIComponent(alt.name)}`}
+                        className="block text-sm text-[#888] hover:text-white transition-colors"
+                      >
+                        {alt.name}
+                        <span className="text-xs text-[#666] ml-2">
+                          {formatNumber(alt.downloads)}/wk
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Maintainers */}
               {pkg.maintainers && pkg.maintainers.length > 0 && (
                 <div className="border-b border-[#333] py-4">
@@ -360,6 +433,47 @@ function StatCell({ label, value }: { label: string; value: React.ReactNode }) {
       <div className="text-sm text-white font-medium tabular-nums">{value}</div>
     </div>
   );
+}
+
+function VulnStatCellFromHealth({ vulns }: { vulns: number }) {
+  return (
+    <div className="flex-1 min-w-[100px] px-4 py-3">
+      <div className="text-[10px] uppercase tracking-widest text-[#666]">vulns</div>
+      <div
+        className={`text-sm font-medium tabular-nums ${vulns > 0 ? "text-red-400" : "text-white"}`}
+      >
+        {vulns}
+      </div>
+    </div>
+  );
+}
+
+function HealthScoreCell({ score, grade }: { score: number; grade: string }) {
+  return (
+    <div className="flex-1 min-w-[100px] px-4 py-3">
+      <div className="text-[10px] uppercase tracking-widest text-[#666]">health</div>
+      <div className={`text-sm font-medium ${getGradeColor(grade)}`}>
+        {grade} ({score})
+      </div>
+    </div>
+  );
+}
+
+function getGradeColor(grade: string): string {
+  switch (grade) {
+    case "A":
+      return "text-green-400";
+    case "B":
+      return "text-lime-400";
+    case "C":
+      return "text-yellow-400";
+    case "D":
+      return "text-orange-400";
+    case "F":
+      return "text-red-400";
+    default:
+      return "text-white";
+  }
 }
 
 async function VulnStatCell({ packageName, version }: { packageName: string; version: string }) {

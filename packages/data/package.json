@@ -1,0 +1,18 @@
+{
+  "name": "@v1/data",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./npm": "./src/npm.ts",
+    "./github": "./src/github.ts",
+    "./osv": "./src/osv.ts",
+    "./npms": "./src/npms.ts",
+    "./bundlephobia": "./src/bundlephobia.ts"
+  },
+  "devDependencies": {
+    "@v1/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}

@@ -2,56 +2,126 @@
 
 This document describes how to deploy v1.run to Railway with multi-region support.
 
-## Architecture
+## Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        Cloudflare CDN                                │
-│              (Global edge caching, DDoS protection)                  │
-└─────────────────────────────────────────────────────────────────────┘
-                                  │
-┌─────────────────────────────────────────────────────────────────────┐
-│                           Users                                      │
-├──────────────┬──────────────────────┬───────────────────────────────┤
-│   EU Users   │    US East Users     │      US West / APAC Users     │
-└──────┬───────┴──────────┬───────────┴───────────────┬───────────────┘
-       │                  │                           │
-       ▼                  ▼                           ▼
-┌──────────────┐  ┌──────────────┐           ┌──────────────┐
-│   Railway    │  │   Railway    │           │   Railway    │
-│  Amsterdam   │  │  Virginia    │           │  California  │
-│  (web)       │  │ (web+worker) │           │  (web)       │
-└──────┬───────┘  └──────┬───────┘           └──────┬───────┘
-       │                  │                           │
-       ▼                  ▼                           ▼
-┌──────────────┐  ┌──────────────┐           ┌──────────────┐
-│  Typesense   │  │  Typesense   │           │  Typesense   │
-│  Frankfurt   │  │  Virginia    │           │  Oregon      │
-└──────────────┴──┴──────────────┴───────────┴──────────────┘
-                  Typesense Cloud SDN (auto-replication)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Cloudflare CDN                                     │
+│                (Global edge caching, DDoS protection)                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              Users                                           │
+├────────────────┬────────────────────────┬───────────────────────────────────┤
+│    EU Users    │     US East Users      │       US West / APAC Users        │
+└───────┬────────┴───────────┬────────────┴──────────────────┬────────────────┘
+        │                    │                               │
+        ▼                    ▼                               ▼
+┌───────────────┐    ┌───────────────┐              ┌───────────────┐
+│    Railway    │    │    Railway    │              │    Railway    │
+│   Amsterdam   │    │   Virginia    │              │  California   │
+│    (web)      │    │  (web+api+    │              │    (web)      │
+│               │    │   worker)     │              │               │
+└───────┬───────┘    └───────┬───────┘              └───────┬───────┘
+        │                    │                               │
+        └────────────────────┼───────────────────────────────┘
+                             │
+                             ▼
+              ┌──────────────────────────────┐
+              │        API Server            │
+              │   (MCP + REST endpoints)     │
+              │                              │
+              │  ┌────────┐   ┌──────────┐   │
+              │  │ Redis  │   │Typesense │   │
+              │  │ Cache  │   │  Index   │   │
+              │  └────────┘   └──────────┘   │
+              └──────────────────────────────┘
+```
+
+## Data Flow
+
+### Search Flow
+```
+User Search → Web App → API /api/search → Typesense → Results
+                                │
+                                └──→ (fallback) npm registry → Queue for sync
+```
+
+### Package Page Flow
+```
+User Request → Web App (ISR) → API /api/package/:name/health
+                                        │
+                                        ▼
+                               ┌────────────────┐
+                               │  Redis Cache   │ ← 1 hour TTL
+                               │   (health)     │
+                               └───────┬────────┘
+                                       │ miss
+                                       ▼
+                               ┌────────────────┐
+                               │   Typesense    │ ← Core package data
+                               │    (index)     │
+                               └───────┬────────┘
+                                       │ miss
+                                       ▼
+                               ┌────────────────┐
+                               │  npm Registry  │ ← Fetch + queue for sync
+                               └───────┬────────┘
+                                       │
+                                       ▼
+                               ┌────────────────┐
+                               │  Enrichment    │
+                               │  (GitHub,      │
+                               │   npms.io,     │
+                               │   OSV)         │
+                               └────────────────┘
 ```
 
 ### Sync Worker Architecture
-
 ```
 ┌──────────────────┐     ┌──────────────┐     ┌──────────────┐
-│ npm Changes Feed │────▶│   Producer   │────▶│    Redis     │
-│ (CouchDB stream) │     │  (index.ts)  │     │   (BullMQ)   │
+│ npm Changes Feed │────▶│   Listener   │────▶│    Redis     │
+│ (CouchDB stream) │     │  (producer)  │     │   (BullMQ)   │
 └──────────────────┘     └──────────────┘     └──────┬───────┘
                                                      │
-                                              ┌──────▼───────┐
-                                              │    Worker    │
-                                              │ (worker.ts)  │
-                                              └──────┬───────┘
-                                                     │
-                                              ┌──────▼───────┐
-                                              │  Typesense   │
-                                              └──────────────┘
+                              ┌───────────────────────┘
+                              │
+                              ▼
+┌──────────────────┐     ┌──────────────┐     ┌──────────────┐
+│   API Server     │────▶│   Processor  │────▶│  Typesense   │
+│ (queues on miss) │     │   (worker)   │     │   (index)    │
+└──────────────────┘     └──────────────┘     └──────────────┘
 ```
 
-The sync worker uses BullMQ for reliable job processing:
-- **Producer**: Listens to npm changes and adds jobs to Redis queue
-- **Worker**: Processes jobs with retries, rate limiting, and concurrency control
+## Packages & Apps
+
+### Monorepo Structure
+
+```
+v1.run/
+├── apps/
+│   ├── web/          # Next.js web app (package pages, search UI)
+│   ├── api/          # Hono API server (MCP + REST)
+│   └── worker/       # BullMQ sync worker (listener + processor)
+│
+└── packages/
+    ├── clients/      # Shared API clients (npm, GitHub, OSV, npms.io)
+    ├── decisions/    # Package comparison & health scoring logic
+    ├── readme-renderer/  # README HTML rendering
+    └── typescript-config/ # Shared TypeScript configs
+```
+
+### Shared Data Clients (`@v1/data`)
+
+Centralized API clients used by both worker and API:
+
+| Client | Purpose |
+|--------|---------|
+| `@v1/data/npm` | npm registry metadata & downloads |
+| `@v1/data/github` | GitHub repo data (stars, issues, commits) |
+| `@v1/data/osv` | Vulnerability data from OSV |
+| `@v1/data/npms` | Quality scores from npms.io |
+| `@v1/data/bundlephobia` | Bundle size metrics |
 
 ## Caching Strategy
 
@@ -59,7 +129,20 @@ The sync worker uses BullMQ for reliable job processing:
 |-------|------|-----|----------|
 | Cloudflare | HTML pages, static assets | 1 hour (stale-while-revalidate: 1 day) | Edge (300+ locations) |
 | Next.js ISR | Package pages | 1 hour | Railway (3 regions) |
-| Typesense Cloud | Search index | Real-time sync | SDN (3 regions) |
+| Redis | Health data, scores, GitHub data | 1 hour - 7 days | Railway (1 region) |
+| Typesense | Search index | Real-time sync | Cloud SDN (3 regions) |
+
+### Redis Cache Keys
+
+| Key Pattern | Data | TTL |
+|-------------|------|-----|
+| `pkg:{name}:health` | Full health response | 1 hour |
+| `pkg:{name}:scores` | npms.io scores | 7 days |
+| `pkg:{name}:github` | GitHub repo data | 1 day |
+| `pkg:{name}:details` | Enriched package details | 1 day |
+| `pkg:{name}:security` | Security signals | 1 day |
+| `pkg:{name}:trend` | Download trend analysis | 1 day |
+| `queued:{name}` | Deduplication flag | 5 minutes |
 
 ## Prerequisites
 
@@ -84,12 +167,18 @@ The sync worker uses BullMQ for reliable job processing:
 
 ## Step 2: Railway Project Setup
 
-### Create Project
+### Project Structure
 
-1. Go to [Railway Dashboard](https://railway.com/dashboard)
-2. Click **New Project**
-3. Select **Deploy from GitHub repo**
-4. Connect your `v1.run` repository
+```
+v1-run (Project)
+├── web (Service) - 3 replicas (Amsterdam, Virginia, California)
+├── api (Service) - MCP + REST API server
+├── listener (Service) - npm changes listener (producer)
+├── processor (Service) - job processor (worker)
+└── redis (Database) - BullMQ queue + API cache
+```
+
+**Note**: The API, worker services, and Redis are deployed to a single region (US East) since they need to communicate with each other. Only the web app requires multi-region for low-latency serving.
 
 ### Automatic Import (Recommended)
 
@@ -98,79 +187,54 @@ Railway auto-detects JavaScript monorepos. When you import the repo:
 1. Go to [Railway Dashboard](https://railway.com/new)
 2. Select **Deploy from GitHub repo**
 3. Choose the `v1.run` repository
-4. Railway will auto-detect both `apps/web` and `apps/worker` as deployable packages
-5. Click **Deploy** to create both services
-
-Railway will automatically:
-- Find `railway.json` in each app directory
-- Configure Dockerfile builds
-- Set up multi-region replicas (web) and single-region (worker)
-- Configure healthchecks and restart policies
+4. Railway will auto-detect services from `railway.json` files
+5. Click **Deploy** to create all services
 
 ### Manual Setup (Alternative)
 
 If auto-import doesn't work:
 
 1. Create an empty project
-2. Add **three** services from the same repo (web, listener, processor)
-3. For each service, set the **Railway Config File** path:
+2. Add **four** services from the same repo:
    - Web: `/apps/web/railway.json`
+   - API: `/apps/api/railway.json`
    - Listener: `/apps/worker/railway.listener.json`
    - Processor: `/apps/worker/railway.processor.json`
-4. Add a Redis database: **+ New** → **Database** → **Redis**
-5. Link Redis to worker services using variable reference: `${{redis.REDIS_URL}}`
-
-### Config as Code
-
-Services are configured via `railway.json` files:
-
-**Web Service** (`apps/web/railway.json`):
-- Multi-region replicas: Amsterdam, Virginia, California
-- Healthcheck at `/api/health`
-- Watch patterns to only rebuild on relevant changes
-
-**Listener** (`apps/worker/railway.listener.json`):
-- Runs `src/index.ts` - listens to npm changes, adds jobs to queue
-- Always restart policy
-
-**Processor** (`apps/worker/railway.processor.json`):
-- Runs `src/worker.ts` - processes jobs from queue
-- Always restart policy
-
-### Railway Project Structure
-
-```
-v1-run (Project)
-├── web (Service) - 3 replicas (Amsterdam, Virginia, California)
-├── listener (Service) - listens to npm changes, adds to queue
-├── processor (Service) - processes jobs from queue
-└── redis (Database)
-```
-
-**Note**: The worker services and Redis are deployed to a single region (US East) since they need to communicate with each other and don't require multi-region.
+3. Add a Redis database: **+ New** → **Database** → **Redis**
+4. Link Redis to API and worker services using: `${{redis.REDIS_URL}}`
 
 ## Step 3: Environment Variables
 
-### Web Service Variables
+### Web Service
 
 | Variable | Description |
 |----------|-------------|
 | `TYPESENSE_API_KEY` | Admin API key from Typesense Cloud |
 | `TYPESENSE_HOST` | Typesense Cloud nearest node host |
 | `NEXT_PUBLIC_TYPESENSE_SEARCH_API_KEY` | Search-only API key (public) |
+| `NEXT_PUBLIC_API_URL` | API server URL (e.g., `https://api.v1.run`) |
 | `REVALIDATE_TOKEN` | Secret token for on-demand ISR cache revalidation |
 
-### Worker Service Variables (Producer & Processor)
+### API Service
+
+| Variable | Description |
+|----------|-------------|
+| `PORT` | Port to listen on (default: 3001) |
+| `REDIS_URL` | Redis connection URL |
+| `TYPESENSE_API_KEY` | Admin API key from Typesense Cloud |
+| `TYPESENSE_HOST` | Typesense Cloud nearest node host |
+
+### Worker Services (Listener & Processor)
 
 | Variable | Description |
 |----------|-------------|
 | `TYPESENSE_API_KEY` | Admin API key from Typesense Cloud |
 | `TYPESENSE_HOST` | Typesense Cloud nearest node host |
-| `REDIS_URL` | Redis connection URL (e.g., `redis://default:password@redis.railway.internal:6379`) |
-| `WEB_URL` | (Optional) Web app URL for auto-revalidation (e.g., `https://v1.run`) |
-| `REVALIDATE_TOKEN` | (Optional) Token for triggering ISR revalidation (must match web app) |
+| `REDIS_URL` | Redis connection URL |
+| `WEB_URL` | (Optional) Web app URL for auto-revalidation |
+| `REVALIDATE_TOKEN` | (Optional) Token for triggering ISR revalidation |
 
-**Note**: On Railway, use the `${{redis.REDIS_URL}}` reference variable to automatically inject the Redis URL.
+**Note**: On Railway, use `${{redis.REDIS_URL}}` reference variable to automatically inject the Redis URL.
 
 ## Step 4: Cloudflare Setup
 
@@ -182,10 +246,10 @@ v1-run (Project)
 
 ### Configure DNS
 
-1. Add a CNAME record pointing to your Railway domain:
-   - Name: `@` (or `www`)
-   - Target: `your-app.up.railway.app`
-   - Proxy status: **Proxied** (orange cloud)
+| Record | Name | Target | Proxy |
+|--------|------|--------|-------|
+| CNAME | `@` | `your-web-app.up.railway.app` | Proxied |
+| CNAME | `api` | `your-api-app.up.railway.app` | Proxied |
 
 ### Cloudflare Settings
 
@@ -197,34 +261,61 @@ v1-run (Project)
 | Brotli | On |
 | Browser Cache TTL | Respect Existing Headers |
 
-### Cache Rules (Optional)
-
-Create a Page Rule for extra caching control:
-- URL: `*v1.run/*`
-- Cache Level: Standard
-- Edge Cache TTL: 1 hour
-
-## Step 5: Custom Domain (Railway)
+## Step 5: Custom Domains (Railway)
 
 1. In Railway, go to Web service → **Settings** → **Networking**
 2. Click **Add Custom Domain**
 3. Enter your domain (e.g., `v1.run`)
-4. Railway will show a verification record - this is handled by Cloudflare proxy
+4. Repeat for API service with subdomain (e.g., `api.v1.run`)
 
 ## Verification
 
-### Check Health Endpoint
+### Check Web Health
 
 ```bash
-curl https://your-domain.com/api/health
+curl https://v1.run/api/health
 ```
 
-Expected response:
+Expected:
 ```json
 {
   "status": "healthy",
   "timestamp": "2026-02-02T12:00:00.000Z",
-  "region": "europe-west4-drams3a"
+  "region": "europe-west4"
+}
+```
+
+### Check API Health
+
+```bash
+curl https://api.v1.run/health
+```
+
+Expected:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-02-02T12:00:00.000Z"
+}
+```
+
+### Check Package Health Endpoint
+
+```bash
+curl https://api.v1.run/api/package/react/health | jq '.health'
+```
+
+Expected:
+```json
+{
+  "score": 95,
+  "grade": "A",
+  "status": "active",
+  "signals": {
+    "positive": ["Active development", "High downloads"],
+    "negative": [],
+    "warnings": []
+  }
 }
 ```
 
@@ -240,59 +331,18 @@ cache-control: public, s-maxage=3600, stale-while-revalidate=86400
 cf-cache-status: HIT
 ```
 
-### Manually Revalidate a Page
-
-If a page is showing stale data, you can manually trigger ISR revalidation:
-
-```bash
-curl -X POST "https://v1.run/api/revalidate?token=YOUR_REVALIDATE_TOKEN&path=/react"
-```
-
-Response:
-```json
-{"revalidated": true, "path": "/react"}
-```
-
-### Check Worker Producer Logs
-
-In Railway dashboard, go to listener → **Deployments** → **View Logs**
-
-You should see:
-```
-npm Sync Producer starting...
-Typesense: xxx.a1.typesense.net:443
-Redis: redis.railway.internal:6379
-Starting npm changes listener (producer mode)...
-Listening for changes from: now
-[Producer] Queued 100 jobs (3.2/s) | Queue: 45 waiting, 5 active, 0 failed
-```
-
-### Check Worker Processor Logs
-
-In Railway dashboard, go to processor → **Deployments** → **View Logs**
-
-You should see:
-```
-npm Sync Worker starting...
-Typesense: xxx.a1.typesense.net:443
-Redis: redis.railway.internal:6379
-Workers ready, processing jobs...
-[Stats] Sync: 45 waiting, 5 active, 0 failed | Bulk: 0 waiting, 0 active
-[job-123] Synced: react v18.2.0 (25,000,000 downloads/wk)
-```
-
 ## Monitoring
 
 ### Cloudflare Analytics
 
 - Request count and bandwidth
-- Cache hit ratio
+- Cache hit ratio (target: >80%)
 - Threats blocked
 - Performance metrics by region
 
 ### Railway Metrics
 
-- CPU and Memory usage per replica
+- CPU and Memory usage per service
 - Request count and latency
 - Logs from all regions
 
@@ -302,13 +352,19 @@ Workers ready, processing jobs...
 - Latency by region
 - Index size and document count
 
+### Redis Monitoring
+
+- Queue stats (waiting, active, failed jobs)
+- Cache hit/miss ratio
+- Memory usage
+
 ## Costs
 
 ### Railway (Pro Plan)
 
 - $20/month base
 - Usage-based pricing for compute
-- Multi-region replicas: 3x web instances
+- ~$15-30/month for 4 services + Redis
 
 ### Typesense Cloud (SDN)
 
@@ -329,27 +385,34 @@ Workers ready, processing jobs...
 2. Verify environment variables are set
 3. Check deployment logs for errors
 
+### API Not Responding
+
+1. Verify `REDIS_URL` is set and Redis is running
+2. Check `TYPESENSE_API_KEY` and `TYPESENSE_HOST`
+3. Check API logs for connection errors
+
 ### Worker Not Processing
 
-1. Verify `TYPESENSE_API_KEY` is set correctly
-2. Verify `REDIS_URL` is set and Redis is running
-3. Check if npm registry is accessible
-4. Look for rate limiting errors in logs
-5. Check queue stats in processor logs for stuck jobs
+1. Verify Redis connection is working
+2. Check processor logs for errors
+3. Verify Typesense credentials
+4. Check queue stats: `[Stats] Sync: X waiting, Y active, Z failed`
 
 ### Queue Issues
 
-1. **Jobs stuck in waiting**: Processor might not be running - check processor logs
-2. **Many failed jobs**: Check processor logs for error details, jobs will retry 3 times
-3. **Redis connection errors**: Verify Redis service is running and `REDIS_URL` is correct
-4. **Rate limiting**: Processor limits to 100 jobs/minute - this is intentional to avoid overwhelming npm API
+| Issue | Solution |
+|-------|----------|
+| Jobs stuck in waiting | Check if processor is running |
+| Many failed jobs | Check processor logs for error details |
+| Redis connection errors | Verify Redis URL and service status |
+| Deduplication not working | Check `queued:{name}` keys in Redis |
 
 ### High Latency
 
 1. Check Cloudflare cache hit ratio (should be >80%)
-2. Verify requests are routed to nearest region
-3. Check Typesense SDN nearest node configuration
-4. Ensure Typesense client uses `nearestNode` option
+2. Verify requests route to nearest region
+3. Check Redis cache hit ratio
+4. Ensure Typesense uses `nearestNode` option
 
 ### Cloudflare Not Caching
 

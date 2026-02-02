@@ -1,11 +1,12 @@
 /**
  * Package data access layer
  *
- * Fetches package data from npm registry and renders README.
+ * Fetches package data from the v1.run API, with fallback to npm registry.
  * Caching is handled by Next.js ISR and Cloudflare CDN.
  */
 
 import { fetchAndRenderReadme } from "@v1/readme-renderer";
+import { fetchPackageHealth, type PackageHealthResponse } from "./api";
 
 /**
  * Package data structure
@@ -53,6 +54,9 @@ export interface PackageData {
   stars?: number;
   typesPackage?: string;
   funding?: string;
+
+  // Health data from API (new)
+  health?: PackageHealthResponse;
 }
 
 // Keep old type alias for backwards compatibility
@@ -60,9 +64,63 @@ export type CachedPackage = PackageData;
 
 /**
  * Get package data by name.
- * Fetches directly from npm registry - caching handled by ISR.
+ * First tries the v1.run API (which has caching and enriched data),
+ * then falls back to direct npm registry fetch if API is unavailable.
  */
 export async function getPackage(name: string): Promise<PackageData | null> {
+  // Try API first (includes health data, caching, etc.)
+  const health = await fetchPackageHealth(name);
+
+  if (health) {
+    // Convert health response to PackageData
+    return healthToPackageData(health);
+  }
+
+  // Fallback to direct npm fetch
+  console.log(`[packages] API miss for ${name}, falling back to npm`);
+  return getPackageFromNpm(name);
+}
+
+/**
+ * Convert API health response to PackageData format
+ */
+function healthToPackageData(health: PackageHealthResponse): PackageData {
+  return {
+    name: health.name,
+    version: health.version,
+    description: health.description,
+    license: health.security.license.spdx,
+    homepage: health.links.homepage,
+    repository: health.links.repository,
+    author: health.author?.name,
+    keywords: [], // Not in health response, but OK for display
+    hasTypes: health.compatibility.types !== "none",
+    isESM:
+      health.compatibility.moduleFormat === "esm" || health.compatibility.moduleFormat === "dual",
+    isCJS:
+      health.compatibility.moduleFormat === "cjs" || health.compatibility.moduleFormat === "dual",
+    nodeVersion: health.compatibility.engines?.node,
+    deprecated: health.health.status === "deprecated",
+    deprecatedMessage: health.replacement?.reason,
+    dependencyCount: health.size.dependencies,
+    downloads: health.popularity.weeklyDownloads,
+    unpackedSize: health.size.unpackedSize,
+    maintainers: [], // Could be added if needed
+    created: 0, // Not in health response
+    updated: new Date(health.activity.lastUpdated).getTime(),
+    hasInstallScripts: health.security.supplyChain.hasInstallScripts || undefined,
+    stars: health.github?.stars || health.popularity.stars,
+    typesPackage: health.compatibility.typesPackage,
+    funding: health.funding?.url,
+    // Include full health data for enhanced display
+    health,
+  };
+}
+
+/**
+ * Fallback: Fetch directly from npm registry
+ */
+async function getPackageFromNpm(name: string): Promise<PackageData | null> {
   try {
     // Fetch package metadata from npm
     const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, {

@@ -19,6 +19,7 @@ export const typesenseClient = new Typesense.Client({
 export const packageSchema = {
   name: config.typesense.collectionName,
   fields: [
+    // Core fields
     { name: "name", type: "string" as const, facet: true },
     { name: "description", type: "string" as const, optional: true },
     { name: "keywords", type: "string[]" as const, facet: true, optional: true },
@@ -49,6 +50,24 @@ export const packageSchema = {
     { name: "dependents", type: "int32" as const, sort: true, optional: true },
     { name: "typesPackage", type: "string" as const, optional: true },
     { name: "funding", type: "string" as const, optional: true },
+
+    // NEW: Fields for search/filter (~10 new fields)
+    // Category-based alternative discovery
+    { name: "inferredCategory", type: "string" as const, facet: true, optional: true },
+    // Module format filtering (esm/cjs/dual/unknown)
+    { name: "moduleFormat", type: "string" as const, facet: true, optional: true },
+    // CLI vs library filtering
+    { name: "hasBin", type: "bool" as const, facet: true, optional: true },
+    // License compliance filtering (permissive/copyleft/proprietary/unknown)
+    { name: "licenseType", type: "string" as const, facet: true, optional: true },
+    // Security filtering - npm attestations present
+    { name: "hasProvenance", type: "bool" as const, facet: true, optional: true },
+    // Size filtering (bytes)
+    { name: "unpackedSize", type: "int64" as const, sort: true, optional: true },
+    // Stability filtering (version >= 1.0.0)
+    { name: "isStable", type: "bool" as const, facet: true, optional: true },
+    // Author discovery - GitHub org/username
+    { name: "authorGithub", type: "string" as const, facet: true, optional: true },
   ],
   default_sorting_field: "downloads",
   enable_nested_fields: false,
@@ -86,6 +105,23 @@ export interface PackageDocument {
   dependents?: number;
   typesPackage?: string;
   funding?: string;
+
+  /** Inferred category for alternative discovery (e.g., 'http-client', 'validation') */
+  inferredCategory?: string;
+  /** Module format: 'esm' | 'cjs' | 'dual' | 'unknown' */
+  moduleFormat?: string;
+  /** Is it a CLI package? */
+  hasBin?: boolean;
+  /** License type: 'permissive' | 'copyleft' | 'proprietary' | 'unknown' */
+  licenseType?: string;
+  /** Has npm provenance/attestations? */
+  hasProvenance?: boolean;
+  /** Unpacked size in bytes */
+  unpackedSize?: number;
+  /** Is stable (version >= 1.0.0)? */
+  isStable?: boolean;
+  /** GitHub org/username from repository URL */
+  authorGithub?: string;
 }
 
 export async function ensureCollection() {

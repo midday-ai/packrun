@@ -23,7 +23,7 @@
     "geist": "^1.5.1",
     "instantsearch.js": "^4.87.0",
     "lucide-react": "^0.563.0",
-    "next": "^15.1.0",
+    "next": "^16.1.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-instantsearch": "^7.23.0",

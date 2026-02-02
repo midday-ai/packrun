@@ -6,12 +6,7 @@
  * Usage: bun run src/test-sync.ts
  */
 
-import {
-  fetchDownloads,
-  fetchPackageMetadata,
-  ensureCollection,
-  upsertPackages,
-} from "./clients";
+import { ensureCollection, fetchDownloads, fetchPackageMetadata, upsertPackages } from "./clients";
 import { fetchVulnerabilities } from "./clients/osv";
 import { transformToDocument } from "./jobs/npm-sync/processor";
 
