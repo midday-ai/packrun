@@ -27,6 +27,10 @@ COPY --from=pruner /app/out/bun.lock ./bun.lock
 # Copy pruned source code
 COPY --from=pruner /app/out/full/ .
 
+# Build-time environment variables (NEXT_PUBLIC_* are inlined during build)
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Build the Next.js app
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN bun run build --filter=web
