@@ -42,4 +42,11 @@ export const config = {
     concurrency: 10,
     rateLimitPerMinute: 1000,
   },
+
+  // Web app revalidation (for clearing ISR cache after sync)
+  revalidation: {
+    webUrl: process.env.WEB_URL || "",
+    token: process.env.REVALIDATE_TOKEN || "",
+    enabled: Boolean(process.env.WEB_URL && process.env.REVALIDATE_TOKEN),
+  },
 } as const;

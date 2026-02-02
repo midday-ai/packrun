@@ -158,6 +158,7 @@ v1-run (Project)
 | `TYPESENSE_API_KEY` | Admin API key from Typesense Cloud |
 | `TYPESENSE_HOST` | Typesense Cloud nearest node host |
 | `NEXT_PUBLIC_TYPESENSE_SEARCH_API_KEY` | Search-only API key (public) |
+| `REVALIDATE_TOKEN` | Secret token for on-demand ISR cache revalidation |
 
 ### Worker Service Variables (Producer & Processor)
 
@@ -166,6 +167,8 @@ v1-run (Project)
 | `TYPESENSE_API_KEY` | Admin API key from Typesense Cloud |
 | `TYPESENSE_HOST` | Typesense Cloud nearest node host |
 | `REDIS_URL` | Redis connection URL (e.g., `redis://default:password@redis.railway.internal:6379`) |
+| `WEB_URL` | (Optional) Web app URL for auto-revalidation (e.g., `https://v1.run`) |
+| `REVALIDATE_TOKEN` | (Optional) Token for triggering ISR revalidation (must match web app) |
 
 **Note**: On Railway, use the `${{redis.REDIS_URL}}` reference variable to automatically inject the Redis URL.
 
@@ -235,6 +238,19 @@ Look for:
 ```
 cache-control: public, s-maxage=3600, stale-while-revalidate=86400
 cf-cache-status: HIT
+```
+
+### Manually Revalidate a Page
+
+If a page is showing stale data, you can manually trigger ISR revalidation:
+
+```bash
+curl -X POST "https://v1.run/api/revalidate?token=YOUR_REVALIDATE_TOKEN&path=/react"
+```
+
+Response:
+```json
+{"revalidated": true, "path": "/react"}
 ```
 
 ### Check Worker Producer Logs
