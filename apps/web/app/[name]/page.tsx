@@ -1,0 +1,388 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { HeaderSearch } from "@/components/header-search";
+import { InstallTabs } from "@/components/install-tabs";
+import { TimeAgo } from "@/components/time-ago";
+import { formatBytes, formatNumber, getCachedPackage } from "@/lib/packages";
+import { getStaticPackages } from "@/lib/popular-packages";
+
+interface PageProps {
+  params: Promise<{ name: string }>;
+}
+
+export async function generateStaticParams() {
+  return getStaticPackages().map((name) => ({ name }));
+}
+
+export async function generateMetadata({ params }: PageProps) {
+  const { name } = await params;
+  const decodedName = decodeURIComponent(name);
+  const pkg = await getCachedPackage(decodedName);
+
+  if (!pkg) {
+    return { title: "Package Not Found" };
+  }
+
+  return {
+    title: `${pkg.name} — v1.run`,
+    description: pkg.description || `${pkg.name} npm package`,
+  };
+}
+
+export default async function PackagePage({ params }: PageProps) {
+  const { name } = await params;
+  const decodedName = decodeURIComponent(name);
+  const pkg = await getCachedPackage(decodedName);
+
+  if (!pkg) {
+    notFound();
+  }
+
+  const deps = Object.keys(pkg.dependencies || {});
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    name: pkg.name,
+    version: pkg.version,
+    description: pkg.description,
+    codeRepository: pkg.repository,
+    programmingLanguage: "JavaScript",
+    author: pkg.author ? { "@type": "Person", name: pkg.author } : undefined,
+    license: pkg.license,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <main className="min-h-screen bg-black text-white">
+        {/* Header */}
+        <header className="border-b border-[#333]">
+          <div className="container-page flex py-3 items-center gap-6">
+            <Link
+              href="/"
+              className="text-sm uppercase tracking-widest text-white hover:text-[#888] transition-colors shrink-0"
+            >
+              v1.run
+            </Link>
+            <div className="flex-1 flex justify-center">
+              <HeaderSearch />
+            </div>
+            <div className="flex items-center gap-4 text-xs uppercase tracking-wider shrink-0">
+              <Link
+                href={`https://www.npmjs.com/package/${pkg.name}`}
+                target="_blank"
+                className="text-[#666] hover:text-white transition-colors"
+              >
+                npm ↗
+              </Link>
+              {pkg.repository && (
+                <Link
+                  href={pkg.repository}
+                  target="_blank"
+                  className="text-[#666] hover:text-white transition-colors"
+                >
+                  github ↗
+                </Link>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Package Title Bar */}
+        <div className="border-b border-[#333]">
+          <div className="container-page py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+                  {pkg.name}
+                </h1>
+                {pkg.description && (
+                  <p className="mt-2 text-sm text-[#888] max-w-2xl">{pkg.description}</p>
+                )}
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-[#666] uppercase tracking-wider">version</div>
+                <div className="text-lg font-bold tabular-nums">{pkg.version}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Deprecated Warning */}
+        {pkg.deprecated && (
+          <div className="border-b border-[#333] bg-[#111]">
+            <div className="container-page py-3">
+              <span className="text-xs uppercase tracking-wider text-white">deprecated</span>
+              <span className="ml-3 text-sm text-[#888]">
+                {pkg.deprecatedMessage || "This package is deprecated"}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Install Scripts Warning */}
+        {pkg.hasInstallScripts && (
+          <div className="border-b border-[#333] bg-[#111]">
+            <div className="container-page py-3">
+              <span className="text-xs uppercase tracking-wider text-yellow-500">
+                install scripts
+              </span>
+              <span className="ml-3 text-sm text-[#888]">
+                This package runs scripts during installation (preinstall/install/postinstall)
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Bar */}
+        <div className="border-b border-[#333]">
+          <div className="container-page">
+            <div className="flex flex-wrap divide-x divide-[#333] -mx-4">
+              <StatCell label="license" value={pkg.license || "—"} />
+              <StatCell label="deps" value={String(pkg.dependencyCount)} />
+              {pkg.unpackedSize && <StatCell label="size" value={formatBytes(pkg.unpackedSize)} />}
+              <Suspense fallback={<StatCell label="vulns" value="—" />}>
+                <VulnStatCell packageName={pkg.name} version={pkg.version} />
+              </Suspense>
+              <StatCell label="downloads" value={`${formatNumber(pkg.downloads)}/wk`} />
+              {pkg.stars !== undefined && pkg.stars > 0 && (
+                <StatCell label="stars" value={formatNumber(pkg.stars)} />
+              )}
+              {pkg.updated > 0 && (
+                <StatCell label="updated" value={<TimeAgo timestamp={pkg.updated} />} />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="container-page">
+          <div className="flex flex-col lg:flex-row">
+            {/* Left: Main Content */}
+            <div className="flex-1 min-w-0 lg:border-r border-[#333]">
+              {/* Install Section */}
+              <section className="border-b border-[#333] py-6 lg:pr-8">
+                <InstallTabs packageName={pkg.name} hasTypes={pkg.hasTypes} />
+              </section>
+
+              {/* README Section */}
+              {pkg.readmeHtml && (
+                <section className="border-b border-[#333] py-6 lg:pr-8">
+                  <h2 className="text-xs uppercase tracking-widest text-[#666] mb-4">readme</h2>
+                  <div
+                    className="readme max-w-none"
+                    dangerouslySetInnerHTML={{ __html: pkg.readmeHtml }}
+                  />
+                </section>
+              )}
+
+              {/* Dependencies Section */}
+              {deps.length > 0 && (
+                <section className="py-6 lg:pr-8">
+                  <h2 className="text-xs uppercase tracking-widest text-[#666] mb-4">
+                    dependencies [{deps.length}]
+                  </h2>
+                  <div className="flex flex-wrap gap-1">
+                    {deps.slice(0, 50).map((dep) => (
+                      <Link
+                        key={dep}
+                        href={`/${encodeURIComponent(dep)}`}
+                        className="text-xs px-2 py-1 border border-[#333] text-[#888] hover:text-white hover:border-white transition-colors"
+                      >
+                        {dep}
+                      </Link>
+                    ))}
+                    {deps.length > 50 && (
+                      <span className="text-xs px-2 py-1 text-[#444]">+{deps.length - 50}</span>
+                    )}
+                  </div>
+                </section>
+              )}
+            </div>
+
+            {/* Right: Sidebar */}
+            <aside className="w-full lg:w-64 shrink-0 lg:pl-6">
+              {/* Maintainers */}
+              {pkg.maintainers && pkg.maintainers.length > 0 && (
+                <div className="border-b border-[#333] py-4">
+                  <h3 className="text-xs uppercase tracking-widest text-[#666] mb-3">
+                    maintainers
+                  </h3>
+                  <div className="space-y-1">
+                    {pkg.maintainers.slice(0, 5).map((m) => (
+                      <Link
+                        key={m}
+                        href={`https://www.npmjs.com/~${m}`}
+                        target="_blank"
+                        className="block text-sm text-[#888] hover:text-white transition-colors"
+                      >
+                        ~{m}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Keywords */}
+              {pkg.keywords && pkg.keywords.length > 0 && (
+                <div className="border-b border-[#333] py-4">
+                  <h3 className="text-xs uppercase tracking-widest text-[#666] mb-3">keywords</h3>
+                  <div className="text-sm text-[#888] space-y-0.5">
+                    {pkg.keywords.slice(0, 8).map((k) => (
+                      <div key={k}>— {k}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Downloads */}
+              <div className="border-b border-[#333] py-4">
+                <h3 className="text-xs uppercase tracking-widest text-[#666] mb-2">
+                  weekly downloads
+                </h3>
+                <div className="text-xl font-bold tabular-nums">
+                  {pkg.downloads.toLocaleString()}
+                </div>
+              </div>
+
+              {/* Compatibility */}
+              {pkg.nodeVersion && (
+                <div className="border-b border-[#333] py-4">
+                  <h3 className="text-xs uppercase tracking-widest text-[#666] mb-2">node</h3>
+                  <div className="text-sm text-[#888]">{pkg.nodeVersion}</div>
+                </div>
+              )}
+
+              {/* Module */}
+              <div className="border-b border-[#333] py-4">
+                <h3 className="text-xs uppercase tracking-widest text-[#666] mb-3">module</h3>
+                <div className="flex flex-wrap gap-2">
+                  {pkg.hasTypes && (
+                    <span className="text-xs border border-white text-white px-2 py-0.5">TS</span>
+                  )}
+                  {!pkg.hasTypes && pkg.typesPackage && (
+                    <Link
+                      href={`/${encodeURIComponent(pkg.typesPackage)}`}
+                      className="text-xs border border-blue-400/50 text-blue-400 px-2 py-0.5 hover:border-blue-400 transition-colors"
+                    >
+                      @types
+                    </Link>
+                  )}
+                  {pkg.isESM && (
+                    <span className="text-xs border border-[#666] text-[#888] px-2 py-0.5">
+                      ESM
+                    </span>
+                  )}
+                  {pkg.isCJS && (
+                    <span className="text-xs border border-[#666] text-[#888] px-2 py-0.5">
+                      CJS
+                    </span>
+                  )}
+                  {!pkg.hasTypes && !pkg.typesPackage && !pkg.isESM && !pkg.isCJS && (
+                    <span className="text-xs text-[#444]">—</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Version */}
+              <div className="border-b border-[#333] py-4">
+                <h3 className="text-xs uppercase tracking-widest text-[#666] mb-2">latest</h3>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-white font-bold tabular-nums">{pkg.version}</span>
+                  {pkg.updated > 0 && (
+                    <span className="text-xs text-[#666]">
+                      <TimeAgo timestamp={pkg.updated} />
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Links */}
+              <div className="py-4">
+                <h3 className="text-xs uppercase tracking-widest text-[#666] mb-3">links</h3>
+                <div className="space-y-1 text-sm">
+                  <Link
+                    href={`https://www.npmjs.com/package/${pkg.name}`}
+                    target="_blank"
+                    className="block text-[#888] hover:text-white transition-colors"
+                  >
+                    npm ↗
+                  </Link>
+                  {pkg.repository && (
+                    <Link
+                      href={pkg.repository}
+                      target="_blank"
+                      className="block text-[#888] hover:text-white transition-colors"
+                    >
+                      {pkg.repository.includes("github") ? "github" : "repository"} ↗
+                    </Link>
+                  )}
+                  {pkg.homepage && pkg.homepage !== pkg.repository && (
+                    <Link
+                      href={pkg.homepage}
+                      target="_blank"
+                      className="block text-[#888] hover:text-white transition-colors"
+                    >
+                      homepage ↗
+                    </Link>
+                  )}
+                  {pkg.funding && (
+                    <Link
+                      href={pkg.funding}
+                      target="_blank"
+                      className="block text-pink-400 hover:text-pink-300 transition-colors"
+                    >
+                      ♥ sponsor ↗
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
+
+function StatCell({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex-1 min-w-[100px] px-4 py-3">
+      <div className="text-[10px] uppercase tracking-widest text-[#666]">{label}</div>
+      <div className="text-sm text-white font-medium tabular-nums">{value}</div>
+    </div>
+  );
+}
+
+async function VulnStatCell({ packageName, version }: { packageName: string; version: string }) {
+  try {
+    const res = await fetch("https://api.osv.dev/v1/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        package: { name: packageName, ecosystem: "npm" },
+        version,
+      }),
+      next: { revalidate: 3600 },
+    });
+
+    if (!res.ok) return <StatCell label="vulns" value="—" />;
+
+    const data = await res.json();
+    const count = data.vulns?.length || 0;
+
+    return (
+      <div className="flex-1 min-w-[100px] px-4 py-3">
+        <div className="text-[10px] uppercase tracking-widest text-[#666]">vulns</div>
+        <div className="text-sm font-medium tabular-nums text-white">{count}</div>
+      </div>
+    );
+  } catch {
+    return <StatCell label="vulns" value="—" />;
+  }
+}

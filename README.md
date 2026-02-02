@@ -1,135 +1,159 @@
-# Turborepo starter
+# v1.run
 
-This Turborepo starter is maintained by the Turborepo core team.
+**The npm registry for AI agents**
 
-## Using this example
+Automated package comparisons. Real-time scoring. 50+ categories. MCP server for Cursor & Claude.
 
-Run the following command:
+## Features
 
-```sh
-npx create-turbo@latest
-```
+- **Automated Comparisons** - 50+ categories with formula-based scoring
+- **Real-time Metrics** - Downloads, bundle size, maintenance, all live
+- **Alternative Discovery** - Find what to use instead of any package
+- **MCP Server** - Native integration with AI coding assistants
+- **Sub-50ms Search** - Powered by Typesense Cloud
 
-## What's inside?
+## How Scoring Works
 
-This Turborepo includes the following packages/apps:
+Packages are scored automatically (0-100) based on:
 
-### Apps and Packages
+| Factor | Weight | What it measures |
+|--------|--------|------------------|
+| Downloads | 20% | Weekly downloads + trend direction |
+| Bundle Size | 20% | Smaller gzip = higher score |
+| Freshness | 25% | Recent commits and releases |
+| Community | 10% | Stars, contributors |
+| Quality | 25% | TypeScript, ESM, security, tree-shaking |
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+## Project Structure
 
 ```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+v1.run/
+├── apps/
+│   ├── web/          # Next.js frontend
+│   ├── sync/         # Data sync worker
+│   └── mcp-server/   # MCP server for AI agents
+├── packages/
+│   ├── decisions/    # Scoring, categories, comparison engine
+│   ├── agent-utils/  # Conflict detection
+│   └── ui/           # Shared components
+└── turbo.json
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## MCP Server
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+For AI coding assistants (Cursor, Claude, etc.):
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+npx @packages-run/mcp-server
 ```
 
-### Develop
+**Tools:**
 
-To develop all apps and packages, run the following command:
+| Tool | Description |
+|------|-------------|
+| `search_packages` | Search npm packages |
+| `get_package` | Get package metadata |
+| `get_package_health` | Check maintenance status |
+| `compare_packages` | Compare packages with scoring |
+| `find_alternatives` | Find alternatives to any package |
+| `get_comparison_category` | Get category comparison (e.g., "date-library") |
+| `list_comparison_categories` | List all 50+ categories |
+| `validate_install` | Check compatibility before installing |
 
-```
-cd my-turborepo
+## API
 
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+### Compare Packages
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+```bash
+# Compare specific packages
+GET /api/compare?packages=axios,got,ky
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+# Get category comparison
+GET /api/compare?category=date-library
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+# Find alternatives for a package
+GET /api/compare?package=moment
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+# List all categories
+GET /api/compare?list=categories
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### Response Example
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
+```json
+{
+  "category": "date-library",
+  "recommendation": "date-fns",
+  "smallestBundle": "dayjs",
+  "mostPopular": "moment",
+  "packages": [
+    {
+      "name": "date-fns",
+      "score": 82,
+      "badges": ["TypeScript", "ESM", "Trending Up"],
+      "metrics": {
+        "weeklyDownloads": 20000000,
+        "downloadTrend": "growing",
+        "bundleSizeKb": "13.2kb",
+        "lastCommitDays": 2,
+        "hasTypes": true
+      }
+    },
+    ...
+  ]
+}
 ```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+## Categories
+
+50+ categories including:
+
+- **HTTP clients**: axios, got, ky, node-fetch
+- **Date libraries**: moment, date-fns, dayjs, luxon
+- **Validation**: zod, yup, joi, ajv, valibot
+- **State management**: redux, zustand, jotai, recoil
+- **ORM**: prisma, drizzle, typeorm, sequelize
+- **Testing**: vitest, jest, mocha, ava
+- **Bundlers**: vite, esbuild, webpack, rollup
+- **Logging**: pino, winston, bunyan
+- And 40+ more...
+
+## Getting Started
+
+### Prerequisites
+
+- [Bun](https://bun.sh) v1.2+
+- [Typesense Cloud](https://cloud.typesense.org) account
+- Redis instance
+
+### Installation
+
+```bash
+git clone https://github.com/your-org/v1.run
+cd v1.run
+bun install
 ```
 
-## Useful Links
+### Development
 
-Learn more about the power of Turborepo:
+```bash
+bun run dev:web    # Web app on :3000
+bun run dev:sync   # Sync worker
+```
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+### Environment Variables
+
+```bash
+# Typesense
+TYPESENSE_HOST=xxx.typesense.net
+TYPESENSE_PORT=443
+TYPESENSE_PROTOCOL=https
+TYPESENSE_API_KEY=xxx
+
+# Optional: GitHub token for higher rate limits
+GITHUB_TOKEN=xxx
+```
+
+## License
+
+MIT

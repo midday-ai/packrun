@@ -1,0 +1,21 @@
+{
+  "name": "@v1/readme-renderer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "marked": "^17.0.1",
+    "sanitize-html": "^2.17.0",
+    "shiki": "^3.22.0"
+  },
+  "devDependencies": {
+    "@v1/typescript-config": "workspace:*",
+    "@types/sanitize-html": "^2.16.0",
+    "typescript": "^5.9.3"
+  }
+}

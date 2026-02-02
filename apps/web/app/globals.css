@@ -1,50 +1,366 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@import "tailwindcss";
+
+/* Tailwind v4 Theme Configuration */
+@theme {
+  /* Zero radius - sharp corners */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-full: 0;
+
+  /* Font - Geist Mono via next/font */
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+  --font-sans: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* Colors - Pure monochrome */
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-border: #333333;
+  --color-muted: #888888;
+  --color-subtle: #666666;
+  --color-faint: #444444;
+  --color-surface: #111111;
+
+  /* Max width */
+  --container-max: 1200px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base styles */
+@layer base {
+  * {
+    border-color: var(--color-border);
   }
-}
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.imgDark {
-  display: none;
-}
-
-@media (prefers-color-scheme: dark) {
   html {
-    color-scheme: dark;
+    background: var(--color-background);
+    color: var(--color-foreground);
   }
 
-  .imgLight {
-    display: none;
+  body {
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  .imgDark {
-    display: unset;
+
+  /* Selection */
+  ::selection {
+    background: #ffffff;
+    color: #000000;
   }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #000000;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #333333;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #666666;
+  }
+}
+
+/* Utility classes */
+@layer utilities {
+  .container-page {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-page {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+
+  .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-subtle);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* README Prose Styling */
+.readme {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+
+  /* Headings */
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  & h1 {
+    font-size: 1rem;
+    margin-top: 2.5rem;
+  }
+  & h2 {
+    font-size: 0.875rem;
+    margin-top: 2rem;
+  }
+  & h3 {
+    font-size: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  & h4,
+  & h5,
+  & h6 {
+    font-size: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  /* First heading no top margin */
+  & > h1:first-child,
+  & > h2:first-child,
+  & > h3:first-child {
+    margin-top: 0;
+  }
+
+  /* Paragraphs */
+  & p {
+    margin-block: 0.75rem;
+  }
+
+  /* Links */
+  & a {
+    color: #ffffff;
+    text-decoration: underline;
+    text-decoration-color: var(--color-faint);
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.15s;
+  }
+
+  & a:hover {
+    text-decoration-color: #ffffff;
+  }
+
+  /* Lists */
+  & ul,
+  & ol {
+    margin-block: 0.75rem;
+    padding-left: 0;
+  }
+
+  & ul {
+    list-style: none;
+  }
+
+  & ul > li {
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  & ul > li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--color-faint);
+  }
+
+  & ol {
+    list-style: none;
+    counter-reset: item;
+  }
+
+  & ol > li {
+    padding-left: 1.5rem;
+    position: relative;
+    counter-increment: item;
+  }
+
+  & ol > li::before {
+    content: counter(item) ".";
+    position: absolute;
+    left: 0;
+    color: var(--color-subtle);
+    font-variant-numeric: tabular-nums;
+  }
+
+  & li {
+    margin-block: 0.25rem;
+  }
+
+  /* Nested lists */
+  & li ul,
+  & li ol {
+    margin-top: 0.25rem;
+    margin-bottom: 0;
+  }
+
+  /* Inline code */
+  & code:not(pre code) {
+    background: var(--color-surface);
+    color: #ffffff;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+    border: 1px solid var(--color-border);
+  }
+
+  /* Code blocks */
+  & pre {
+    margin-block: 1rem;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.75rem;
+    border: 1px solid var(--color-border);
+    background: #000000;
+  }
+
+  & pre code {
+    background: transparent;
+    padding: 0;
+    border: 0;
+    color: var(--color-muted);
+  }
+
+  /* Tables */
+  & table {
+    width: 100%;
+    margin-block: 1rem;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+  }
+
+  & th,
+  & td {
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+
+  & th {
+    background: var(--color-surface);
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  & td {
+    color: var(--color-muted);
+  }
+
+  /* Blockquotes */
+  & blockquote {
+    border-left: 2px solid var(--color-border);
+    padding-left: 1rem;
+    margin-block: 1rem;
+    color: var(--color-subtle);
+    font-style: italic;
+  }
+
+  & blockquote p {
+    margin-block: 0.5rem;
+  }
+
+  /* Images */
+  & img {
+    max-width: 100%;
+    height: auto;
+    margin-block: 1rem;
+    border: 1px solid var(--color-border);
+  }
+
+  /* Horizontal rules */
+  & hr {
+    margin-block: 2rem;
+    border: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* Strong */
+  & strong {
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  /* Emphasis */
+  & em {
+    color: #aaaaaa;
+  }
+
+  /* Keyboard */
+  & kbd {
+    background: var(--color-surface);
+    color: #ffffff;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+    border: 1px solid var(--color-border);
+  }
+
+  /* Details/Summary */
+  & details {
+    margin-block: 0.75rem;
+    border: 1px solid var(--color-border);
+  }
+
+  & summary {
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    color: #ffffff;
+    background: var(--color-surface);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  & details[open] summary {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  & details > *:not(summary) {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Shiki Code Highlighting */
+.shiki {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  background: #000000 !important;
+}
+
+.shiki code {
+  color: var(--color-muted);
+}
+
+.shiki,
+.shiki span {
+  color: var(--color-muted) !important;
+  background-color: transparent !important;
 }
