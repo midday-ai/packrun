@@ -225,11 +225,9 @@ export async function processSyncJob(job: Job<SyncJobData>): Promise<void> {
  * Process a bulk sync job (multiple packages)
  */
 export async function processBulkSyncJob(job: Job<BulkSyncJobData>): Promise<void> {
-  const { names, phase } = job.data;
+  const { names } = job.data;
 
-  console.log(
-    `[${job.id}] Processing bulk sync: ${names.length} packages (phase ${phase || "N/A"})`,
-  );
+  console.log(`[${job.id}] Processing bulk sync: ${names.length} packages`);
 
   const metadataPromises = names.map((name) => fetchPackageMetadata(name));
   const metadataResults = await Promise.all(metadataPromises);

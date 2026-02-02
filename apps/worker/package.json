@@ -20,6 +20,7 @@
     "@v1/data": "workspace:*",
     "@v1/decisions": "workspace:*",
     "@v1/queue": "workspace:*",
+    "ioredis": "^5.6.1",
     "typesense": "^2.1.0"
   },
   "devDependencies": {

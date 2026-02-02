@@ -15,5 +15,4 @@ export interface SyncJobData {
 
 export interface BulkSyncJobData {
   names: string[];
-  phase?: number;
 }

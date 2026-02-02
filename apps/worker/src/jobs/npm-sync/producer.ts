@@ -23,17 +23,18 @@ export async function queuePackageSync(name: string, seq: string, deleted = fals
 /**
  * Add multiple packages to the bulk sync queue
  */
-export async function queueBulkSync(names: string[], phase?: number): Promise<void> {
+export async function queueBulkSync(names: string[]): Promise<void> {
   const queue = getBulkSyncQueue();
   // Split into chunks of 50 for manageable job sizes
   const chunkSize = 50;
+  const timestamp = Date.now();
   for (let i = 0; i < names.length; i += chunkSize) {
     const chunk = names.slice(i, i + chunkSize);
     await queue.add(
       "bulk-sync",
-      { names: chunk, phase },
+      { names: chunk },
       {
-        jobId: `bulk:${phase || 0}:${i}`,
+        jobId: `bulk:${timestamp}:${i}`,
       },
     );
   }

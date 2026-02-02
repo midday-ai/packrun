@@ -18,6 +18,7 @@
         "@v1/decisions": "workspace:*",
         "@v1/queue": "workspace:*",
         "hono": "^4.11.7",
+        "ioredis": "^5.6.1",
         "module-replacements": "^2.11.0",
         "typesense": "^2.1.0",
         "zod": "^4.3.6",
@@ -72,6 +73,7 @@
         "@v1/data": "workspace:*",
         "@v1/decisions": "workspace:*",
         "@v1/queue": "workspace:*",
+        "ioredis": "^5.6.1",
         "typesense": "^2.1.0",
       },
       "devDependencies": {

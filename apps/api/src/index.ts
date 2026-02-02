@@ -21,6 +21,13 @@ import {
   SEED_CATEGORIES,
   toApiResponse,
 } from "@v1/decisions";
+import {
+  getBackfillStatus,
+  pauseBackfill,
+  requestBackfillStart,
+  resetBackfill,
+  resumeBackfill,
+} from "./lib/backfill";
 import { searchNpmRegistry } from "./lib/clients/npm";
 import { searchPackages as typesenseSearch } from "./lib/clients/typesense";
 import { fetchPackageMetrics } from "./lib/metrics";
@@ -662,11 +669,70 @@ app.get("/api/compare", async (c) => {
   }
 });
 
+// =============================================================================
+// Backfill Control Endpoints
+// =============================================================================
+
+// Get backfill status
+app.get("/api/backfill/status", async (c) => {
+  try {
+    const status = await getBackfillStatus();
+    c.header("Cache-Control", CACHE.NONE);
+    return c.json(status);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
+  }
+});
+
+// Start a new backfill of the full npm registry
+app.post("/api/backfill/start", async (c) => {
+  try {
+    const state = await requestBackfillStart();
+    return c.json({
+      message: "Backfill started. Worker will fetch all packages and begin processing.",
+      state,
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 400);
+  }
+});
+
+// Pause backfill
+app.post("/api/backfill/pause", async (c) => {
+  try {
+    const state = await pauseBackfill();
+    return c.json({ message: "Backfill paused.", state });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 400);
+  }
+});
+
+// Resume backfill
+app.post("/api/backfill/resume", async (c) => {
+  try {
+    const state = await resumeBackfill();
+    return c.json({ message: "Backfill resumed.", state });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 400);
+  }
+});
+
+// Reset backfill
+app.post("/api/backfill/reset", async (c) => {
+  try {
+    const state = await resetBackfill();
+    return c.json({ message: "Backfill reset to idle.", state });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 400);
+  }
+});
+
 // Start server
 console.log(`v1.run API server starting on port ${PORT}...`);
 console.log(`  Health: http://localhost:${PORT}/health`);
 console.log(`  MCP:    http://localhost:${PORT}/mcp`);
 console.log(`  REST:   http://localhost:${PORT}/api/package/:name/version`);
+console.log(`  Backfill: http://localhost:${PORT}/api/backfill/status`);
 
 export default {
   port: PORT,
