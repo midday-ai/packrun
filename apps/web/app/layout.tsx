@@ -5,6 +5,7 @@ import { Providers } from "@/components/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://v1.run"),
   title: "v1.run - The fastest npm",
   description: "Health scores, security, and real stats — for humans and agents",
   openGraph: {
