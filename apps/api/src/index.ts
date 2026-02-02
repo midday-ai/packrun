@@ -117,8 +117,9 @@ async function getCurrentUser(c: { req: { raw: Request } }) {
   return session?.user || null;
 }
 
-// Favorites API endpoints
+// Favorites API endpoints (no caching - user-specific data)
 app.get("/api/favorites", async (c) => {
+  c.header("Cache-Control", "no-store, no-cache, must-revalidate");
   const user = await getCurrentUser(c);
   if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
@@ -140,6 +141,7 @@ app.get("/api/favorites", async (c) => {
 });
 
 app.post("/api/favorites/:name", async (c) => {
+  c.header("Cache-Control", "no-store");
   const user = await getCurrentUser(c);
   if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
@@ -165,6 +167,7 @@ app.post("/api/favorites/:name", async (c) => {
 });
 
 app.delete("/api/favorites/:name", async (c) => {
+  c.header("Cache-Control", "no-store");
   const user = await getCurrentUser(c);
   if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
@@ -185,6 +188,7 @@ app.delete("/api/favorites/:name", async (c) => {
 });
 
 app.get("/api/favorites/check/:name", async (c) => {
+  c.header("Cache-Control", "no-store, no-cache, must-revalidate");
   const user = await getCurrentUser(c);
   if (!user) {
     return c.json({ isFavorite: false });
@@ -207,6 +211,7 @@ app.get("/api/favorites/check/:name", async (c) => {
 
 // Delete user account
 app.delete("/api/account", async (c) => {
+  c.header("Cache-Control", "no-store");
   const currentUser = await getCurrentUser(c);
   if (!currentUser) {
     return c.json({ error: "Unauthorized" }, 401);
