@@ -12,8 +12,10 @@ RUN turbo prune web --docker
 
 # Stage 2: Install dependencies (cached layer)
 FROM base AS installer
-# Copy pruned package.json files and lockfile
+# Copy pruned package.json files
 COPY --from=pruner /app/out/json/ .
+# Copy pruned lockfile (turbo prune puts it at out/ root, not in json/)
+COPY --from=pruner /app/out/bun.lock ./bun.lock
 RUN bun install
 
 # Stage 3: Build the application
