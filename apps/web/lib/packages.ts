@@ -2,11 +2,14 @@
  * Package data access layer
  *
  * Fetches package data from npm registry and renders README.
- * Results are cached via Next.js "use cache" directive for instant subsequent loads.
+ * Results are cached in Redis for fast subsequent loads across regions.
  */
 
 import { fetchAndRenderReadme } from "@v1/readme-renderer";
-import { cacheLife } from "next/cache";
+import { cacheGet, cacheSet } from "./redis";
+
+// Cache TTL in seconds (1 hour)
+const CACHE_TTL = 3600;
 
 /**
  * Package data structure
@@ -62,13 +65,34 @@ export interface CachedPackage {
 
 /**
  * Get package data by name.
- * Uses "use cache" directive - result is cached by Next.js for fast subsequent loads.
+ * Results are cached in Redis for fast subsequent loads.
  */
 export async function getCachedPackage(name: string): Promise<CachedPackage | null> {
-  "use cache";
-  cacheLife("hours"); // Cache for 1 hour, revalidate after
+  const cacheKey = `pkg:${name}`;
 
-  return fetchFromNpmRegistry(name);
+  // Try cache first
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return JSON.parse(cached) as CachedPackage;
+    }
+  } catch (error) {
+    console.error(`Cache read error for ${name}:`, error);
+  }
+
+  // Fetch from npm registry
+  const pkg = await fetchFromNpmRegistry(name);
+
+  // Cache the result if successful
+  if (pkg) {
+    try {
+      await cacheSet(cacheKey, JSON.stringify(pkg), CACHE_TTL);
+    } catch (error) {
+      console.error(`Cache write error for ${name}:`, error);
+    }
+  }
+
+  return pkg;
 }
 
 /**

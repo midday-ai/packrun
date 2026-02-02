@@ -8,7 +8,6 @@ const __dirname = dirname(__filename);
 const nextConfig = {
   output: "standalone",
   transpilePackages: ["@v1/ui", "@v1/readme-renderer"],
-  cacheComponents: true,
   turbopack: {
     // Set root to monorepo root for turbo prune Docker builds
     root: resolve(__dirname, "../.."),
@@ -16,9 +15,6 @@ const nextConfig = {
   // Disable type checking and linting during build (handled separately in CI)
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
 };
 

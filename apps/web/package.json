@@ -23,7 +23,7 @@
     "geist": "^1.5.1",
     "instantsearch.js": "^4.87.0",
     "lucide-react": "^0.563.0",
-    "next": "^16.2.0-canary.23",
+    "next": "^15.1.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-instantsearch": "^7.23.0",
@@ -34,6 +34,7 @@
   "devDependencies": {
     "@v1/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.1.18",
+    "@types/bun": "latest",
     "@types/node": "^25.2.0",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",

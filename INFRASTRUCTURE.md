@@ -15,7 +15,7 @@ This document describes how to deploy v1.run to Railway with multi-region suppor
 ┌──────────────┐  ┌──────────────┐           ┌──────────────┐
 │   Railway    │  │   Railway    │           │   Railway    │
 │  Amsterdam   │  │  Virginia    │           │  California  │
-│  (web)       │  │  (web+sync)  │           │  (web)       │
+│  (web+redis) │  │(web+sync+redis)│         │  (web+redis) │
 └──────┬───────┘  └──────┬───────┘           └──────┬───────┘
        │                  │                           │
        ▼                  ▼                           ▼
@@ -25,6 +25,9 @@ This document describes how to deploy v1.run to Railway with multi-region suppor
 └──────────────┴──┴──────────────┴───────────┴──────────────┘
                   Typesense Cloud SDN (auto-replication)
 ```
+
+Each region has its own Redis instance for package data caching (~1-5ms latency).
+Cache misses fetch from npm registry and populate the regional cache.
 
 ## Prerequisites
 
@@ -95,7 +98,33 @@ Both services are configured via `railway.json` files:
 - Always restart policy
 - Watch patterns for sync-related files only
 
-## Step 3: Environment Variables
+## Step 3: Redis Setup (Package Caching)
+
+Each region needs its own Redis instance for low-latency package data caching.
+
+### Deploy Redis Instances
+
+For each region (Amsterdam, Virginia, California):
+
+1. In Railway project, click **Add Service** → **Database** → **Redis**
+2. Name it according to region: `redis-eu`, `redis-use`, `redis-usw`
+3. Set the region to match the web app replica's region:
+   - `redis-eu` → EU West (Amsterdam)
+   - `redis-use` → US East (Virginia)
+   - `redis-usw` → US West (California)
+
+### Railway Project Structure
+
+```
+v1-run (Project)
+├── web (Service) - 3 replicas
+├── sync-worker (Service) - 1 replica
+├── redis-eu (Redis) - Amsterdam
+├── redis-use (Redis) - Virginia
+└── redis-usw (Redis) - California
+```
+
+## Step 4: Environment Variables
 
 ### Web Service Variables
 
@@ -103,6 +132,12 @@ Both services are configured via `railway.json` files:
 |----------|-------------|
 | `TYPESENSE_API_KEY` | Admin API key from Typesense Cloud |
 | `NEXT_PUBLIC_TYPESENSE_SEARCH_API_KEY` | Search-only API key (public) |
+| `REDIS_URL_EU` | Redis URL for EU region (from `redis-eu` service) |
+| `REDIS_URL_US_EAST` | Redis URL for US East region (from `redis-use` service) |
+| `REDIS_URL_US_WEST` | Redis URL for US West region (from `redis-usw` service) |
+| `REDIS_URL` | Fallback Redis URL (optional) |
+
+**Note**: Railway automatically sets `RAILWAY_REPLICA_REGION` for each replica, which the app uses to connect to the correct regional Redis.
 
 ### Sync Worker Variables
 
@@ -111,7 +146,7 @@ Both services are configured via `railway.json` files:
 | `TYPESENSE_API_KEY` | Admin API key from Typesense Cloud |
 | `TYPESENSE_HOST` | (Optional) Override default host |
 
-## Step 4: Custom Domain
+## Step 5: Custom Domain
 
 1. In Railway, go to Web service → **Settings** → **Networking**
 2. Click **Generate Domain** or **Add Custom Domain**
@@ -195,3 +230,11 @@ Listening for changes from: now
 1. Verify requests are routed to nearest region
 2. Check Typesense SDN nearest node configuration
 3. Ensure Typesense client uses `nearestNode` option
+4. Check Redis is deployed in the same region as the web replica
+
+### Redis Cache Issues
+
+1. Verify `REDIS_URL_*` environment variables are set correctly
+2. Check Redis service is running in Railway dashboard
+3. Ensure Redis is in the same region as the web replica for low latency
+4. Check logs for "Redis connected to region" message on startup
