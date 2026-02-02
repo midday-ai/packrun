@@ -90,10 +90,16 @@ export default async function PackagePage({ params }: PageProps) {
             <div className="flex-1" />
             <Link
               href="/updates"
-              className="text-xs uppercase tracking-wider text-[#666] hover:text-white transition-colors flex items-center gap-1.5"
+              className="text-xs text-[#666] hover:text-white transition-colors font-mono relative"
             >
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-              LIVE
+              ● LIVE
+              <span
+                className="absolute inset-0 pointer-events-none z-10"
+                style={{
+                  background:
+                    "repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(0,0,0,0.3) 1px, rgba(0,0,0,0.3) 2px)",
+                }}
+              />
             </Link>
             <Link
               href="/mcp"
@@ -454,10 +460,16 @@ export default async function PackagePage({ params }: PageProps) {
             <div className="flex items-center gap-4">
               <Link
                 href="/updates"
-                className="hover:text-white transition-colors uppercase tracking-wider flex items-center gap-1.5"
+                className="hover:text-white transition-colors font-mono relative"
               >
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                LIVE
+                ● LIVE
+                <span
+                  className="absolute inset-0 pointer-events-none z-10"
+                  style={{
+                    background:
+                      "repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(0,0,0,0.3) 1px, rgba(0,0,0,0.3) 2px)",
+                  }}
+                />
               </Link>
               <Link
                 href="/mcp"
