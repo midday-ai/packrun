@@ -89,6 +89,13 @@ export default async function PackagePage({ params }: PageProps) {
             <SearchTrigger />
             <div className="flex-1" />
             <Link
+              href="/updates"
+              className="text-xs uppercase tracking-wider text-[#666] hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+              LIVE
+            </Link>
+            <Link
               href="/mcp"
               className="text-xs uppercase tracking-wider text-[#666] hover:text-white transition-colors"
             >
@@ -444,12 +451,21 @@ export default async function PackagePage({ params }: PageProps) {
             <Link href="/" className="hover:text-white transition-colors">
               v1.run
             </Link>
-            <Link
-              href="/mcp"
-              className="hover:text-white transition-colors uppercase tracking-wider"
-            >
-              MCP
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/updates"
+                className="hover:text-white transition-colors uppercase tracking-wider flex items-center gap-1.5"
+              >
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                LIVE
+              </Link>
+              <Link
+                href="/mcp"
+                className="hover:text-white transition-colors uppercase tracking-wider"
+              >
+                MCP
+              </Link>
+            </div>
           </div>
         </footer>
       </main>
