@@ -1,14 +1,26 @@
 import Typesense from "typesense";
 
-// Typesense Cloud configuration
-const TYPESENSE_NODES = [
-  { host: "v2ejq75nb439thdup-1.a1.typesense.net", port: 443, protocol: "https" as const },
-  { host: "v2ejq75nb439thdup-2.a1.typesense.net", port: 443, protocol: "https" as const },
-  { host: "v2ejq75nb439thdup-3.a1.typesense.net", port: 443, protocol: "https" as const },
-];
+// Get Typesense host from environment variable
+const TYPESENSE_HOST = process.env.TYPESENSE_HOST || "localhost";
+
+// Helper to derive Typesense Cloud SDN nodes from the nearest node host
+function getTypesenseNodes(host: string) {
+  // Typesense Cloud SDN uses pattern: xxx.a1.typesense.net -> xxx-1.a1.typesense.net
+  if (host.includes(".a1.typesense.net")) {
+    return [
+      { host: host.replace(".a1.", "-1.a1."), port: 443, protocol: "https" as const },
+      { host: host.replace(".a1.", "-2.a1."), port: 443, protocol: "https" as const },
+      { host: host.replace(".a1.", "-3.a1."), port: 443, protocol: "https" as const },
+    ];
+  }
+  // For non-cloud setups, just use the single host
+  return [{ host, port: 443, protocol: "https" as const }];
+}
+
+const TYPESENSE_NODES = getTypesenseNodes(TYPESENSE_HOST);
 
 const TYPESENSE_NEAREST_NODE = {
-  host: "v2ejq75nb439thdup.a1.typesense.net",
+  host: TYPESENSE_HOST,
   port: 443,
   protocol: "https" as const,
 };

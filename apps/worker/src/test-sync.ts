@@ -6,9 +6,14 @@
  * Usage: bun run src/test-sync.ts
  */
 
-import { fetchDownloads, fetchPackageMetadata, transformToDocument } from "./npm-client";
-import { fetchVulnerabilities } from "./osv-client";
-import { ensureCollection, upsertPackages } from "./typesense";
+import {
+  fetchDownloads,
+  fetchPackageMetadata,
+  ensureCollection,
+  upsertPackages,
+} from "./clients";
+import { fetchVulnerabilities } from "./clients/osv";
+import { transformToDocument } from "./jobs/npm-sync/processor";
 
 const TEST_PACKAGES = [
   "react",
@@ -37,7 +42,6 @@ async function syncPackage(name: string): Promise<boolean> {
     const downloads = await fetchDownloads([name]);
     const downloadCount = downloads.get(name) || 0;
 
-    // Fetch vulnerabilities
     const version = metadata["dist-tags"]?.latest || "0.0.0";
     const vulns = await fetchVulnerabilities(name, version);
 
@@ -47,7 +51,6 @@ async function syncPackage(name: string): Promise<boolean> {
 
     const doc = transformToDocument(metadata, downloadCount);
 
-    // Add vulnerability data
     doc.vulnerabilities = vulns.total;
     doc.vulnCritical = vulns.critical;
     doc.vulnHigh = vulns.high;

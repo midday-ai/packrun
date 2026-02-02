@@ -1,5 +1,7 @@
 /**
- * GitHub API client for fetching repository health data
+ * GitHub API Client
+ *
+ * Fetches repository health data from GitHub.
  */
 
 import type { GitHubRepoData } from "@v1/decisions/schema";
@@ -31,7 +33,6 @@ interface GitHubContributor {
  * Parse GitHub repository URL to owner/repo
  */
 export function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
-  // Handle various GitHub URL formats
   const patterns = [/github\.com\/([^/]+)\/([^/#?]+)/, /github\.com:([^/]+)\/([^/.]+)/];
 
   for (const pattern of patterns) {
@@ -65,7 +66,6 @@ export async function fetchGitHubRepoData(
   }
 
   try {
-    // Fetch basic repo info
     const repoResponse = await fetch(`${GITHUB_API}/repos/${owner}/${repo}`, { headers });
     if (!repoResponse.ok) {
       console.error(`GitHub API error for ${owner}/${repo}: ${repoResponse.status}`);
@@ -73,7 +73,6 @@ export async function fetchGitHubRepoData(
     }
     const repoData: GitHubRepo = await repoResponse.json();
 
-    // Fetch recent commits (last 6 months)
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
@@ -83,7 +82,6 @@ export async function fetchGitHubRepoData(
     );
     const commits: GitHubCommit[] = commitsResponse.ok ? await commitsResponse.json() : [];
 
-    // Fetch releases (last 6 months)
     const releasesResponse = await fetch(
       `${GITHUB_API}/repos/${owner}/${repo}/releases?per_page=20`,
       { headers },
@@ -91,14 +89,12 @@ export async function fetchGitHubRepoData(
     const releases: GitHubRelease[] = releasesResponse.ok ? await releasesResponse.json() : [];
     const recentReleases = releases.filter((r) => new Date(r.published_at) > sixMonthsAgo).length;
 
-    // Fetch contributors count
     const contributorsResponse = await fetch(
       `${GITHUB_API}/repos/${owner}/${repo}/contributors?per_page=1`,
       { headers },
     );
     let contributorCount = 0;
     if (contributorsResponse.ok) {
-      // GitHub returns total count in Link header
       const linkHeader = contributorsResponse.headers.get("Link");
       if (linkHeader) {
         const lastMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
@@ -109,7 +105,6 @@ export async function fetchGitHubRepoData(
       }
     }
 
-    // Fetch open PRs count
     const prsResponse = await fetch(
       `${GITHUB_API}/repos/${owner}/${repo}/pulls?state=open&per_page=1`,
       { headers },
@@ -130,7 +125,7 @@ export async function fetchGitHubRepoData(
       repo,
       stars: repoData.stargazers_count,
       forks: repoData.forks_count,
-      openIssues: repoData.open_issues_count - openPRs, // GitHub counts PRs as issues
+      openIssues: repoData.open_issues_count - openPRs,
       openPRs,
       lastCommit: new Date(repoData.pushed_at),
       contributors: contributorCount,
@@ -160,10 +155,8 @@ export function extractGitHubUrl(
     return null;
   }
 
-  // Clean up git+ prefix and .git suffix
   url = url.replace(/^git\+/, "").replace(/\.git$/, "");
 
-  // Only return if it's a GitHub URL
   if (url.includes("github.com")) {
     return url;
   }
@@ -173,14 +166,11 @@ export function extractGitHubUrl(
 
 /**
  * Fetch GitHub stars using ungh.cc proxy (no auth required)
- * This is faster and doesn't count against GitHub API rate limits
  */
 export async function fetchGitHubStars(owner: string, repo: string): Promise<number | undefined> {
   try {
     const response = await fetch(`https://ungh.cc/repos/${owner}/${repo}`, {
-      headers: {
-        "User-Agent": "v1.run",
-      },
+      headers: { "User-Agent": "v1.run" },
     });
 
     if (!response.ok) {
@@ -201,20 +191,16 @@ export async function fetchGitHubStarsBatch(
   repos: Array<{ owner: string; repo: string; packageName: string }>,
 ): Promise<Map<string, number>> {
   const results = new Map<string, number>();
-
-  // Process in parallel batches of 10
   const batchSize = 10;
 
   for (let i = 0; i < repos.length; i += batchSize) {
     const batch = repos.slice(i, i + batchSize);
-
     const promises = batch.map(async ({ owner, repo, packageName }) => {
       const stars = await fetchGitHubStars(owner, repo);
       if (stars !== undefined) {
         results.set(packageName, stars);
       }
     });
-
     await Promise.all(promises);
   }
 

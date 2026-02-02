@@ -1,15 +1,15 @@
 {
-  "name": "sync",
+  "name": "worker",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "build": "bun build src/index.ts --outdir=dist --target=bun",
-    "start": "bun run dist/index.js",
-    "sync": "bun run src/index.ts",
-    "sync:bulk": "bun run src/bulk-sync.ts",
+    "dev:listener": "bun run --watch src/index.ts",
+    "dev:worker": "bun run --watch src/worker.ts",
+    "start:listener": "bun run src/index.ts",
+    "start:worker": "bun run src/worker.ts",
     "sync:test": "bun run src/test-sync.ts",
+    "sync:bulk": "bun run src/bulk-sync.ts",
     "sync:priority": "bun run src/priority-sync.ts",
     "sync:phase1": "bun run src/priority-sync.ts 1",
     "sync:phase2": "bun run src/priority-sync.ts 2",
@@ -17,6 +17,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "bullmq": "^5.34.0",
     "typesense": "^2.1.0"
   },
   "devDependencies": {

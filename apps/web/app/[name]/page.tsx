@@ -4,8 +4,11 @@ import { Suspense } from "react";
 import { HeaderSearch } from "@/components/header-search";
 import { InstallTabs } from "@/components/install-tabs";
 import { TimeAgo } from "@/components/time-ago";
-import { formatBytes, formatNumber, getCachedPackage } from "@/lib/packages";
+import { formatBytes, formatNumber, getPackage } from "@/lib/packages";
 import { getStaticPackages } from "@/lib/popular-packages";
+
+// ISR: Revalidate pages every hour
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ name: string }>;
@@ -18,7 +21,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
-  const pkg = await getCachedPackage(decodedName);
+  const pkg = await getPackage(decodedName);
 
   if (!pkg) {
     return { title: "Package Not Found" };
@@ -33,7 +36,7 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function PackagePage({ params }: PageProps) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
-  const pkg = await getCachedPackage(decodedName);
+  const pkg = await getPackage(decodedName);
 
   if (!pkg) {
     notFound();

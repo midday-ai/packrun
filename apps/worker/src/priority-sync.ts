@@ -7,16 +7,22 @@
  * 3. Long tail via registry scan (hours)
  *
  * Usage:
- *   bun run sync:priority     # Run all phases
- *   bun run sync:phase1       # Curated only (~100 packages)
- *   bun run sync:phase2       # + Popular search results (~5000)
- *   bun run sync:phase3       # + Long tail (millions)
+ *   bun run bulk:priority     # Run all phases
+ *   bun run bulk:phase1       # Curated only (~100 packages)
+ *   bun run bulk:phase2       # + Popular search results (~5000)
+ *   bun run bulk:phase3       # + Long tail (millions)
  */
 
 import { config } from "./config";
-import { fetchDownloads, fetchPackageMetadata, transformToDocument } from "./npm-client";
-import { fetchVulnerabilities } from "./osv-client";
-import { ensureCollection, type PackageDocument, upsertPackages } from "./typesense";
+import {
+  fetchDownloads,
+  fetchPackageMetadata,
+  ensureCollection,
+  upsertPackages,
+  type PackageDocument,
+} from "./clients";
+import { fetchVulnerabilities } from "./clients/osv";
+import { transformToDocument } from "./jobs/npm-sync/processor";
 
 // Phase 1: Curated list of most important packages
 const PRIORITY_PACKAGES = [
@@ -391,7 +397,6 @@ async function syncBatch(names: string[]): Promise<number> {
   const packageNames = validPackages.map((p) => p.name);
   const downloads = await fetchDownloads(packageNames);
 
-  // Fetch vulnerabilities for each package (in parallel)
   const vulnPromises = validPackages.map(async (metadata) => {
     const version = metadata["dist-tags"]?.latest || "0.0.0";
     return { name: metadata.name, vulns: await fetchVulnerabilities(metadata.name, version) };
@@ -466,7 +471,6 @@ async function phase2_PopularFromSearch(): Promise<number> {
   const allPackages = new Set<string>(PRIORITY_PACKAGES);
   const startTime = Date.now();
 
-  // Fetch popular packages for each search term
   for (let i = 0; i < SEARCH_TERMS.length; i++) {
     const term = SEARCH_TERMS[i]!;
     const packages = await fetchPopularFromSearch(term, 100);
@@ -478,13 +482,11 @@ async function phase2_PopularFromSearch(): Promise<number> {
       );
     }
 
-    // Small delay between searches
     await sleep(100);
   }
 
   console.log(`\n   Found ${allPackages.size} total unique packages`);
 
-  // Filter to only new packages
   const toSync = Array.from(allPackages).filter((pkg) => !PRIORITY_PACKAGES.includes(pkg));
   console.log(`   ${toSync.length} new packages to sync\n`);
 
@@ -524,10 +526,8 @@ async function phase3_AllPackages(startFrom = 0): Promise<number> {
   console.log("\n🔄 PHASE 3: Syncing all packages from registry...");
   console.log("   This will take several hours. Press Ctrl+C to pause.\n");
 
-  // Use a different approach: paginated fetch from registry
   console.log("   Fetching package list...");
 
-  // npm registry supports /_all_docs with startkey/endkey for pagination
   let allPackages: string[] = [];
   let startkey = "";
 
@@ -539,7 +539,6 @@ async function phase3_AllPackages(startFrom = 0): Promise<number> {
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        // Try alternative endpoint
         console.log("   Using CouchDB _all_docs endpoint...");
         break;
       }
@@ -554,7 +553,7 @@ async function phase3_AllPackages(startFrom = 0): Promise<number> {
 
       console.log(`   Fetched ${allPackages.length.toLocaleString()} packages...`);
 
-      if (names.length < 5000) break; // Last page
+      if (names.length < 5000) break;
     } catch (err) {
       console.error("   Error fetching package list:", err);
       break;
@@ -622,7 +621,7 @@ async function main() {
   const phase = args[0] || "all";
 
   console.log("╔═══════════════════════════════════════════════════════════╗");
-  console.log("║           V1.RUN PRIORITY SYNC                      ║");
+  console.log("║           V1.RUN PRIORITY SYNC                            ║");
   console.log("╚═══════════════════════════════════════════════════════════╝");
 
   await ensureCollection();

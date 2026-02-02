@@ -1,5 +1,7 @@
 /**
- * Bundlephobia API client for bundle size metrics
+ * Bundlephobia API Client
+ *
+ * Fetches bundle size metrics from Bundlephobia.
  */
 
 import type { BundleData } from "@v1/decisions/schema";
@@ -14,7 +16,6 @@ const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
  * Fetch bundle size data from Bundlephobia
  */
 export async function fetchBundleData(packageName: string): Promise<BundleData | null> {
-  // Check cache
   const cached = cache.get(packageName);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.data;
@@ -29,7 +30,6 @@ export async function fetchBundleData(packageName: string): Promise<BundleData |
     });
 
     if (!response.ok) {
-      // Package might not be bundleable (native modules, etc.)
       cache.set(packageName, { data: null, timestamp: Date.now() });
       return null;
     }
@@ -42,7 +42,7 @@ export async function fetchBundleData(packageName: string): Promise<BundleData |
       dependencyCount: data.dependencyCount || 0,
       hasJSModule: Boolean(data.hasJSModule),
       hasJSNext: Boolean(data.hasJSNext),
-      hasSideEffects: data.hasSideEffects !== false, // default true
+      hasSideEffects: data.hasSideEffects !== false,
     };
 
     cache.set(packageName, { data: bundleData, timestamp: Date.now() });
@@ -73,7 +73,6 @@ export async function fetchBundleDataBatch(
 
     await Promise.all(promises);
 
-    // Rate limit delay between batches
     if (i + concurrency < packageNames.length) {
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }

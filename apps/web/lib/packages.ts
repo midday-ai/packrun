@@ -2,19 +2,15 @@
  * Package data access layer
  *
  * Fetches package data from npm registry and renders README.
- * Results are cached in Redis for fast subsequent loads across regions.
+ * Caching is handled by Next.js ISR and Cloudflare CDN.
  */
 
 import { fetchAndRenderReadme } from "@v1/readme-renderer";
-import { cacheGet, cacheSet } from "./redis";
-
-// Cache TTL in seconds (1 hour)
-const CACHE_TTL = 3600;
 
 /**
  * Package data structure
  */
-export interface CachedPackage {
+export interface PackageData {
   // Core metadata
   name: string;
   version: string;
@@ -49,12 +45,8 @@ export interface CachedPackage {
   // Timestamps
   created: number;
   updated: number;
-  syncedAt: number;
 
-  // Security & quality (optional, from enhanced sync)
-  vulnerabilities?: number;
-  vulnCritical?: number;
-  vulnHigh?: number;
+  // Security & quality (optional)
   hasInstallScripts?: boolean;
 
   // Popularity & metadata (optional)
@@ -63,42 +55,14 @@ export interface CachedPackage {
   funding?: string;
 }
 
+// Keep old type alias for backwards compatibility
+export type CachedPackage = PackageData;
+
 /**
  * Get package data by name.
- * Results are cached in Redis for fast subsequent loads.
+ * Fetches directly from npm registry - caching handled by ISR.
  */
-export async function getCachedPackage(name: string): Promise<CachedPackage | null> {
-  const cacheKey = `pkg:${name}`;
-
-  // Try cache first
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) {
-      return JSON.parse(cached) as CachedPackage;
-    }
-  } catch (error) {
-    console.error(`Cache read error for ${name}:`, error);
-  }
-
-  // Fetch from npm registry
-  const pkg = await fetchFromNpmRegistry(name);
-
-  // Cache the result if successful
-  if (pkg) {
-    try {
-      await cacheSet(cacheKey, JSON.stringify(pkg), CACHE_TTL);
-    } catch (error) {
-      console.error(`Cache write error for ${name}:`, error);
-    }
-  }
-
-  return pkg;
-}
-
-/**
- * Fetch package data directly from npm registry
- */
-async function fetchFromNpmRegistry(name: string): Promise<CachedPackage | null> {
+export async function getPackage(name: string): Promise<PackageData | null> {
   try {
     // Fetch package metadata from npm
     const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, {
@@ -242,8 +206,6 @@ async function fetchFromNpmRegistry(name: string): Promise<CachedPackage | null>
       readmeHtml,
       created,
       updated,
-      syncedAt: 0,
-      // Security & quality
       hasInstallScripts: hasInstallScripts || undefined,
       funding,
     };
@@ -252,6 +214,9 @@ async function fetchFromNpmRegistry(name: string): Promise<CachedPackage | null>
     return null;
   }
 }
+
+// Alias for backwards compatibility
+export const getCachedPackage = getPackage;
 
 /**
  * Format bytes to human readable string

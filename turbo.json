@@ -17,7 +17,11 @@
       "cache": false,
       "persistent": true
     },
-    "sync": {
+    "start": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:processor": {
       "cache": false,
       "persistent": true
     }

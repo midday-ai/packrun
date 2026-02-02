@@ -16,6 +16,61 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Cache headers for Cloudflare CDN
+  async headers() {
+    return [
+      {
+        // Package pages - cache for 1 hour, serve stale for up to 1 day while revalidating
+        source: "/:name",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        // Compare pages
+        source: "/compare/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        // Search API - short cache
+        source: "/api/search",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=300",
+          },
+        ],
+      },
+      {
+        // Package API - cache for 5 minutes
+        source: "/api/package/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=300, stale-while-revalidate=3600",
+          },
+        ],
+      },
+      {
+        // Static assets - cache for 1 year (immutable)
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

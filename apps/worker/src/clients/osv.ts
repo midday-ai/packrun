@@ -28,11 +28,7 @@ export interface VulnerabilityData {
   low: number;
 }
 
-/**
- * Determine severity level from OSV vulnerability data
- */
 function getSeverity(vuln: OsvVulnerability): string {
-  // Check CVSS severity first
   if (vuln.severity && vuln.severity.length > 0) {
     const cvss = vuln.severity.find((s) => s.type === "CVSS_V3" || s.type === "CVSS_V2");
     if (cvss) {
@@ -44,7 +40,6 @@ function getSeverity(vuln: OsvVulnerability): string {
     }
   }
 
-  // Fall back to database_specific severity
   if (vuln.database_specific?.severity) {
     const sev = vuln.database_specific.severity.toLowerCase();
     if (sev === "critical") return "critical";
@@ -74,14 +69,9 @@ export async function fetchVulnerabilities(
   try {
     const response = await fetch("https://api.osv.dev/v1/query", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        package: {
-          name: packageName,
-          ecosystem: "npm",
-        },
+        package: { name: packageName, ecosystem: "npm" },
         version,
       }),
     });
@@ -118,31 +108,25 @@ export async function fetchVulnerabilities(
 
     return result;
   } catch (error) {
-    // Silently fail - vulnerabilities are optional data
     return result;
   }
 }
 
 /**
  * Batch fetch vulnerabilities for multiple packages
- * Processes in parallel batches to avoid overwhelming the API
  */
 export async function fetchVulnerabilitiesBatch(
   packages: Array<{ name: string; version: string }>,
 ): Promise<Map<string, VulnerabilityData>> {
   const results = new Map<string, VulnerabilityData>();
-
-  // Process in parallel batches of 10
   const batchSize = 10;
 
   for (let i = 0; i < packages.length; i += batchSize) {
     const batch = packages.slice(i, i + batchSize);
-
     const promises = batch.map(async (pkg) => {
       const vulns = await fetchVulnerabilities(pkg.name, pkg.version);
       results.set(pkg.name, vulns);
     });
-
     await Promise.all(promises);
   }
 

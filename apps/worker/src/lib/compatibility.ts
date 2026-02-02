@@ -1,6 +1,7 @@
 /**
- * Compatibility checking for npm packages
- * Extracts Node version requirements, ESM/CJS compatibility
+ * Compatibility Checking
+ *
+ * Extracts Node version requirements, ESM/CJS compatibility from packages.
  */
 
 interface PackageVersion {

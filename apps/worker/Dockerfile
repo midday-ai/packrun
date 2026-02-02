@@ -4,11 +4,11 @@
 FROM oven/bun:1.3-alpine AS base
 WORKDIR /app
 
-# Stage 1: Prune the monorepo for sync package
+# Stage 1: Prune the monorepo for worker package
 FROM base AS pruner
 RUN bun add -g turbo
 COPY . .
-RUN turbo prune sync --docker
+RUN turbo prune worker --docker
 
 # Stage 2: Install dependencies (cached layer)
 FROM base AS installer
@@ -35,6 +35,6 @@ COPY --from=pruner /app/out/full/ .
 
 USER worker
 
-WORKDIR /app/apps/sync
+WORKDIR /app/apps/worker
 
 CMD ["bun", "run", "src/index.ts"]
