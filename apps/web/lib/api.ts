@@ -1,4 +1,4 @@
-// API URL (must be NEXT_PUBLIC_ for client-side access)
+// API URL (NEXT_PUBLIC_ works on both client and server)
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Search API
@@ -124,8 +124,8 @@ export async function fetchPackageHealth(name: string): Promise<PackageHealthRes
       return null;
     }
 
-    const res = await fetch(`${API_URL}/api/package/${encodeURIComponent(name)}/health`, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
+    const res = await fetch(`${API_URL}/api/package/${encodeURIComponent(name)}`, {
+      next: { revalidate: 86400 }, // Cache for 24 hours (on-demand invalidation handles updates)
     });
 
     if (!res.ok) {

@@ -70,12 +70,23 @@ export interface PackageDocument {
 }
 
 /**
- * Get a package by name
+ * Get a package by exact name
  */
 export async function getPackage(name: string): Promise<PackageDocument | null> {
   try {
-    const doc = await typesenseClient.collections(COLLECTION_NAME).documents(name).retrieve();
-    return doc as PackageDocument;
+    const result = await typesenseClient
+      .collections(COLLECTION_NAME)
+      .documents()
+      .search({
+        q: name,
+        query_by: "name",
+        filter_by: `name:=${name}`,
+        per_page: 1,
+      });
+    if (result.hits && result.hits.length > 0) {
+      return result.hits[0]?.document as PackageDocument;
+    }
+    return null;
   } catch {
     return null;
   }

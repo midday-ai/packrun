@@ -7,8 +7,8 @@ import { TimeAgo } from "@/components/time-ago";
 import { formatBytes, formatNumber, getPackage } from "@/lib/packages";
 import { getStaticPackages } from "@/lib/popular-packages";
 
-// ISR: Revalidate pages every hour
-export const revalidate = 3600;
+// ISR: Revalidate pages every 24 hours (on-demand revalidation handles updates)
+export const revalidate = 86400;
 
 interface PageProps {
   params: Promise<{ name: string }>;

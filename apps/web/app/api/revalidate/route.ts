@@ -1,23 +1,26 @@
 import { revalidatePath } from "next/cache";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const token = searchParams.get("token");
-  const path = searchParams.get("path");
-
-  // Validate token
-  if (token !== process.env.REVALIDATE_TOKEN) {
-    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-  }
-
-  if (!path) {
-    return NextResponse.json({ error: "Missing path" }, { status: 400 });
-  }
-
+export async function POST(request: Request) {
   try {
-    revalidatePath(path);
-    return NextResponse.json({ revalidated: true, path });
+    const { packageName, secret } = await request.json();
+
+    if (secret !== process.env.REVALIDATE_SECRET) {
+      return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
+    }
+
+    if (!packageName) {
+      return NextResponse.json({ error: "Missing packageName" }, { status: 400 });
+    }
+
+    // Revalidate both URL patterns for the package
+    revalidatePath(`/${packageName}`);
+    revalidatePath(`/package/${packageName}`);
+
+    return NextResponse.json({
+      revalidated: true,
+      paths: [`/${packageName}`, `/package/${packageName}`],
+    });
   } catch (error) {
     console.error("Revalidation error:", error);
     return NextResponse.json({ error: "Revalidation failed" }, { status: 500 });

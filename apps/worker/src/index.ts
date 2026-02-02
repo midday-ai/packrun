@@ -8,6 +8,7 @@
 import { getConnectionInfo } from "@v1/queue";
 import { config } from "./config";
 import { getCombinedStats, queuePackageSync } from "./jobs/npm-sync";
+import { invalidatePackageCache } from "./lib/cache-invalidation";
 import { getCurrentSeq, type NpmChange, pollChanges } from "./listeners/npm-changes";
 
 let jobsQueued = 0;
@@ -34,8 +35,14 @@ async function processChanges(changes: NpmChange[]): Promise<void> {
       continue;
     }
 
+    // Queue sync job
     await queuePackageSync(change.id, change.seq, change.deleted);
     jobsQueued++;
+
+    // Invalidate caches (Cloudflare + ISR) - fire and forget
+    invalidatePackageCache(change.id).catch(() => {
+      // Errors already logged in invalidatePackageCache
+    });
   }
 
   if (changes.length > 0) {

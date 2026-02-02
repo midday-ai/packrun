@@ -391,7 +391,9 @@ function buildHealthResponse(
     compatibility: {
       types: typesStatus,
       typesPackage: pkg.typesPackage,
-      moduleFormat: pkg.moduleFormat,
+      moduleFormat:
+        pkg.moduleFormat ||
+        (pkg.isESM && pkg.isCJS ? "dual" : pkg.isESM ? "esm" : pkg.isCJS ? "cjs" : undefined),
       sideEffects: details?.sideEffects,
       engines: details ? { node: details.engineNode, npm: details.engineNpm } : undefined,
       os: details?.os,

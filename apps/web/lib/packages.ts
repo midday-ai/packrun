@@ -63,20 +63,51 @@ export interface PackageData {
 export type CachedPackage = PackageData;
 
 /**
+ * Fetch readme from npm and render it
+ */
+async function fetchReadme(name: string, version?: string): Promise<string | undefined> {
+  try {
+    const npmRes = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 86400 }, // 24 hours (on-demand invalidation handles updates)
+    });
+    if (!npmRes.ok) return undefined;
+
+    const npmData = await npmRes.json();
+    const versionData = version ? npmData.versions?.[version] : null;
+
+    return (
+      (await fetchAndRenderReadme({
+        name,
+        readme: npmData.readme,
+        readmeFilename: npmData.readmeFilename,
+        repository: versionData?.repository,
+        "dist-tags": npmData["dist-tags"],
+      })) || undefined
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Get package data by name.
- * First tries the v1.run API (which has caching and enriched data),
- * then falls back to direct npm registry fetch if API is unavailable.
+ * Fetches health from API and readme from npm in parallel.
  */
 export async function getPackage(name: string): Promise<PackageData | null> {
-  // Try API first (includes health data, caching, etc.)
-  const health = await fetchPackageHealth(name);
+  // Fetch health and readme in parallel
+  const [health, readmeHtml] = await Promise.all([
+    fetchPackageHealth(name),
+    fetchReadme(name),
+  ]);
 
   if (health) {
-    // Convert health response to PackageData
-    return healthToPackageData(health);
+    const pkg = healthToPackageData(health);
+    pkg.readmeHtml = readmeHtml;
+    return pkg;
   }
 
-  // Fallback to direct npm fetch
+  // Fallback to direct npm fetch (includes readme)
   console.log(`[packages] API miss for ${name}, falling back to npm`);
   return getPackageFromNpm(name);
 }

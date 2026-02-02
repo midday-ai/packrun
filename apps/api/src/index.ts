@@ -25,6 +25,15 @@ import {
 const app = new Hono();
 const PORT = process.env.PORT || 3001;
 
+// Cache-Control headers for Cloudflare edge caching
+const CACHE = {
+  LONG: "public, s-maxage=86400, stale-while-revalidate=3600", // 24h + 1h stale
+  MEDIUM: "public, s-maxage=21600, stale-while-revalidate=3600", // 6h + 1h stale
+  SHORT: "public, s-maxage=3600, stale-while-revalidate=600", // 1h + 10min stale
+  SEARCH: "public, s-maxage=300, stale-while-revalidate=60", // 5min + 1min stale
+  NONE: "no-store",
+};
+
 // Initialize replacements at startup
 initReplacements();
 const replacementStats = getReplacementStats();
@@ -329,8 +338,10 @@ app.get("/search", async (c) => {
 
   try {
     const results = await typesenseSearch(query, { limit });
+    c.header("Cache-Control", CACHE.SEARCH);
     return c.json({
       hits: results.map((pkg) => ({
+        id: pkg.id,
         name: pkg.name,
         description: pkg.description,
         version: pkg.version,
@@ -338,6 +349,20 @@ app.get("/search", async (c) => {
         hasTypes: pkg.hasTypes,
         license: pkg.license,
         deprecated: pkg.deprecated,
+        deprecatedMessage: pkg.deprecatedMessage,
+        author: pkg.author,
+        homepage: pkg.homepage,
+        repository: pkg.repository,
+        keywords: pkg.keywords,
+        stars: pkg.stars,
+        isESM: pkg.isESM,
+        isCJS: pkg.isCJS,
+        dependencies: pkg.dependencies,
+        maintainers: pkg.maintainers,
+        created: pkg.created,
+        updated: pkg.updated,
+        vulnerabilities: pkg.vulnerabilities,
+        funding: pkg.funding,
       })),
       found: results.length,
     });
@@ -352,6 +377,7 @@ app.get("/api/package/:name/version", async (c) => {
   try {
     const name = decodeURIComponent(c.req.param("name"));
     const result = await getPackageVersion({ name });
+    c.header("Cache-Control", CACHE.SHORT); // 1 hour
     return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 404);
@@ -362,6 +388,7 @@ app.get("/api/package/:name/deprecated", async (c) => {
   try {
     const name = decodeURIComponent(c.req.param("name"));
     const result = await checkDeprecated({ name });
+    c.header("Cache-Control", CACHE.LONG); // 24 hours
     return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 404);
@@ -372,6 +399,7 @@ app.get("/api/package/:name/types", async (c) => {
   try {
     const name = decodeURIComponent(c.req.param("name"));
     const result = await checkTypes({ name });
+    c.header("Cache-Control", CACHE.LONG); // 24 hours
     return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 404);
@@ -383,6 +411,7 @@ app.get("/api/package/:name/vulnerabilities", async (c) => {
     const name = decodeURIComponent(c.req.param("name"));
     const version = c.req.query("version");
     const result = await checkVulnerabilities({ name, version });
+    c.header("Cache-Control", CACHE.MEDIUM); // 6 hours
     return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 404);
@@ -393,6 +422,7 @@ app.get("/api/package/:name/alternatives", async (c) => {
   try {
     const name = decodeURIComponent(c.req.param("name"));
     const result = await findAlternatives({ name });
+    c.header("Cache-Control", CACHE.LONG); // 24 hours
     return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 404);
@@ -403,19 +433,23 @@ app.post("/api/compare", async (c) => {
   try {
     const body = await c.req.json();
     const result = await comparePackages({ packages: body.packages });
+    // POST requests typically not cached, but we can cache the response
+    c.header("Cache-Control", CACHE.SHORT); // 1 hour
     return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 400);
   }
 });
 
-app.get("/api/package/:name/health", async (c) => {
+// Main package endpoint - comprehensive data
+app.get("/api/package/:name", async (c) => {
   try {
     const name = decodeURIComponent(c.req.param("name"));
     const result = await getPackageHealth(name);
     if (!result) {
       return c.json({ error: "Package not found" }, 404);
     }
+    c.header("Cache-Control", CACHE.LONG); // 24 hours
     return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
