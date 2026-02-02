@@ -11,9 +11,6 @@ export const authClient = createAuthClient({
   basePath: "/api/auth",
   fetchOptions: {
     credentials: "include", // Send cookies with cross-origin requests
-    headers: {
-      "Cache-Control": "no-cache", // Bypass CDN cache
-    },
   },
 });
 

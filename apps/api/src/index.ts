@@ -81,7 +81,7 @@ app.use(
       return origin || "*";
     },
     allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type"],
+    allowHeaders: ["Content-Type", "Cache-Control"],
     credentials: true,
   }),
 );
