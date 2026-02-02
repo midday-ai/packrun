@@ -1,37 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface Alternative {
-  name: string;
-  score: number;
-  badges: string[];
-}
-
-interface AlternativesData {
-  package: string;
-  category: string;
-  categoryName: string;
-  alternatives: Alternative[];
-  message?: string;
-}
+import { useAlternatives } from "@/lib/hooks";
 
 export function AlternativesSection({ packageName }: { packageName: string }) {
-  const [data, setData] = useState<AlternativesData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useAlternatives(packageName);
 
-  useEffect(() => {
-    fetch(`/api/compare?package=${encodeURIComponent(packageName)}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then(setData)
-      .catch(() => setData(null))
-      .finally(() => setLoading(false));
-  }, [packageName]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>

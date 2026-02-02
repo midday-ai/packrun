@@ -10,7 +10,20 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { z } from "zod";
+import {
+  CURATED_COMPARISONS,
+  compareSpecificPackages,
+  type ExtendedCategory,
+  generateComparison,
+  getCategoryName,
+  getComparison as getCuratedComparison,
+  inferCategory,
+  SEED_CATEGORIES,
+  toApiResponse,
+} from "@v1/decisions";
+import { searchNpmRegistry } from "./lib/clients/npm";
 import { searchPackages as typesenseSearch } from "./lib/clients/typesense";
+import { fetchPackageMetrics } from "./lib/metrics";
 import { getReplacementStats, initReplacements } from "./lib/replacements";
 import { getWeeklyDownloads } from "./tools/downloads";
 import { getPackageHealth } from "./tools/health";
@@ -331,46 +344,68 @@ app.all("/mcp", async (c) => {
 // Search endpoint
 app.get("/search", async (c) => {
   const query = c.req.query("q") || "";
-  const limit = Math.min(Number.parseInt(c.req.query("limit") || "10"), 100);
+  const page = Number.parseInt(c.req.query("page") || "1");
+  const limit = Math.min(Number.parseInt(c.req.query("limit") || "20"), 100);
 
   if (!query.trim()) {
-    return c.json({ hits: [], found: 0 });
+    return c.json({ hits: [], found: 0, page: 1 });
   }
+
+  let hits: unknown[] = [];
+  let typesenseWorked = false;
 
   try {
     const results = await typesenseSearch(query, { limit });
-    c.header("Cache-Control", CACHE.SEARCH);
-    return c.json({
-      hits: results.map((pkg) => ({
-        id: pkg.id,
-        name: pkg.name,
-        description: pkg.description,
-        version: pkg.version,
-        downloads: pkg.downloads,
-        hasTypes: pkg.hasTypes,
-        license: pkg.license,
-        deprecated: pkg.deprecated,
-        deprecatedMessage: pkg.deprecatedMessage,
-        author: pkg.author,
-        homepage: pkg.homepage,
-        repository: pkg.repository,
-        keywords: pkg.keywords,
-        stars: pkg.stars,
-        isESM: pkg.isESM,
-        isCJS: pkg.isCJS,
-        dependencies: pkg.dependencies,
-        maintainers: pkg.maintainers,
-        created: pkg.created,
-        updated: pkg.updated,
-        vulnerabilities: pkg.vulnerabilities,
-        funding: pkg.funding,
-      })),
-      found: results.length,
-    });
+    hits = results.map((pkg) => ({
+      id: pkg.id,
+      name: pkg.name,
+      description: pkg.description,
+      version: pkg.version,
+      downloads: pkg.downloads,
+      hasTypes: pkg.hasTypes,
+      license: pkg.license,
+      deprecated: pkg.deprecated,
+      deprecatedMessage: pkg.deprecatedMessage,
+      author: pkg.author,
+      homepage: pkg.homepage,
+      repository: pkg.repository,
+      keywords: pkg.keywords,
+      stars: pkg.stars,
+      isESM: pkg.isESM,
+      isCJS: pkg.isCJS,
+      dependencies: pkg.dependencies,
+      maintainers: pkg.maintainers,
+      created: pkg.created,
+      updated: pkg.updated,
+      vulnerabilities: pkg.vulnerabilities,
+      funding: pkg.funding,
+    }));
+    typesenseWorked = true;
   } catch (error) {
-    console.error("Search error:", error);
-    return c.json({ error: "Search failed" }, 500);
+    console.error("Typesense search failed, falling back to npm:", error);
   }
+
+  // Fallback to npm search if Typesense failed or has few results (only on page 1)
+  if (page === 1 && (!typesenseWorked || hits.length < 3)) {
+    const npmResults = await searchNpmRegistry(query, limit);
+
+    if (!typesenseWorked) {
+      // Complete fallback - use npm results only
+      hits = npmResults;
+    } else {
+      // Supplement sparse results - merge with deduplication
+      const existingNames = new Set(hits.map((h) => (h as { name: string }).name));
+      const newHits = npmResults.filter((r) => !existingNames.has(r.name));
+      hits = [...hits, ...newHits].slice(0, limit);
+    }
+  }
+
+  c.header("Cache-Control", CACHE.SEARCH);
+  return c.json({
+    hits,
+    found: hits.length,
+    page,
+  });
 });
 
 // REST API endpoints (for non-MCP clients)
@@ -470,6 +505,160 @@ app.get("/api/package/:name/downloads", async (c) => {
     return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
+  }
+});
+
+// Compare endpoint - package comparisons and alternatives
+// Cloudflare handles caching via Cache-Control headers
+app.get("/api/compare", async (c) => {
+  const packages = c.req.query("packages")?.split(",").filter(Boolean);
+  const category = c.req.query("category");
+  const packageName = c.req.query("package");
+  const listCategories = c.req.query("list") === "categories";
+
+  try {
+    // List all available categories
+    if (listCategories) {
+      const categories: ExtendedCategory[] = SEED_CATEGORIES.map((cat) => ({
+        ...cat,
+        source: "seed" as const,
+        confidence: 1,
+      }));
+
+      c.header("Cache-Control", CACHE.MEDIUM);
+      return c.json({
+        categories: categories.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          keywords: cat.keywords.slice(0, 5),
+          source: cat.source,
+          confidence: cat.confidence,
+        })),
+        curatedCount: CURATED_COMPARISONS.length,
+        seedCategories: categories.length,
+        discoveredCategories: 0,
+        totalCategories: categories.length,
+      });
+    }
+
+    // Get comparison for a specific category
+    if (category) {
+      const curated = getCuratedComparison(category);
+      if (curated) {
+        const comparison = await generateComparison(
+          {
+            category: curated.category,
+            categoryName: curated.categoryName,
+            packages: curated.packages,
+            confidence: 1,
+            discoveredVia: "manual",
+          },
+          fetchPackageMetrics,
+        );
+
+        if (comparison) {
+          c.header("Cache-Control", CACHE.MEDIUM);
+          return c.json(toApiResponse(comparison));
+        }
+
+        c.header("Cache-Control", CACHE.MEDIUM);
+        return c.json(curated);
+      }
+
+      return c.json(
+        { error: "Category not found. Use ?list=categories to see available categories." },
+        404,
+      );
+    }
+
+    // Find alternatives for a specific package
+    if (packageName && !packages) {
+      const metrics = await fetchPackageMetrics(packageName);
+      if (!metrics) {
+        return c.json({ error: "Package not found" }, 404);
+      }
+
+      const categoryId = inferCategory(metrics.keywords);
+      if (!categoryId) {
+        c.header("Cache-Control", CACHE.SHORT);
+        return c.json({
+          package: packageName,
+          category: null,
+          alternatives: [],
+          message: "Could not determine package category from keywords",
+        });
+      }
+
+      const curated = getCuratedComparison(categoryId);
+      if (curated && curated.packages.includes(packageName)) {
+        const comparison = await generateComparison(
+          {
+            category: curated.category,
+            categoryName: curated.categoryName,
+            packages: curated.packages,
+            confidence: 1,
+            discoveredVia: "manual",
+          },
+          fetchPackageMetrics,
+        );
+
+        if (comparison) {
+          c.header("Cache-Control", CACHE.MEDIUM);
+          return c.json({
+            package: packageName,
+            category: categoryId,
+            categoryName: getCategoryName(categoryId),
+            alternatives: comparison.packages
+              .filter((p) => p.name !== packageName)
+              .map((p) => ({
+                name: p.name,
+                score: p.score,
+                badges: p.badges,
+              })),
+            comparison: toApiResponse(comparison),
+          });
+        }
+      }
+
+      c.header("Cache-Control", CACHE.SHORT);
+      return c.json({
+        package: packageName,
+        category: categoryId,
+        categoryName: getCategoryName(categoryId),
+        alternatives: [],
+        message: "No curated comparison available for this category yet",
+      });
+    }
+
+    // Compare specific packages
+    if (packages && packages.length >= 2) {
+      const comparison = await compareSpecificPackages(packages, fetchPackageMetrics);
+
+      if (!comparison) {
+        return c.json({ error: "Could not fetch metrics for the requested packages" }, 400);
+      }
+
+      c.header("Cache-Control", CACHE.MEDIUM);
+      return c.json(toApiResponse(comparison));
+    }
+
+    // Default: return usage info
+    c.header("Cache-Control", CACHE.LONG);
+    return c.json({
+      message: "Package Comparison API",
+      usage: {
+        "List categories": "GET /api/compare?list=categories",
+        "Get category comparison": "GET /api/compare?category=http-client",
+        "Find alternatives": "GET /api/compare?package=axios",
+        "Compare specific packages": "GET /api/compare?packages=axios,got,ky",
+      },
+      availableCategories: SEED_CATEGORIES.slice(0, 10).map((cat) => cat.id),
+      seedCategories: SEED_CATEGORIES.length,
+      totalCategories: SEED_CATEGORIES.length,
+    });
+  } catch (error) {
+    console.error("Compare API error:", error);
+    return c.json({ error: "Failed to generate comparison" }, 500);
   }
 });
 

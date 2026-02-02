@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { searchPackages } from "./api";
+import { fetchAlternatives, searchPackages } from "./api";
 
 export function useSearch(query: string, debounceMs = 100) {
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -23,4 +23,12 @@ export function useSearch(query: string, debounceMs = 100) {
     ...result,
     debouncedQuery,
   };
+}
+
+export function useAlternatives(packageName: string) {
+  return useQuery({
+    queryKey: ["alternatives", packageName],
+    queryFn: () => fetchAlternatives(packageName),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 }

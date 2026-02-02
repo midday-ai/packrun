@@ -296,3 +296,81 @@ export async function fetchReadmeFromCdn(
 
   return null;
 }
+
+// --- Search ---
+
+export interface NpmSearchResult {
+  name: string;
+  description?: string;
+  version: string;
+  downloads: number;
+  hasTypes: boolean;
+  isESM: boolean;
+  isCJS: boolean;
+  author?: string;
+  updated: number;
+}
+
+interface NpmSearchResponse {
+  objects: Array<{
+    package: {
+      name: string;
+      description?: string;
+      version: string;
+      date: string;
+      author?: { name?: string };
+    };
+  }>;
+}
+
+/**
+ * Search npm registry and fetch metadata for results
+ * Used as fallback when Typesense is unavailable or has few results
+ */
+export async function searchNpmRegistry(query: string, limit = 20): Promise<NpmSearchResult[]> {
+  try {
+    const response = await fetch(
+      `${REGISTRY_URL}/-/v1/search?text=${encodeURIComponent(query)}&size=${limit}`,
+    );
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data: NpmSearchResponse = await response.json();
+    const names = data.objects.map((obj) => obj.package.name);
+
+    if (names.length === 0) {
+      return [];
+    }
+
+    // Fetch full metadata + downloads in parallel for rich results
+    const results = await Promise.all(
+      names.map(async (name): Promise<NpmSearchResult | null> => {
+        const [pkg, downloads] = await Promise.all([
+          fetchPackageMetadata(name),
+          fetchDownloads(name),
+        ]);
+
+        if (!pkg) return null;
+
+        return {
+          name: pkg.name,
+          description: pkg.description,
+          version: getLatestVersion(pkg),
+          downloads: downloads?.downloads || 0,
+          hasTypes: hasBuiltInTypes(pkg),
+          isESM: isESM(pkg),
+          isCJS: isCJS(pkg),
+          author: getAuthorName(pkg) || undefined,
+          updated: pkg.time?.modified ? new Date(pkg.time.modified).getTime() : 0,
+        };
+      }),
+    );
+
+    return results.filter((r): r is NpmSearchResult => r !== null);
+  } catch (error) {
+    console.error("[npm] Search fallback failed:", error);
+    return [];
+  }
+}

@@ -8,6 +8,7 @@
 export type {
   NpmDownloadsResponse as DownloadsData,
   NpmPackageMetadata as PackageMetadata,
+  NpmSearchResult,
 } from "@v1/data/npm";
 // Re-export everything from shared package
 // Re-export with API-compatible names
@@ -29,6 +30,7 @@ export {
   isCJS,
   isDeprecated,
   isESM,
+  searchNpmRegistry,
   type NpmDownloadsResponse,
   type NpmPackageMetadata,
   type NpmVersionData,

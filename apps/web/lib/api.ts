@@ -141,6 +141,28 @@ export async function fetchPackageHealth(name: string): Promise<PackageHealthRes
   }
 }
 
+// Alternatives API
+export interface Alternative {
+  name: string;
+  score: number;
+  badges: string[];
+}
+
+export interface AlternativesData {
+  package: string;
+  category: string;
+  categoryName: string;
+  alternatives: Alternative[];
+  message?: string;
+}
+
+export async function fetchAlternatives(packageName: string): Promise<AlternativesData | null> {
+  if (!API_URL) return null;
+  const res = await fetch(`${API_URL}/api/compare?package=${encodeURIComponent(packageName)}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
 // Utils
 export function formatDownloads(num: number): string {
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;

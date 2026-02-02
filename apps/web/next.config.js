@@ -40,26 +40,6 @@ const nextConfig = {
         ],
       },
       {
-        // Search API - short cache
-        source: "/api/search",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, s-maxage=60, stale-while-revalidate=300",
-          },
-        ],
-      },
-      {
-        // Package API - cache for 5 minutes
-        source: "/api/package/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, s-maxage=300, stale-while-revalidate=3600",
-          },
-        ],
-      },
-      {
         // Static assets - cache for 1 year (immutable)
         source: "/_next/static/:path*",
         headers: [

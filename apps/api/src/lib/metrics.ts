@@ -3,31 +3,27 @@
  */
 
 import type { BundleData, PackageMetrics } from "@v1/decisions/schema";
+import { fetchPackageMetadata } from "./clients/npm";
+import { fetchGitHubData } from "./clients/github";
+import { cache, TTL } from "./cache";
 
-const NPM_REGISTRY = "https://registry.npmjs.org";
-const NPM_DOWNLOADS = "https://api.npmjs.org/downloads";
-const GITHUB_API = "https://api.github.com";
 const BUNDLEPHOBIA_API = "https://bundlephobia.com/api/size";
-
-// Simple in-memory cache
-const metricsCache = new Map<string, { data: PackageMetrics; timestamp: number }>();
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const NPM_DOWNLOADS = "https://api.npmjs.org/downloads";
 
 /**
  * Fetch complete metrics for a package
  */
 export async function fetchPackageMetrics(packageName: string): Promise<PackageMetrics | null> {
   // Check cache
-  const cached = metricsCache.get(packageName);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
+  const cacheKey = `pkg:${packageName}:metrics`;
+  const cached = cache.get<PackageMetrics>(cacheKey);
+  if (cached) return cached;
 
   try {
     // Fetch all data in parallel
     const [npmData, downloadData, bundleData] = await Promise.all([
-      fetchNpmData(packageName),
-      fetchDownloadData(packageName),
+      fetchPackageMetadata(packageName),
+      fetchDownloadRange(packageName),
       fetchBundleData(packageName),
     ]);
 
@@ -42,8 +38,8 @@ export async function fetchPackageMetrics(packageName: string): Promise<PackageM
 
     const metrics = buildMetrics(packageName, npmData, downloadData, bundleData, githubData);
 
-    // Cache
-    metricsCache.set(packageName, { data: metrics, timestamp: Date.now() });
+    // Cache for 1 hour
+    cache.set(cacheKey, metrics, TTL.HEALTH);
 
     return metrics;
   } catch (error) {
@@ -53,20 +49,9 @@ export async function fetchPackageMetrics(packageName: string): Promise<PackageM
 }
 
 /**
- * Fetch npm registry data
+ * Fetch download history (90 days)
  */
-async function fetchNpmData(packageName: string) {
-  const res = await fetch(`${NPM_REGISTRY}/${encodeURIComponent(packageName)}`, {
-    headers: { Accept: "application/json" },
-  });
-  if (!res.ok) return null;
-  return res.json();
-}
-
-/**
- * Fetch download history
- */
-async function fetchDownloadData(packageName: string) {
+async function fetchDownloadRange(packageName: string) {
   try {
     const endDate = new Date();
     const startDate = new Date();
@@ -118,58 +103,6 @@ function extractGitHubUrl(repository: string | { url?: string } | undefined): st
   const cleaned = url.replace(/^git\+/, "").replace(/\.git$/, "");
   if (!cleaned.includes("github.com")) return null;
   return cleaned;
-}
-
-/**
- * Parse GitHub URL to owner/repo
- */
-function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
-  const match = url.match(/github\.com\/([^/]+)\/([^/#?]+)/);
-  if (!match) return null;
-  return { owner: match[1], repo: match[2].replace(/\.git$/, "") };
-}
-
-/**
- * Fetch GitHub data
- */
-async function fetchGitHubData(repoUrl: string) {
-  const parsed = parseGitHubUrl(repoUrl);
-  if (!parsed) return null;
-
-  const headers: Record<string, string> = {
-    Accept: "application/vnd.github.v3+json",
-    "User-Agent": "v1.run",
-  };
-  if (process.env.GITHUB_TOKEN) {
-    headers.Authorization = `token ${process.env.GITHUB_TOKEN}`;
-  }
-
-  try {
-    const res = await fetch(`${GITHUB_API}/repos/${parsed.owner}/${parsed.repo}`, { headers });
-    if (!res.ok) return null;
-
-    const data = await res.json();
-
-    // Get recent commits count
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const commitsRes = await fetch(
-      `${GITHUB_API}/repos/${parsed.owner}/${parsed.repo}/commits?since=${sixMonthsAgo.toISOString()}&per_page=100`,
-      { headers },
-    );
-    const commits = commitsRes.ok ? await commitsRes.json() : [];
-
-    return {
-      stars: data.stargazers_count || 0,
-      openIssues: data.open_issues_count || 0,
-      lastCommit: new Date(data.pushed_at),
-      contributors: 0, // Skip for simplicity
-      recentCommits: Array.isArray(commits) ? commits.length : 0,
-    };
-  } catch {
-    return null;
-  }
 }
 
 /**
@@ -232,45 +165,16 @@ function buildMetrics(
     bundleSizeRaw: bundleData?.size || 0,
     treeShakeable: bundleData?.hasJSModule || bundleData?.hasJSNext || false,
     lastCommitDays,
-    recentCommits: githubData?.recentCommits || 0,
-    recentReleases: 0, // Skip for now
+    recentCommits: 0,
+    recentReleases: 0,
     stars: githubData?.stars || 0,
     openIssues: githubData?.openIssues || 0,
-    contributors: githubData?.contributors || 0,
+    contributors: 0,
     hasTypes,
     isESM,
-    securityIssues: 0, // Would need npm audit API
+    securityIssues: 0,
     deprecated: Boolean(npmData.deprecated),
     keywords: npmData.keywords || [],
     updatedAt: new Date(),
   };
-}
-
-/**
- * Batch fetch metrics with rate limiting
- */
-export async function fetchMetricsBatch(
-  packageNames: string[],
-  concurrency = 3,
-): Promise<Map<string, PackageMetrics>> {
-  const results = new Map<string, PackageMetrics>();
-
-  for (let i = 0; i < packageNames.length; i += concurrency) {
-    const batch = packageNames.slice(i, i + concurrency);
-    const promises = batch.map(async (name) => {
-      const metrics = await fetchPackageMetrics(name);
-      if (metrics) {
-        results.set(name, metrics);
-      }
-    });
-
-    await Promise.all(promises);
-
-    // Small delay between batches
-    if (i + concurrency < packageNames.length) {
-      await new Promise((resolve) => setTimeout(resolve, 200));
-    }
-  }
-
-  return results;
 }
