@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema.ts",
+    "./categories": "./src/categories.ts",
     "./comparisons": "./src/comparisons.ts",
     "./health": "./src/health.ts"
   },

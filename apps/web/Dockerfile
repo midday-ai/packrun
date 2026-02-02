@@ -22,6 +22,8 @@ RUN bun install
 FROM base AS builder
 # Copy installed dependencies
 COPY --from=installer /app/node_modules ./node_modules
+# Copy pruned lockfile for turbo workspace resolution
+COPY --from=pruner /app/out/bun.lock ./bun.lock
 # Copy pruned source code
 COPY --from=pruner /app/out/full/ .
 

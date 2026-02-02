@@ -28,6 +28,8 @@ RUN adduser --system --uid 1001 worker
 
 # Copy installed dependencies
 COPY --from=installer /app/node_modules ./node_modules
+# Copy pruned lockfile
+COPY --from=pruner /app/out/bun.lock ./bun.lock
 # Copy pruned source code
 COPY --from=pruner /app/out/full/ .
 
