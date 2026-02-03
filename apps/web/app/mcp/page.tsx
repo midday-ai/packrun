@@ -4,8 +4,24 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "MCP - v1.run",
-  description: "Connect v1.run to your AI agent via Model Context Protocol",
+  title: "Model Context Protocol (MCP) Integration | v1.run",
+  description:
+    "Give your AI agent fast, accurate npm data via MCP. Latest versions, security vulnerabilities, and package health in under 100ms.",
+  alternates: {
+    canonical: "https://v1.run/mcp",
+  },
+  openGraph: {
+    title: "Model Context Protocol (MCP) Integration | v1.run",
+    description:
+      "Give your AI agent fast, accurate npm data via MCP. Latest versions, security vulnerabilities, and package health.",
+    url: "https://v1.run/mcp",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Model Context Protocol (MCP) Integration | v1.run",
+    description:
+      "Give your AI agent fast, accurate npm data via MCP. Latest versions, security vulnerabilities, and package health.",
+  },
 };
 
 // Cursor deeplink - config is base64 encoded JSON: {"url":"https://api.v1.run/mcp"}
