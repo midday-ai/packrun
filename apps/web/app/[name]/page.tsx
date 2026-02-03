@@ -518,17 +518,17 @@ function HealthScoreCell({ score, grade }: { score: number; grade: string }) {
 function getGradeColor(grade: string): string {
   switch (grade) {
     case "A":
-      return "#0fff50"; // laser green
+      return "var(--health-a)";
     case "B":
-      return "#39ff14"; // neon lime
+      return "var(--health-b)";
     case "C":
-      return "#dfff00"; // electric yellow
+      return "var(--health-c)";
     case "D":
-      return "#ff6700"; // blazing orange
+      return "var(--health-d)";
     case "F":
-      return "#ff003c"; // laser red
+      return "var(--health-f)";
     default:
-      return "#ffffff";
+      return "var(--color-foreground)";
   }
 }
 

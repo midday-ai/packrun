@@ -47,6 +47,12 @@ html.dark {
   --popover-foreground: #ffffff;
   --accent: #1a1a1a;
   --accent-foreground: #ffffff;
+  /* Health grade colors - bright neon for dark mode */
+  --health-a: #0fff50;
+  --health-b: #39ff14;
+  --health-c: #dfff00;
+  --health-d: #ff6700;
+  --health-f: #ff003c;
 }
 
 /* Light theme - Old school beige */
@@ -64,6 +70,12 @@ html.light {
   --popover-foreground: #1a1a1a;
   --accent: #d4cfc4;
   --accent-foreground: #1a1a1a;
+  /* Health grade colors - darker, more saturated for light mode */
+  --health-a: #00a844;
+  --health-b: #2d8f0f;
+  --health-c: #b8a000;
+  --health-d: #cc4400;
+  --health-f: #cc0026;
 }
 
 /* Base styles */
