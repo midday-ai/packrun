@@ -38,3 +38,27 @@ export {
   checkVulnerabilities,
   checkVulnerabilitiesSchema,
 } from "./vulnerabilities";
+export {
+  type CheckVersionHealthInput,
+  type CheckVersionHealthResult,
+  checkVersionHealth,
+  checkVersionHealthSchema,
+} from "./version-health";
+export {
+  type GetLatestWithHealthInput,
+  type GetLatestWithHealthResult,
+  getLatestWithHealth,
+  getLatestWithHealthSchema,
+} from "./latest-health";
+export {
+  type AuditOutdatedPackagesInput,
+  type AuditOutdatedPackagesResult,
+  auditOutdatedPackages,
+  auditOutdatedPackagesSchema,
+} from "./outdated-audit";
+export {
+  type SuggestLatestForCategoryInput,
+  type SuggestLatestForCategoryResult,
+  suggestLatestForCategory,
+  suggestLatestForCategorySchema,
+} from "./category-latest";

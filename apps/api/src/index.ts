@@ -35,12 +35,16 @@ import { getReplacementStats, initReplacements } from "./lib/replacements";
 import { getWeeklyDownloads } from "./tools/downloads";
 import { getPackageHealth } from "./tools/health";
 import {
+  auditOutdatedPackages,
   checkDeprecated,
   checkTypes,
+  checkVersionHealth,
   checkVulnerabilities,
   comparePackages,
   findAlternatives,
+  getLatestWithHealth,
   getPackageVersion,
+  suggestLatestForCategory,
 } from "./tools/index";
 import { auth } from "./lib/auth";
 import { db } from "./lib/db";
@@ -241,7 +245,7 @@ function createMcpServer() {
         tools: {},
       },
       instructions:
-        "npm package tools for AI assistants. Use these to check package versions, deprecation status, TypeScript types, security vulnerabilities, and find alternatives.",
+        "npm package tools for AI assistants. Use these tools whenever the user mentions npm packages, asks about choosing between packages, comparing frameworks, or making package decisions. Always use latest versions. Tools check package versions, health scores, security vulnerabilities, and provide upgrade recommendations. When users ask 'should I use X or Y?', 'which package is better?', or 'compare X and Y', use compare_packages or get_package_health to provide data-driven recommendations. Focus on ensuring packages are up-to-date, secure, and well-maintained.",
     },
   );
 
@@ -398,13 +402,15 @@ function createMcpServer() {
     {
       title: "Compare Packages",
       description:
-        "Compare multiple npm packages side by side (downloads, types, ESM support, vulnerabilities)",
+        "Compare multiple npm packages side by side (downloads, types, ESM support, vulnerabilities). Use this tool when users ask 'should I use X or Y?', 'which is better?', 'compare X and Y', or any question about choosing between packages. Essential for framework/library selection questions.",
       inputSchema: {
         packages: z
           .array(z.string())
           .min(2)
           .max(5)
-          .describe("Array of package names to compare (2-5 packages)"),
+          .describe(
+            "Array of package names to compare (2-5 packages). Use when user mentions multiple packages or asks comparison questions.",
+          ),
       },
     },
     async ({ packages }) => {
@@ -433,11 +439,13 @@ function createMcpServer() {
     {
       title: "Get Package Health",
       description:
-        "Get comprehensive package health assessment including security, quality, compatibility, popularity, alternatives, and AI recommendations. This is the primary tool for evaluating npm packages - returns everything in one call.",
+        "Get comprehensive package health assessment including security, quality, compatibility, popularity, alternatives, and AI recommendations. This is the primary tool for evaluating npm packages - returns everything in one call. Use when users ask about a specific package, want to evaluate a package, or need detailed information for decision-making.",
       inputSchema: {
         name: z
           .string()
-          .describe("The npm package name to analyze (e.g., 'lodash', 'express', '@types/react')"),
+          .describe(
+            "The npm package name to analyze (e.g., 'lodash', 'express', '@types/react'). Use whenever a package name is mentioned in the conversation.",
+          ),
       },
     },
     async ({ name }) => {
@@ -449,6 +457,177 @@ function createMcpServer() {
             isError: true,
           };
         }
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // Version health checker tool
+  server.registerTool(
+    "check_version_health",
+    {
+      title: "Check Version Health",
+      description:
+        "Check if a specific package version is latest, secure, and well-maintained. Compares current version against latest and provides upgrade recommendations.",
+      inputSchema: {
+        name: z.string().describe("The npm package name"),
+        version: z
+          .string()
+          .optional()
+          .describe("Current version to check (if not provided, checks latest version)"),
+        checkLatest: z
+          .boolean()
+          .optional()
+          .default(true)
+          .describe("Whether to compare against latest version"),
+      },
+    },
+    async ({ name, version, checkLatest }) => {
+      try {
+        const result = await checkVersionHealth({ name, version, checkLatest });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // Get latest with health tool
+  server.registerTool(
+    "get_latest_with_health",
+    {
+      title: "Get Latest Version with Health",
+      description:
+        "Always get the latest version of a package with comprehensive health check, security status, and safety assessment. Ensures you're using the best version.",
+      inputSchema: {
+        name: z.string().describe("The npm package name"),
+        includeAlternatives: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Include alternative package recommendations"),
+      },
+    },
+    async ({ name, includeAlternatives }) => {
+      try {
+        const result = await getLatestWithHealth({ name, includeAlternatives });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // Audit outdated packages tool
+  server.registerTool(
+    "audit_outdated_packages",
+    {
+      title: "Audit Outdated Packages",
+      description:
+        "Analyze package.json to find outdated packages, security vulnerabilities, and prioritize upgrades. Returns comprehensive audit with actionable recommendations.",
+      inputSchema: {
+        packageJson: z
+          .string()
+          .or(z.record(z.string(), z.unknown()))
+          .describe("package.json content as string or parsed object"),
+        includeDevDependencies: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Check devDependencies too"),
+        minSeverity: z
+          .enum(["low", "moderate", "high", "critical"])
+          .optional()
+          .default("low")
+          .describe("Minimum severity to report"),
+      },
+    },
+    async ({ packageJson, includeDevDependencies, minSeverity }) => {
+      try {
+        const result = await auditOutdatedPackages({
+          packageJson,
+          includeDevDependencies,
+          minSeverity,
+        });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // Suggest latest for category tool
+  server.registerTool(
+    "suggest_latest_for_category",
+    {
+      title: "Suggest Latest Packages for Category",
+      description:
+        "Get latest versions of top packages in a category with health scores and recommendations. Always returns latest versions with safety assessment.",
+      inputSchema: {
+        category: z
+          .string()
+          .describe("Category ID (e.g., 'http-client', 'date-library', 'validation')"),
+        limit: z
+          .number()
+          .min(1)
+          .max(10)
+          .optional()
+          .default(5)
+          .describe("Number of packages to return (1-10)"),
+        minHealthScore: z
+          .number()
+          .min(0)
+          .max(100)
+          .optional()
+          .default(60)
+          .describe("Minimum health score (0-100)"),
+      },
+    },
+    async ({ category, limit, minHealthScore }) => {
+      try {
+        const result = await suggestLatestForCategory({ category, limit, minHealthScore });
         return {
           content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
         };

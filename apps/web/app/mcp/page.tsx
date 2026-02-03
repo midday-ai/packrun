@@ -6,21 +6,21 @@ import { Footer } from "@/components/footer";
 export const metadata: Metadata = {
   title: "Model Context Protocol (MCP) Integration | v1.run",
   description:
-    "Give your AI agent fast, accurate npm data via MCP. Latest versions, security vulnerabilities, and package health in under 100ms.",
+    "Give your AI agent fast, accurate npm data via MCP. Always use latest versions, check security vulnerabilities, and get comprehensive package health assessments.",
   alternates: {
     canonical: "https://v1.run/mcp",
   },
   openGraph: {
     title: "Model Context Protocol (MCP) Integration | v1.run",
     description:
-      "Give your AI agent fast, accurate npm data via MCP. Latest versions, security vulnerabilities, and package health.",
+      "Give your AI agent fast, accurate npm data via MCP. Always use latest versions, check security vulnerabilities, and get comprehensive package health assessments.",
     url: "https://v1.run/mcp",
   },
   twitter: {
     card: "summary_large_image",
     title: "Model Context Protocol (MCP) Integration | v1.run",
     description:
-      "Give your AI agent fast, accurate npm data via MCP. Latest versions, security vulnerabilities, and package health.",
+      "Give your AI agent fast, accurate npm data via MCP. Always use latest versions, check security vulnerabilities, and get comprehensive package health assessments.",
   },
 };
 
@@ -37,8 +37,8 @@ export default function MCPPage() {
       <div className="container-page py-12 flex-1">
         <h1 className="text-2xl font-bold mb-4">Model Context Protocol</h1>
         <p className="text-muted mb-8">
-          Give your AI agent fast, accurate npm data — latest versions, security vulnerabilities,
-          and package health.
+          Give your AI agent fast, accurate npm data — always use latest versions, check security
+          vulnerabilities, and get comprehensive package health assessments.
         </p>
 
         {/* Why */}
@@ -109,25 +109,89 @@ export default function MCPPage() {
         {/* Available Tools */}
         <section className="mb-12">
           <h2 className="text-xs uppercase tracking-widest text-subtle mb-4">Tools</h2>
-          <div className="space-y-4">
-            <div className="border border-border p-4">
-              <h3 className="text-foreground font-medium mb-2">package_health</h3>
-              <p className="text-sm text-muted">
-                Latest version, vulnerabilities, health score, downloads, TypeScript support, and
-                maintenance status.
-              </p>
+
+          {/* Version Intelligence Tools */}
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-foreground mb-3">Version Intelligence</h3>
+            <div className="space-y-4">
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">get_latest_with_health</h4>
+                <p className="text-sm text-muted">
+                  Always get the latest version with comprehensive health check, security status,
+                  and safety assessment. Ensures you're using the best version.
+                </p>
+              </div>
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">check_version_health</h4>
+                <p className="text-sm text-muted">
+                  Check if a specific package version is latest, secure, and well-maintained.
+                  Compares current version against latest with upgrade recommendations.
+                </p>
+              </div>
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">audit_outdated_packages</h4>
+                <p className="text-sm text-muted">
+                  Analyze package.json to find outdated packages, security vulnerabilities, and
+                  prioritize upgrades. Returns comprehensive audit with actionable recommendations.
+                </p>
+              </div>
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">suggest_latest_for_category</h4>
+                <p className="text-sm text-muted">
+                  Get latest versions of top packages in a category with health scores and
+                  recommendations. Always returns latest versions with safety assessment.
+                </p>
+              </div>
             </div>
-            <div className="border border-border p-4">
-              <h3 className="text-foreground font-medium mb-2">search_packages</h3>
-              <p className="text-sm text-muted">
-                Fast search across 3M+ packages. Filter by downloads, types, and category.
-              </p>
-            </div>
-            <div className="border border-border p-4">
-              <h3 className="text-foreground font-medium mb-2">compare_packages</h3>
-              <p className="text-sm text-muted">
-                Side-by-side comparison of health, security, and popularity.
-              </p>
+          </div>
+
+          {/* Package Analysis Tools */}
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-foreground mb-3">Package Analysis</h3>
+            <div className="space-y-4">
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">get_package_health</h4>
+                <p className="text-sm text-muted">
+                  Comprehensive package health assessment including security, quality,
+                  compatibility, popularity, alternatives, and AI recommendations.
+                </p>
+              </div>
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">compare_packages</h4>
+                <p className="text-sm text-muted">
+                  Side-by-side comparison of multiple packages (health, security, popularity, types,
+                  ESM support).
+                </p>
+              </div>
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">find_alternatives</h4>
+                <p className="text-sm text-muted">
+                  Find alternative packages with recommendations for deprecated or outdated
+                  packages.
+                </p>
+              </div>
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">check_vulnerabilities</h4>
+                <p className="text-sm text-muted">
+                  Check for known security vulnerabilities in a package version using OSV database.
+                </p>
+              </div>
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">check_deprecated</h4>
+                <p className="text-sm text-muted">
+                  Check if a package is deprecated and get recommended alternatives.
+                </p>
+              </div>
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">check_types</h4>
+                <p className="text-sm text-muted">
+                  Check if a package has TypeScript types (bundled or via @types package).
+                </p>
+              </div>
+              <div className="border border-border p-4">
+                <h4 className="text-foreground font-medium mb-2">get_package_version</h4>
+                <p className="text-sm text-muted">Get the latest version of an npm package.</p>
+              </div>
             </div>
           </div>
         </section>
