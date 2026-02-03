@@ -11,12 +11,22 @@ const API_DOMAIN = process.env.API_DOMAIN || "https://api.v1.run";
 const WEB_REVALIDATE_URL = process.env.WEB_REVALIDATE_URL;
 const REVALIDATE_SECRET = process.env.REVALIDATE_SECRET;
 
+// Log missing config once at startup
+const cfConfigured = Boolean(CF_ZONE_ID && CF_API_TOKEN);
+const isrConfigured = Boolean(WEB_REVALIDATE_URL && REVALIDATE_SECRET);
+
+if (!cfConfigured) {
+  console.log("[Cache] Cloudflare credentials not configured, cache purge disabled");
+}
+if (!isrConfigured) {
+  console.log("[Cache] ISR revalidation not configured, ISR disabled");
+}
+
 /**
  * Purge all API cache entries for a package from Cloudflare edge
  */
 export async function purgeCloudflareCache(packageName: string): Promise<boolean> {
-  if (!CF_ZONE_ID || !CF_API_TOKEN) {
-    console.warn("[Cache] Cloudflare credentials not configured, skipping purge");
+  if (!cfConfigured) {
     return false;
   }
 
@@ -60,13 +70,12 @@ export async function purgeCloudflareCache(packageName: string): Promise<boolean
  * Revalidate ISR pages for a package in Next.js
  */
 export async function revalidateISR(packageName: string): Promise<boolean> {
-  if (!WEB_REVALIDATE_URL || !REVALIDATE_SECRET) {
-    console.warn("[Cache] ISR revalidation not configured, skipping");
+  if (!isrConfigured) {
     return false;
   }
 
   try {
-    const response = await fetch(WEB_REVALIDATE_URL, {
+    const response = await fetch(WEB_REVALIDATE_URL!, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

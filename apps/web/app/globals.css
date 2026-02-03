@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Source files for Tailwind to scan */
+@source "../components/**/*.tsx";
+@source "../app/**/*.tsx";
+@source "../lib/**/*.ts";
+
 /* Dark mode uses class strategy (for next-themes) */
 @custom-variant dark (&:where(.dark, .dark *));
 

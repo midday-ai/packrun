@@ -58,9 +58,7 @@ function getWeekStart(dateStr: string): string {
 /**
  * Aggregate daily downloads into weekly buckets
  */
-function aggregateToWeeks(
-  downloads: Array<{ day: string; downloads: number }>,
-): WeeklyDataPoint[] {
+function aggregateToWeeks(downloads: Array<{ day: string; downloads: number }>): WeeklyDataPoint[] {
   const weekMap = new Map<string, { start: string; end: string; downloads: number }>();
 
   for (const { day, downloads: count } of downloads) {
@@ -88,6 +86,14 @@ function aggregateToWeeks(
 }
 
 /**
+ * Check if a week is complete (has all 7 days of data up to yesterday)
+ */
+function isWeekComplete(weekEnd: string, yesterday: string): boolean {
+  // A week is complete if its end date is on or before yesterday
+  return weekEnd <= yesterday;
+}
+
+/**
  * Fetch weekly download history for a package
  *
  * @param name - Package name
@@ -99,7 +105,7 @@ export async function getWeeklyDownloads(
 ): Promise<WeeklyDownloadsResponse | null> {
   try {
     // Calculate date range (weeks * 7 days + buffer for partial weeks)
-    const days = weeks * 7 + 7;
+    const days = weeks * 7 + 14; // Extra buffer to ensure we get enough complete weeks
     const startDate = getDateNDaysAgo(days);
     const endDate = getDateNDaysAgo(1); // Yesterday (npm data has 1-day lag)
 
@@ -118,8 +124,11 @@ export async function getWeeklyDownloads(
     // Aggregate into weeks
     const weeklyData = aggregateToWeeks(data.downloads);
 
+    // Filter out incomplete weeks (current week that hasn't ended yet)
+    const completeWeeks = weeklyData.filter((week) => isWeekComplete(week.end, endDate));
+
     // Take only the requested number of weeks (most recent)
-    const recentWeeks = weeklyData.slice(-weeks);
+    const recentWeeks = completeWeeks.slice(-weeks);
 
     // Calculate total
     const total = recentWeeks.reduce((sum, week) => sum + week.downloads, 0);

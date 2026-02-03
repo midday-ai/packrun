@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Footer } from "@/components/footer";
 import { Spinner } from "@/components/ui/spinner";
 import { useSearch } from "@/lib/hooks";
 import { formatDownloads } from "@/lib/api";
@@ -150,7 +151,7 @@ export default function Home() {
   const hasSearched = isFetched && debouncedQuery.length > 0;
 
   return (
-    <div className="min-h-screen h-screen bg-background text-foreground font-mono relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground font-mono relative">
       {/* Screen flicker */}
       <div className="screen-flicker" />
 
@@ -160,9 +161,12 @@ export default function Home() {
       </div>
 
       {/* Content */}
-      <main className="relative z-10 h-screen flex flex-col">
+      <main className="relative z-10 min-h-screen flex flex-col">
         {/* Main content - centered */}
-        <div className="flex-1 flex flex-col items-center justify-center -mt-8">
+        <div
+          className="flex-1 flex flex-col items-center justify-center"
+          style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+        >
           {/* Logo */}
           <Image
             src="/logo.svg"
@@ -174,7 +178,7 @@ export default function Home() {
           />
 
           {/* Tagline */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 mt-4">
             <h1 className="text-xl text-foreground">npm for agents</h1>
             <p className="text-sm text-muted mt-2">
               MCP-first. Security signals. &lt;100ms globally.
@@ -289,6 +293,8 @@ export default function Home() {
             )}
           </div>
         </div>
+
+        <Footer />
       </main>
 
       <style jsx global>{`

@@ -235,7 +235,7 @@ export default async function PackagePage({ params }: PageProps) {
         )}
 
         {/* Main Content */}
-        <div className="container-page">
+        <div className="container-page" style={{ paddingBottom: "150px" }}>
           <div className="flex flex-col lg:flex-row">
             {/* Left: Main Content */}
             <div className="flex-1 min-w-0 lg:border-r border-border">

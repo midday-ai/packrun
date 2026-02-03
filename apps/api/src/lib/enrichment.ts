@@ -249,7 +249,17 @@ export interface WeeklyDownloads {
 }
 
 /**
+ * Get date string for N days ago (YYYY-MM-DD)
+ */
+function getDateDaysAgo(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString().split("T")[0]!;
+}
+
+/**
  * Fetch live weekly downloads from npm API with caching
+ * Uses 7-day range ending yesterday to avoid incomplete today data
  */
 export async function getWeeklyDownloads(packageName: string): Promise<number> {
   const cacheKey = `pkg:${packageName}:downloads`;
@@ -259,8 +269,12 @@ export async function getWeeklyDownloads(packageName: string): Promise<number> {
   if (cached) return cached.downloads;
 
   try {
+    // Use date range: 7 days ago to yesterday (7 full days, excluding today)
+    const startDate = getDateDaysAgo(7);
+    const endDate = getDateDaysAgo(1);
+
     const response = await fetch(
-      `https://api.npmjs.org/downloads/point/last-week/${encodeURIComponent(packageName)}`,
+      `https://api.npmjs.org/downloads/point/${startDate}:${endDate}/${encodeURIComponent(packageName)}`,
     );
 
     if (!response.ok) return 0;
