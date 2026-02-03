@@ -6,7 +6,6 @@ const PACKAGE_MANAGERS = ["npm", "pnpm", "yarn", "bun", "deno", "vlt"] as const;
 type PackageManager = (typeof PACKAGE_MANAGERS)[number];
 
 const STORAGE_KEY = "v1.run:pm";
-const COMBINE_KEY = "v1.run:combine";
 
 function getStoredPm(): PackageManager {
   if (typeof window === "undefined") return "npm";
@@ -17,13 +16,6 @@ function getStoredPm(): PackageManager {
   return "npm";
 }
 
-function getStoredCombine(): boolean {
-  if (typeof window === "undefined") return true;
-  const stored = localStorage.getItem(COMBINE_KEY);
-  if (stored === "false") return false;
-  return true; // default to combined
-}
-
 interface InstallTabsProps {
   packageName: string;
   hasTypes?: boolean;
@@ -31,7 +23,6 @@ interface InstallTabsProps {
 
 export function InstallTabs({ packageName, hasTypes }: InstallTabsProps) {
   const [pm, setPm] = useState<PackageManager>("npm");
-  const [combine, setCombine] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -39,7 +30,6 @@ export function InstallTabs({ packageName, hasTypes }: InstallTabsProps) {
   // Load saved preferences on mount
   useEffect(() => {
     setPm(getStoredPm());
-    setCombine(getStoredCombine());
   }, []);
 
   // Close dropdown when clicking outside
@@ -60,13 +50,7 @@ export function InstallTabs({ packageName, hasTypes }: InstallTabsProps) {
     setIsOpen(false);
   };
 
-  const handleCombineToggle = () => {
-    const newValue = !combine;
-    setCombine(newValue);
-    localStorage.setItem(COMBINE_KEY, String(newValue));
-  };
-
-  const commands = getCommands(pm, packageName, hasTypes, combine);
+  const commands = getCommands(pm, packageName, hasTypes, false);
 
   const handleCopy = async (cmd: string) => {
     await navigator.clipboard.writeText(cmd);
@@ -83,20 +67,6 @@ export function InstallTabs({ packageName, hasTypes }: InstallTabsProps) {
         <span className="text-xs uppercase tracking-widest text-subtle">install</span>
 
         <div className="flex items-center gap-2">
-          {/* Combine toggle - only show when types are needed */}
-          {needsTypes && (
-            <button
-              onClick={handleCombineToggle}
-              className={`px-2 py-1 text-xs tracking-wide border transition-all ${
-                combine
-                  ? "border-faint text-muted hover:text-foreground hover:border-subtle"
-                  : "border-faint text-subtle hover:text-muted hover:border-subtle"
-              }`}
-            >
-              {combine ? "combined" : "separate"}
-            </button>
-          )}
-
           {/* Package manager dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button

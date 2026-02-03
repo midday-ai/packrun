@@ -118,40 +118,28 @@ export default function UpdatesPage() {
 
         {/* Terminal */}
         <main className="crt-terminal">
-          <div className="terminal-frame">
-            {/* Title bar */}
-            <div className="terminal-titlebar">
-              <span className="terminal-title">
-                NPM LIVE FEED — STREAMING FROM REGISTRY.NPMJS.ORG
-              </span>
+          {packages.length === 0 ? (
+            <div className="terminal-line waiting">
+              &gt; WAITING FOR INCOMING PACKAGES...<span className="cursor">█</span>
             </div>
-
-            {/* Content area */}
-            <div className="terminal-body">
-              {packages.length === 0 ? (
-                <div className="terminal-line waiting">
-                  &gt; WAITING FOR INCOMING PACKAGES...<span className="cursor">█</span>
-                </div>
-              ) : (
-                packages.map((pkg, index) => (
-                  <div
-                    key={pkg.id}
-                    className="terminal-line"
-                    style={{
-                      opacity: Math.max(0.25, 1 - index * 0.02),
-                    }}
-                  >
-                    <span className="time">[{formatTime(pkg.timestamp)}]</span>
-                    <span className="prompt"> &gt; </span>
-                    <span className="cmd">PUBLISH </span>
-                    <Link href={`/${encodeURIComponent(pkg.name)}`} className="package-name">
-                      {pkg.name}
-                    </Link>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          ) : (
+            packages.map((pkg, index) => (
+              <div
+                key={pkg.id}
+                className="terminal-line"
+                style={{
+                  opacity: Math.max(0.25, 1 - index * 0.02),
+                }}
+              >
+                <span className="time">[{formatTime(pkg.timestamp)}]</span>
+                <span className="prompt"> &gt; </span>
+                <span className="cmd">PUBLISH </span>
+                <Link href={`/${encodeURIComponent(pkg.name)}`} className="package-name">
+                  {pkg.name}
+                </Link>
+              </div>
+            ))
+          )}
         </main>
 
         {/* Footer */}
@@ -166,8 +154,8 @@ export default function UpdatesPage() {
       <style jsx global>{`
         .crt-screen {
           min-height: 100vh;
-          background: #050505;
-          color: #ffffff;
+          background: var(--bg);
+          color: var(--fg);
           font-family: var(--font-mono), 'Courier New', monospace;
           position: relative;
           overflow: hidden;
@@ -181,10 +169,10 @@ export default function UpdatesPage() {
           z-index: 100;
           background: repeating-linear-gradient(
             0deg,
-            rgba(0, 0, 0, 0) 0px,
-            rgba(0, 0, 0, 0) 1px,
-            rgba(0, 0, 0, 0.3) 1px,
-            rgba(0, 0, 0, 0.3) 2px
+            transparent 0px,
+            transparent 1px,
+            var(--scanline) 1px,
+            var(--scanline) 2px
           );
           animation: scanlines 8s linear infinite;
         }
@@ -218,7 +206,14 @@ export default function UpdatesPage() {
           height: 100vh;
           display: flex;
           flex-direction: column;
+        }
+
+        html.dark .crt-content {
           text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+        }
+
+        html.light .crt-content {
+          text-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
         }
 
         @media (min-width: 640px) {
@@ -229,12 +224,12 @@ export default function UpdatesPage() {
 
         .crt-header {
           padding: 10px 0;
-          border-bottom: 1px solid #333;
+          border-bottom: 1px solid var(--border);
           flex-shrink: 0;
         }
 
         .crt-link {
-          color: #fff;
+          color: var(--fg);
           text-decoration: none;
         }
 
@@ -251,38 +246,11 @@ export default function UpdatesPage() {
           flex-direction: column;
           min-height: 0;
           margin-top: 20px;
-        }
-
-        .terminal-frame {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          min-height: 0;
-          border: 1px solid #444;
-        }
-
-        .terminal-titlebar {
-          padding: 8px 16px;
-          border-bottom: 1px solid #444;
-          text-align: center;
-          flex-shrink: 0;
-        }
-
-        .terminal-title {
-          color: #666;
-          font-size: 12px;
-          letter-spacing: 1px;
-        }
-
-        .terminal-body {
-          flex: 1;
           overflow-y: auto;
           scrollbar-width: none;
-          padding: 12px 16px;
-          min-height: 0;
         }
 
-        .terminal-body::-webkit-scrollbar {
+        .crt-terminal::-webkit-scrollbar {
           display: none;
         }
 
@@ -301,30 +269,37 @@ export default function UpdatesPage() {
         }
 
         .terminal-line.waiting {
-          color: #666;
+          color: var(--subtle);
         }
 
         .terminal-line .time {
-          color: #555;
+          color: var(--faint);
         }
 
         .terminal-line .prompt {
-          color: #666;
+          color: var(--subtle);
         }
 
         .terminal-line .cmd {
-          color: #777;
+          color: var(--muted);
         }
 
         .terminal-line .package-name {
-          color: #fff;
+          color: var(--fg);
           text-decoration: none;
         }
 
         .terminal-line .package-name:hover {
-          color: #fff;
+          color: var(--fg);
           text-decoration: underline;
+        }
+
+        html.dark .terminal-line .package-name:hover {
           text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+        }
+
+        html.light .terminal-line .package-name:hover {
+          text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
         }
 
         .cursor {
@@ -342,20 +317,24 @@ export default function UpdatesPage() {
 
         .crt-footer {
           padding: 10px 0;
-          border-top: 1px solid #333;
+          border-top: 1px solid var(--border);
           display: flex;
           justify-content: space-between;
-          color: #444;
+          color: var(--subtle);
           font-size: 12px;
           flex-shrink: 0;
           margin-top: auto;
         }
 
-        /* Phosphor glow on text */
-        .crt-content * {
+        /* Phosphor glow on text - dark mode only */
+        html.dark .crt-content * {
           text-shadow: 
             0 0 1px rgba(255, 255, 255, 0.3),
             0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        html.light .crt-content * {
+          text-shadow: none;
         }
 
         /* New line animation */

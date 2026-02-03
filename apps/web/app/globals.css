@@ -75,12 +75,18 @@ html.light {
   html {
     background: var(--color-background);
     color: var(--color-foreground);
+    scrollbar-gutter: stable;
+    /* Force scrollbar space to always be reserved */
+    overflow-y: scroll;
   }
 
   body {
     font-family: var(--font-mono);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Ensure body doesn't interfere */
+    margin: 0;
+    padding: 0;
   }
 
   /* Selection - dark mode */
@@ -176,6 +182,24 @@ html.light {
 
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Toast positioning - fixed and consistent */
+  .crt-toast {
+    position: fixed !important;
+    bottom: 1rem !important;
+    right: 20px !important;
+    z-index: 50 !important;
+    display: none !important;
+    /* Ensure it's always positioned relative to viewport */
+    margin: 0 !important;
+    transform: translateZ(0) !important;
+  }
+
+  @media (min-width: 768px) {
+    .crt-toast {
+      display: block !important;
+    }
   }
 }
 

@@ -143,11 +143,14 @@ function healthToPackageData(health: PackageHealthResponse): PackageData {
 async function getPackageFromNpm(name: string): Promise<PackageData | null> {
   try {
     // Fetch package metadata from npm
+    // Note: Large packages (>2MB) can't be cached by Next.js, which is fine
     const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, {
       headers: {
         Accept: "application/json",
       },
-      next: { revalidate: 86400 }, // 24h - warning for >2MB packages is expected
+      // Disable caching for large packages to avoid errors
+      // The API layer handles caching instead
+      cache: "no-store",
     });
 
     if (!response.ok) {

@@ -52,16 +52,22 @@ export function MCPToast() {
   if (!mounted || !visible) return null;
 
   return (
-    <div
-      className={`fixed bottom-4 right-4 z-50 font-mono crt-toast ${isGlitchingIn ? "glitch-in" : ""} ${glitchClass}`}
-    >
+    <div className={`font-mono crt-toast ${isGlitchingIn ? "glitch-in" : ""} ${glitchClass}`}>
       <style jsx global>{`
-        /* CRT Toast container */
-        .crt-toast {
+        /* CRT Toast container - Dark mode */
+        html.dark .crt-toast {
           --crt-color: #a3a3a3;
           --crt-color-dim: #737373;
           --crt-color-glow: rgba(163, 163, 163, 0.4);
           --crt-bg: #0a0a0a;
+        }
+        
+        /* CRT Toast container - Light mode */
+        html.light .crt-toast {
+          --crt-color: #3a3a3a;
+          --crt-color-dim: #6b6b6b;
+          --crt-color-glow: rgba(58, 58, 58, 0.25);
+          --crt-bg: #f5f0e6;
         }
         
         /* Glitch-in animation */
@@ -127,20 +133,20 @@ export function MCPToast() {
           }
           10% {
             text-shadow: 
-              -2px 0 rgba(255,255,255,0.5),
-              2px 0 rgba(255,255,255,0.3),
+              -2px 0 var(--crt-color-glow),
+              2px 0 var(--crt-color-glow),
               0 0 6px var(--crt-color-glow);
           }
           20% {
             text-shadow: 
-              1px 0 rgba(255,255,255,0.4),
-              -1px 0 rgba(255,255,255,0.4),
+              1px 0 var(--crt-color-glow),
+              -1px 0 var(--crt-color-glow),
               0 0 6px var(--crt-color-glow);
           }
           30% {
             text-shadow: 
-              -1px 0 rgba(255,255,255,0.3),
-              1px 0 rgba(255,255,255,0.5),
+              -1px 0 var(--crt-color-glow),
+              1px 0 var(--crt-color-glow),
               0 0 6px var(--crt-color-glow);
           }
           50% {
@@ -192,18 +198,28 @@ export function MCPToast() {
         }
         
         /* CRT screen effect */
-        .crt-screen {
+        .crt-toast-screen {
           background: var(--crt-bg);
           border: 1px solid var(--crt-color-dim);
-          box-shadow: 
-            0 0 10px rgba(163, 163, 163, 0.1),
-            inset 0 0 30px rgba(0, 0, 0, 0.5);
           position: relative;
           overflow: hidden;
         }
         
+        html.dark .crt-toast-screen {
+          box-shadow: 
+            0 0 10px rgba(163, 163, 163, 0.1),
+            inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        html.light .crt-toast-screen {
+          box-shadow: 
+            0 0 10px rgba(58, 58, 58, 0.12),
+            inset 0 0 30px rgba(0, 0, 0, 0.08),
+            0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
         /* Scanlines */
-        .crt-screen::before {
+        html.dark .crt-toast-screen::before {
           content: '';
           position: absolute;
           inset: 0;
@@ -218,8 +234,23 @@ export function MCPToast() {
           z-index: 10;
         }
         
+        html.light .crt-toast-screen::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 6px,
+            rgba(0, 0, 0, 0.05) 6px,
+            rgba(0, 0, 0, 0.05) 7px
+          );
+          pointer-events: none;
+          z-index: 10;
+        }
+        
         /* Screen glow/vignette */
-        .crt-screen::after {
+        html.dark .crt-toast-screen::after {
           content: '';
           position: absolute;
           inset: 0;
@@ -227,6 +258,19 @@ export function MCPToast() {
             ellipse at center,
             transparent 50%,
             rgba(0, 0, 0, 0.4) 100%
+          );
+          pointer-events: none;
+          z-index: 11;
+        }
+        
+        html.light .crt-toast-screen::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(
+            ellipse at center,
+            transparent 50%,
+            rgba(0, 0, 0, 0.15) 100%
           );
           pointer-events: none;
           z-index: 11;
@@ -242,7 +286,14 @@ export function MCPToast() {
         
         .crt-text-dim {
           color: var(--crt-color-dim);
+        }
+        
+        html.dark .crt-text-dim {
           text-shadow: 0 0 4px rgba(163, 163, 163, 0.2);
+        }
+        
+        html.light .crt-text-dim {
+          text-shadow: 0 0 1px rgba(58, 58, 58, 0.2);
         }
         
         /* Moving scanline */
@@ -256,15 +307,27 @@ export function MCPToast() {
           left: 0;
           right: 0;
           height: 4px;
+          animation: scanline 3s linear infinite;
+          pointer-events: none;
+          z-index: 5;
+        }
+        
+        html.dark .crt-scanline {
           background: linear-gradient(
             to bottom,
             transparent,
             rgba(255, 255, 255, 0.05),
             transparent
           );
-          animation: scanline 3s linear infinite;
-          pointer-events: none;
-          z-index: 5;
+        }
+        
+        html.light .crt-scanline {
+          background: linear-gradient(
+            to bottom,
+            transparent,
+            rgba(0, 0, 0, 0.06),
+            transparent
+          );
         }
         
         /* Button styles */
@@ -276,13 +339,19 @@ export function MCPToast() {
           transition: all 0.15s;
         }
         
-        .crt-button:hover {
+        html.dark .crt-button:hover {
           background: rgba(255, 255, 255, 0.05);
           box-shadow: 0 0 8px rgba(163, 163, 163, 0.2);
         }
+        
+        html.light .crt-button:hover {
+          background: rgba(0, 0, 0, 0.06);
+          box-shadow: 0 0 8px rgba(58, 58, 58, 0.2);
+          border-color: var(--crt-color);
+        }
       `}</style>
 
-      <div className="crt-screen p-4 max-w-[340px]">
+      <div className="crt-toast-screen p-4 max-w-[340px]">
         {/* Moving scanline */}
         <div className="crt-scanline" />
 
