@@ -10,7 +10,7 @@
  * See CLOUDFLARE_MCP_FIX.md for setup instructions.
  *
  * Reliability improvements:
- * - Keep-alive pings every 30 seconds to prevent idle timeouts
+ * - Keep-alive pings every 15 seconds to prevent idle timeouts (same as updates endpoint)
  * - Better error handling and connection management
  * - Railway 5-minute timeout awareness
  */
@@ -22,22 +22,22 @@ import { createMcpServer } from "../mcp/server";
 /**
  * Wrap SSE stream with keep-alive pings to prevent idle timeouts
  * Railway has a 5-minute HTTP timeout, but keep-alive helps with intermediate timeouts
+ * Uses 15-second interval (same as updates endpoint) to prevent any proxy/router timeouts
  *
  * Uses ReadableStream with manual forwarding for better control
  */
 function addKeepAlive(stream: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
   const reader = stream.getReader();
-  let lastActivity = Date.now();
   let pingInterval: ReturnType<typeof setInterval> | null = null;
   let isStreamActive = true;
 
   return new ReadableStream({
     start(controller) {
-      // Send keep-alive ping every 30 seconds during idle periods
+      // Send keep-alive ping every 15 seconds (same as updates endpoint)
+      // This prevents Railway and intermediate proxies from timing out the connection
       pingInterval = setInterval(() => {
-        if (isStreamActive && Date.now() - lastActivity > 25000) {
-          // Only ping if no activity in last 25 seconds (to avoid pinging during active communication)
+        if (isStreamActive) {
           try {
             // SSE comment (ping) - doesn't trigger events but keeps connection alive
             controller.enqueue(encoder.encode(`: keep-alive\n\n`));
@@ -47,7 +47,7 @@ function addKeepAlive(stream: ReadableStream<Uint8Array>): ReadableStream<Uint8A
             if (pingInterval) clearInterval(pingInterval);
           }
         }
-      }, 30000); // Check every 30 seconds
+      }, 15000); // Ping every 15 seconds (same as updates endpoint)
 
       // Forward original stream data
       const pump = async () => {
@@ -60,8 +60,7 @@ function addKeepAlive(stream: ReadableStream<Uint8Array>): ReadableStream<Uint8A
               controller.close();
               break;
             }
-            // Update activity timestamp when we receive data
-            lastActivity = Date.now();
+            // Forward original data
             controller.enqueue(value);
           }
         } catch (error) {
