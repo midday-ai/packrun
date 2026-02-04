@@ -1,16 +1,15 @@
 /**
  * MCP Route
  *
- * Model Context Protocol endpoint with connection reuse for reliability.
- * Maintains a single server instance and reuses transport connections
- * to avoid connection state issues after batches of tool calls.
+ * Model Context Protocol endpoint for stateless operation.
+ * Creates fresh server + transport per request to avoid conflicts
+ * when multiple clients connect simultaneously.
  *
  * This endpoint should be served on a separate subdomain (e.g., mcp.v1.run)
  * that bypasses Cloudflare proxy to avoid SSE timeout issues.
  * See CLOUDFLARE_MCP_FIX.md for setup instructions.
  *
  * Reliability improvements:
- * - Connection reuse: Single server instance, transport per session
  * - Keep-alive pings every 30 seconds to prevent idle timeouts
  * - Better error handling and connection management
  * - Railway 5-minute timeout awareness
@@ -19,17 +18,6 @@
 import { Hono } from "hono";
 import { StreamableHTTPTransport } from "@hono/mcp";
 import { createMcpServer } from "../mcp/server";
-
-// Maintain a single MCP server instance for connection reuse
-// This prevents connection state corruption after batches of tool calls
-let mcpServerInstance: ReturnType<typeof createMcpServer> | null = null;
-
-function getMcpServer(): ReturnType<typeof createMcpServer> {
-  if (!mcpServerInstance) {
-    mcpServerInstance = createMcpServer();
-  }
-  return mcpServerInstance;
-}
 
 /**
  * Wrap SSE stream with keep-alive pings to prevent idle timeouts
@@ -101,22 +89,10 @@ export function createMcpRoutes() {
 
   app.all("/mcp", async (c) => {
     try {
-      // Get or create the shared MCP server instance
-      const mcpServer = getMcpServer();
-
-      // Create a fresh transport per request
-      // StreamableHTTPTransport is designed to handle requests statelessly
+      // Create fresh server and transport per request to avoid conflicts
+      // This ensures clean state for each request and prevents connection state corruption
+      const mcpServer = createMcpServer();
       const transport = new StreamableHTTPTransport();
-
-      // Connect server to transport
-      // If server was connected to a previous transport, disconnect first to avoid state conflicts
-      if (mcpServer.isConnected()) {
-        try {
-          await mcpServer.close();
-        } catch {
-          // Ignore close errors - transport might already be closed
-        }
-      }
 
       await mcpServer.connect(transport);
 
@@ -145,13 +121,6 @@ export function createMcpRoutes() {
       });
     } catch (error) {
       console.error("[MCP] Error handling request:", error);
-
-      // On error, reset the server instance to force reconnection on next request
-      // This helps recover from connection state corruption
-      if (error instanceof Error && error.message.includes("connection")) {
-        mcpServerInstance = null;
-      }
-
       return c.json(
         {
           error: "Internal server error",
