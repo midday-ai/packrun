@@ -16,6 +16,10 @@ import { getStaticPackages } from "@/lib/popular-packages";
 // ISR: Revalidate pages every 24 hours (on-demand revalidation handles updates)
 export const revalidate = 86400;
 
+// Allow on-demand generation for routes not in generateStaticParams
+// This enables ISR for routes visited for the first time
+export const dynamicParams = true;
+
 interface PageProps {
   params: Promise<{ name: string }>;
 }

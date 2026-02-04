@@ -20,12 +20,13 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Package pages - cache for 1 hour, serve stale for up to 1 day while revalidating
+        // Package pages - cache for 24 hours, serve stale for up to 24 hours while revalidating
+        // On-demand revalidation handles updates immediately
         source: "/:name",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+            value: "public, s-maxage=86400, stale-while-revalidate=86400",
           },
         ],
       },
