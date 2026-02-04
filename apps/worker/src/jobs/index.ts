@@ -9,11 +9,9 @@ import {
   NPM_SYNC_QUEUE,
   type SyncJobData,
 } from "@v1/queue/npm-sync";
-import { createBackfillWorker, getBackfillStatus } from "./backfill";
 import { processBulkSyncJob, processSyncJob } from "./npm-sync";
 
 export { getCombinedStats as getQueueStats } from "./npm-sync";
-export { getBackfillStatus } from "./backfill";
 
 export function createWorkers() {
   const syncWorker = createWorker<SyncJobData>(NPM_SYNC_QUEUE, processSyncJob, {
@@ -23,10 +21,8 @@ export function createWorkers() {
 
   const bulkSyncWorker = createWorker<BulkSyncJobData>(NPM_BULK_SYNC_QUEUE, processBulkSyncJob, {
     concurrency: 2,
-    limiter: { max: 50, duration: 60000 }, // 50 jobs/min = 2,500 pkg/min (~42 npm req/sec)
+    limiter: { max: 50, duration: 60000 },
   });
-
-  const backfillWorker = createBackfillWorker();
 
   syncWorker.on("failed", (job, error) => {
     console.error(`[${job?.id}] Failed:`, error.message);
@@ -51,11 +47,9 @@ export function createWorkers() {
   return {
     syncWorker,
     bulkSyncWorker,
-    backfillWorker,
     async close() {
       await syncWorker.close();
       await bulkSyncWorker.close();
-      await backfillWorker.close();
     },
   };
 }

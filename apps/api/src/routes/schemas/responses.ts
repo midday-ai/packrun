@@ -394,56 +394,6 @@ export const FavoriteCheckResponseSchema = z
   .openapi("FavoriteCheckResponse");
 
 // =============================================================================
-// Backfill
-// =============================================================================
-
-export const BackfillStateSchema = z.object({
-  status: z.enum(["idle", "running", "paused", "completed", "error"]),
-  offset: z.number(),
-  total: z.number(),
-  synced: z.number(),
-  failed: z.number(),
-  startedAt: z.number(),
-  updatedAt: z.number(),
-  rate: z.number(),
-  error: z.string().optional(),
-});
-
-export const BackfillStatusResponseSchema = z
-  .object({
-    status: z.enum(["idle", "running", "paused", "completed", "error"]),
-    offset: z.number(),
-    total: z.number(),
-    synced: z.number(),
-    failed: z.number(),
-    startedAt: z.number(),
-    updatedAt: z.number(),
-    rate: z.number(),
-    error: z.string().optional(),
-    queue: z.object({
-      waiting: z.number(),
-      active: z.number(),
-      completed: z.number(),
-      failed: z.number(),
-      totalJobs: z.number(),
-    }),
-    processed: z.number(),
-    processingProgress: z.string(),
-    processingRate: z.string(),
-    elapsed: z.string(),
-    eta: z.string(),
-    remaining: z.number(),
-  })
-  .openapi("BackfillStatusResponse");
-
-export const BackfillActionResponseSchema = z
-  .object({
-    message: z.string(),
-    state: BackfillStateSchema,
-  })
-  .openapi("BackfillActionResponse");
-
-// =============================================================================
 // Compare API (complex)
 // =============================================================================
 

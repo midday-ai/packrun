@@ -5,8 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./npm-sync": "./src/npm-sync.ts",
-    "./backfill": "./src/backfill.ts"
+    "./npm-sync": "./src/npm-sync.ts"
   },
   "dependencies": {
     "bullmq": "^5.67.2"

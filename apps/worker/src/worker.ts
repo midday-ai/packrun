@@ -8,23 +8,16 @@
 import { getConnectionInfo } from "@v1/queue";
 import { ensureCollection } from "./clients/typesense";
 import { config } from "./config";
-import { createWorkers, getBackfillStatus, getQueueStats } from "./jobs";
+import { createWorkers, getQueueStats } from "./jobs";
 
 let workers: ReturnType<typeof createWorkers> | null = null;
 
 async function logStats() {
   const stats = await getQueueStats();
-  const backfill = await getBackfillStatus();
-
-  let backfillInfo = `Backfill: ${backfill.status}`;
-  if (backfill.status === "running" || backfill.status === "paused") {
-    backfillInfo += ` (${backfill.progress}, ${backfill.offset.toLocaleString()}/${backfill.total.toLocaleString()})`;
-  }
 
   console.log(
     `[Stats] Sync: ${stats.sync.waiting} waiting, ${stats.sync.active} active, ${stats.sync.failed} failed | ` +
-      `Bulk: ${stats.bulk.waiting} waiting, ${stats.bulk.active} active | ` +
-      backfillInfo,
+      `Bulk: ${stats.bulk.waiting} waiting, ${stats.bulk.active} active`,
   );
 }
 
