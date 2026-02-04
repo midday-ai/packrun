@@ -36,9 +36,10 @@ export interface CheckDeprecatedResult {
 
 export async function checkDeprecated(input: CheckDeprecatedInput): Promise<CheckDeprecatedResult> {
   // Try Typesense first for deprecation status
+  // Verify exact name match to avoid tokenization issues (e.g., "react" vs "re-act")
   const typesensePkg = await getTypesensePackage(input.name);
 
-  if (typesensePkg) {
+  if (typesensePkg && typesensePkg.name === input.name) {
     // Check module-replacements for native alternatives (instant O(1))
     const replacement = formatReplacement(input.name);
 

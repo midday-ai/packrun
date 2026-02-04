@@ -24,8 +24,9 @@ export async function getPackageVersion(
   input: GetPackageVersionInput,
 ): Promise<GetPackageVersionResult> {
   // Try Typesense first (O(1) indexed lookup)
+  // Verify exact name match to avoid tokenization issues (e.g., "react" vs "re-act")
   const typesensePkg = await getTypesensePackage(input.name);
-  if (typesensePkg) {
+  if (typesensePkg && typesensePkg.name === input.name) {
     return {
       name: typesensePkg.name,
       version: typesensePkg.version,
