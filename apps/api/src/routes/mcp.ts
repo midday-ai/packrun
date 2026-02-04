@@ -27,35 +27,24 @@ export function createMcpRoutes() {
       return c.json({ error: "Failed to handle MCP request" }, 500);
     }
 
-    // Clone response with Cloudflare-compatible headers
+    // Clone response with Cloudflare-compatible headers for SSE streaming
+    // These headers match the working /api/updates/stream endpoint exactly
     const headers = new Headers(response.headers);
 
     // Ensure Content-Type is set for SSE (StreamableHTTPTransport uses SSE for streaming)
-    const contentType = headers.get("Content-Type");
-    if (!contentType || !contentType.includes("event-stream")) {
-      headers.set("Content-Type", "text/event-stream");
-    }
+    headers.set("Content-Type", "text/event-stream");
 
-    // Prevent Cloudflare from caching/buffering the streaming connection
-    // Note: Cloudflare doesn't cache POST requests by default anyway
-    // We rely on in-memory LRU cache in tool functions for fast responses
+    // Critical: Prevent Cloudflare from buffering/caching SSE streams
+    // These headers MUST be set to prevent Bad Gateway errors
     headers.set("Cache-Control", "no-cache, no-store, no-transform, must-revalidate");
     headers.set("Connection", "keep-alive");
     headers.set("X-Accel-Buffering", "no"); // Disable nginx/proxy buffering
     headers.set("CF-Cache-Status", "DYNAMIC"); // Tell Cloudflare not to cache
+    headers.set("Transfer-Encoding", "chunked"); // Ensure chunked transfer
 
-    // Ensure Transfer-Encoding is chunked for streaming (matches SSE endpoint)
-    if (!headers.has("Transfer-Encoding")) {
-      headers.set("Transfer-Encoding", "chunked");
-    }
-
-    // Ensure CORS headers are set for MCP clients
-    if (!headers.has("Access-Control-Allow-Origin")) {
-      headers.set("Access-Control-Allow-Origin", "*");
-    }
-    if (!headers.has("Access-Control-Allow-Headers")) {
-      headers.set("Access-Control-Allow-Headers", "Content-Type, Cache-Control");
-    }
+    // CORS headers for MCP clients (matches SSE endpoint)
+    headers.set("Access-Control-Allow-Origin", "*");
+    headers.set("Access-Control-Allow-Headers", "Cache-Control");
 
     // Return new response with modified headers and same body
     return new Response(response.body ?? null, {
