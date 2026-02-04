@@ -4,6 +4,7 @@
 
 import { comparePackages as comparePackagesFromDecisions } from "@v1/decisions/comparisons";
 import { z } from "zod";
+import { compareCache } from "../lib/cache";
 import {
   getDownloads,
   getLatestVersion,
@@ -46,6 +47,14 @@ export interface ComparePackagesResult {
 }
 
 export async function comparePackages(input: ComparePackagesInput): Promise<ComparePackagesResult> {
+  // Check cache first (fast path for MCP tool calls)
+  // Use sorted package names as cache key for consistent lookups
+  const cacheKey = `compare:${[...input.packages].sort().join(",")}`;
+  const cached = compareCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   // Fetch live data for all packages in parallel
   const packageDataPromises = input.packages.map(async (name) => {
     const [pkg, downloads] = await Promise.all([getPackage(name), getDownloads(name)]);
@@ -73,7 +82,7 @@ export async function comparePackages(input: ComparePackagesInput): Promise<Comp
   // Check for curated comparison data
   const curatedComparison = comparePackagesFromDecisions(input.packages);
 
-  return {
+  const result = {
     packages,
     curatedComparison: curatedComparison
       ? {
@@ -85,4 +94,9 @@ export async function comparePackages(input: ComparePackagesInput): Promise<Comp
         }
       : null,
   };
+
+  // Cache the result
+  compareCache.set(cacheKey, result);
+
+  return result;
 }

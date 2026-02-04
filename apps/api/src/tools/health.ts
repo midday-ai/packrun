@@ -46,6 +46,7 @@ import {
   generateRecommendation,
   type HealthAssessment,
 } from "../lib/health-score";
+import { healthCache } from "../lib/cache";
 import { queuePackageSync } from "../lib/queue";
 import { formatReplacement, type ReplacementInfo } from "../lib/replacements";
 import { stripHtml } from "../lib/utils";
@@ -201,9 +202,16 @@ interface PackageData {
  * Get comprehensive package health
  *
  * Always fetches from npm registry (source of truth).
- * Cloudflare edge cache handles all response caching (24h TTL).
+ * Uses in-memory LRU cache for fast MCP tool calls (1 hour TTL).
  */
 export async function getPackageHealth(name: string): Promise<PackageHealthResponse | null> {
+  // Check cache first (fast path for MCP tool calls)
+  const cacheKey = `health:${name}`;
+  const cached = healthCache.get(cacheKey);
+  if (cached) {
+    return cached as PackageHealthResponse;
+  }
+
   // 1. Fetch from npm registry (authoritative source)
   const npmPkg = await getNpmPackage(name);
   if (!npmPkg) return null;
@@ -265,7 +273,7 @@ export async function getPackageHealth(name: string): Promise<PackageHealthRespo
   const health = computeHealthScore(pkg, scores, security, trend, github);
 
   // 9. Build response
-  return buildHealthResponse(
+  const response = buildHealthResponse(
     pkg,
     health,
     scores,
@@ -277,6 +285,11 @@ export async function getPackageHealth(name: string): Promise<PackageHealthRespo
     replacement,
     readme,
   );
+
+  // Cache the result for fast future MCP tool calls
+  healthCache.set(cacheKey, response);
+
+  return response;
 }
 
 /**

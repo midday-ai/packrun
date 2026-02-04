@@ -5,6 +5,7 @@
  */
 
 import { z } from "zod";
+import { versionCache } from "../lib/cache";
 import { getLatestVersion, getPackage, getPublishedAt } from "../lib/clients/npm";
 import { getPackage as getTypesensePackage } from "../lib/clients/typesense";
 
@@ -23,15 +24,24 @@ export interface GetPackageVersionResult {
 export async function getPackageVersion(
   input: GetPackageVersionInput,
 ): Promise<GetPackageVersionResult> {
+  // Check cache first (fast path for MCP tool calls)
+  const cacheKey = `version:${input.name}`;
+  const cached = versionCache.get(cacheKey);
+  if (cached) {
+    return cached as GetPackageVersionResult;
+  }
+
   // Try Typesense first (O(1) indexed lookup)
   // Verify exact name match to avoid tokenization issues (e.g., "react" vs "re-act")
   const typesensePkg = await getTypesensePackage(input.name);
   if (typesensePkg && typesensePkg.name === input.name) {
-    return {
+    const result = {
       name: typesensePkg.name,
       version: typesensePkg.version,
       publishedAt: typesensePkg.updated ? new Date(typesensePkg.updated).toISOString() : null,
     };
+    versionCache.set(cacheKey, result);
+    return result;
   }
 
   // Fall back to npm registry
@@ -44,9 +54,14 @@ export async function getPackageVersion(
   const version = getLatestVersion(pkg);
   const publishedAt = getPublishedAt(pkg);
 
-  return {
+  const result = {
     name: pkg.name,
     version,
     publishedAt,
   };
+
+  // Cache the result
+  versionCache.set(cacheKey, result);
+
+  return result;
 }
