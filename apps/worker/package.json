@@ -19,6 +19,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@paralleldrive/cuid2": "^3.3.0",
     "@packrun/data": "workspace:*",
     "@packrun/db": "workspace:*",
     "@packrun/decisions": "workspace:*",

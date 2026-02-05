@@ -102,6 +102,7 @@
         "@packrun/email": "workspace:*",
         "@packrun/logger": "workspace:*",
         "@packrun/queue": "workspace:*",
+        "@paralleldrive/cuid2": "^3.3.0",
         "ioredis": "^5.6.1",
         "semver": "^7.6.3",
         "typesense": "^2.1.0",
