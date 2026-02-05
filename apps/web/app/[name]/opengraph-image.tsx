@@ -177,22 +177,23 @@ export default async function OGImage({ params }: Props) {
           flex: 1,
           flexDirection: "column",
           position: "relative",
+          paddingBottom: 40,
         }}
       >
         {/* Top bar with logo left, domain right */}
         <div
           style={{
             display: "flex",
-            height: 56,
+            height: 64,
             alignItems: "center",
             justifyContent: "space-between",
-            paddingLeft: 24,
-            paddingRight: 24,
+            paddingLeft: 32,
+            paddingRight: 32,
           }}
         >
           {/* Logo on left */}
           <div style={{ display: "flex", alignItems: "center" }}>
-            <svg width="24" height="17" viewBox="0 0 129 91" fill="none">
+            <svg width="64" height="45" viewBox="0 0 129 91" fill="none">
               <path
                 d="M4.99974 21.1816H15.0906V51.4543H4.99974V21.1816ZM45.3634 21.1816H55.4543V51.4543H45.3634V21.1816ZM25.1816 71.6361H15.0906V51.4543H25.1816V71.6361ZM25.1816 71.6361H35.2725V81.7271H25.1816V71.6361ZM35.2725 51.4543H45.3634V71.6361H35.2725V51.4543ZM93.6373 21.1816H73.4555V11.0907H93.6373V0.999776H103.728V71.6361H123.91V81.7271H73.4555V71.6361H93.6373V21.1816Z"
                 fill="white"
@@ -200,7 +201,7 @@ export default async function OGImage({ params }: Props) {
             </svg>
           </div>
           {/* Domain on right */}
-          <div style={{ display: "flex", color: "#666", fontSize: 14 }}>v1.run</div>
+          <div style={{ display: "flex", color: "#666", fontSize: 32 }}>v1.run</div>
         </div>
 
         {/* Main content area */}
@@ -219,7 +220,7 @@ export default async function OGImage({ params }: Props) {
             style={{
               display: "flex",
               fontSize:
-                packageNameDisplay.length > 30 ? 48 : packageNameDisplay.length > 20 ? 60 : 72,
+                packageNameDisplay.length > 30 ? 56 : packageNameDisplay.length > 20 ? 72 : 88,
               fontWeight: 700,
               color: "#fff",
               textAlign: "center",
@@ -233,12 +234,12 @@ export default async function OGImage({ params }: Props) {
             <div
               style={{
                 display: "flex",
-                fontSize: 18,
-                color: "#666",
-                maxWidth: 700,
+                fontSize: 24,
+                color: "#888",
+                maxWidth: 900,
                 textAlign: "center",
-                marginTop: 20,
-                lineHeight: 1.5,
+                marginTop: 24,
+                lineHeight: 1.5
               }}
             >
               {truncatedDesc}
@@ -250,6 +251,8 @@ export default async function OGImage({ params }: Props) {
         <div
           style={{
             display: "flex",
+            paddingLeft: 16,
+            paddingRight: 16,
           }}
         >
           {/* Stats cells */}
@@ -258,21 +261,21 @@ export default async function OGImage({ params }: Props) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                padding: 16,
-                paddingLeft: 24,
-                paddingRight: 24,
+                padding: 20,
+                paddingLeft: 32,
+                paddingRight: 32,
               }}
             >
-              <div style={{ display: "flex", fontSize: 10, color: "#555" }}>
+              <div style={{ display: "flex", fontSize: 14, color: "#555", letterSpacing: 1 }}>
                 {stat1.label.toUpperCase()}
               </div>
               <div
                 style={{
                   display: "flex",
-                  fontSize: 18,
+                  fontSize: 28,
                   fontWeight: 700,
                   color: stat1.color,
-                  marginTop: 2,
+                  marginTop: 4,
                 }}
               >
                 {stat1.value}
@@ -284,21 +287,21 @@ export default async function OGImage({ params }: Props) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                padding: 16,
-                paddingLeft: 24,
-                paddingRight: 24,
+                padding: 20,
+                paddingLeft: 32,
+                paddingRight: 32,
               }}
             >
-              <div style={{ display: "flex", fontSize: 10, color: "#555" }}>
+              <div style={{ display: "flex", fontSize: 14, color: "#555", letterSpacing: 1 }}>
                 {stat2.label.toUpperCase()}
               </div>
               <div
                 style={{
                   display: "flex",
-                  fontSize: 18,
+                  fontSize: 28,
                   fontWeight: 600,
                   color: "#fff",
-                  marginTop: 2,
+                  marginTop: 4,
                 }}
               >
                 {stat2.value}
@@ -310,21 +313,21 @@ export default async function OGImage({ params }: Props) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                padding: 16,
-                paddingLeft: 24,
-                paddingRight: 24,
+                padding: 20,
+                paddingLeft: 32,
+                paddingRight: 32,
               }}
             >
-              <div style={{ display: "flex", fontSize: 10, color: "#555" }}>
+              <div style={{ display: "flex", fontSize: 14, color: "#555", letterSpacing: 1 }}>
                 {stat3.label.toUpperCase()}
               </div>
               <div
                 style={{
                   display: "flex",
-                  fontSize: 18,
+                  fontSize: 28,
                   fontWeight: 600,
                   color: "#fff",
-                  marginTop: 2,
+                  marginTop: 4,
                 }}
               >
                 {stat3.value}
@@ -336,21 +339,21 @@ export default async function OGImage({ params }: Props) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                padding: 16,
-                paddingLeft: 24,
-                paddingRight: 24,
+                padding: 20,
+                paddingLeft: 32,
+                paddingRight: 32,
               }}
             >
-              <div style={{ display: "flex", fontSize: 10, color: "#555" }}>
+              <div style={{ display: "flex", fontSize: 14, color: "#555", letterSpacing: 1 }}>
                 {stat4.label.toUpperCase()}
               </div>
               <div
                 style={{
                   display: "flex",
-                  fontSize: 18,
+                  fontSize: 28,
                   fontWeight: 600,
                   color: stat4.color,
-                  marginTop: 2,
+                  marginTop: 4,
                 }}
               >
                 {stat4.value}
@@ -364,11 +367,11 @@ export default async function OGImage({ params }: Props) {
             style={{
               display: "flex",
               alignItems: "center",
-              padding: 16,
-              paddingLeft: 24,
-              paddingRight: 24,
-              color: "#333",
-              fontSize: 14,
+              padding: 20,
+              paddingLeft: 32,
+              paddingRight: 32,
+              color: "#444",
+              fontSize: 24,
             }}
           >
             {`v1.run/${packageNameDisplay}`}
