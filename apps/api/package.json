@@ -10,7 +10,7 @@
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
     "test": "bun test",
-    "db:migrate": "drizzle-kit migrate --config=../../packages/db/drizzle.config.ts",
+    "db:migrate": "drizzle-kit push --config=../../packages/db/drizzle.config.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "check-types": "tsc --noEmit"
