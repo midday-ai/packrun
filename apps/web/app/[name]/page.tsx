@@ -38,9 +38,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // Create SEO-optimized title (aim for 50-60 chars)
-  // Format: "package - brief description | v1.run"
+  // Format: "package - brief description | packrun.dev"
   const maxTitleLength = 60;
-  const suffix = " | v1.run"; // 9 chars
+  const suffix = " | packrun.dev"; // 9 chars
   const separator = " - "; // 3 chars
   const availableForDesc = maxTitleLength - pkg.name.length - suffix.length - separator.length;
 
@@ -63,13 +63,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: {
-      canonical: `https://v1.run/${encodeURIComponent(pkg.name)}`,
+      canonical: `https://packrun.dev/${encodeURIComponent(pkg.name)}`,
     },
     openGraph: {
       title: pkg.name,
       description,
-      url: `https://v1.run/${encodeURIComponent(pkg.name)}`,
-      siteName: "v1.run",
+      url: `https://packrun.dev/${encodeURIComponent(pkg.name)}`,
+      siteName: "packrun.dev",
       type: "website",
     },
     twitter: {
@@ -97,7 +97,7 @@ export default async function PackagePage({ params }: PageProps) {
     name: pkg.name,
     version: pkg.version,
     description: pkg.description,
-    url: `https://v1.run/${encodeURIComponent(pkg.name)}`,
+    url: `https://packrun.dev/${encodeURIComponent(pkg.name)}`,
     codeRepository: pkg.repository,
     programmingLanguage: "JavaScript",
     runtimePlatform: "Node.js",
@@ -114,13 +114,13 @@ export default async function PackagePage({ params }: PageProps) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://v1.run",
+        item: "https://packrun.dev",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: pkg.name,
-        item: `https://v1.run/${encodeURIComponent(pkg.name)}`,
+        item: `https://packrun.dev/${encodeURIComponent(pkg.name)}`,
       },
     ],
   };
@@ -468,7 +468,7 @@ export default async function PackagePage({ params }: PageProps) {
               {/* Install MCP */}
               <div className="py-4">
                 <Link
-                  href="cursor://anysphere.cursor-deeplink/mcp/install?name=v1&config=eyJ1cmwiOiJodHRwczovL2FwaS52MS5ydW4vbWNwIn0="
+                  href="cursor://anysphere.cursor-deeplink/mcp/install?name=packrun&config=eyJ1cmwiOiJodHRwczovL2FwaS5wYWNrcnVuLmRldi9tY3AifQ=="
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-border text-xs text-muted hover:text-foreground hover:border-subtle transition-colors"
                 >
                   <svg

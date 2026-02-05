@@ -2,13 +2,13 @@
  * Job Registry
  */
 
-import { createWorker } from "@v1/queue";
+import { createWorker } from "@packrun/queue";
 import {
   type BulkSyncJobData,
   NPM_BULK_SYNC_QUEUE,
   NPM_SYNC_QUEUE,
   type SyncJobData,
-} from "@v1/queue/npm-sync";
+} from "@packrun/queue/npm-sync";
 import { processBulkSyncJob, processSyncJob } from "./npm-sync";
 import { createSlackDeliveryWorker } from "./slack-delivery";
 import { createEmailDeliveryWorker } from "./email-delivery";

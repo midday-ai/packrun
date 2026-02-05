@@ -7,7 +7,7 @@
 
 const CF_ZONE_ID = process.env.CLOUDFLARE_ZONE_ID;
 const CF_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
-const API_DOMAIN = process.env.API_DOMAIN || "https://api.v1.run";
+const API_DOMAIN = process.env.API_DOMAIN || "https://api.packrun.dev";
 const WEB_REVALIDATE_URL = process.env.WEB_REVALIDATE_URL;
 const REVALIDATE_SECRET = process.env.REVALIDATE_SECRET;
 

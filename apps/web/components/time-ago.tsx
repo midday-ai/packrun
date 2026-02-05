@@ -1,4 +1,4 @@
-import { formatTimeAgo } from "@v1/decisions";
+import { formatTimeAgo } from "@packrun/decisions";
 
 /**
  * Server component for displaying relative time (e.g., "3 days ago").

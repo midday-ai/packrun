@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-const PENDING_FAVORITE_KEY = "v1.run:pending-favorite";
+const PENDING_FAVORITE_KEY = "packrun.dev:pending-favorite";
 
 interface FavoriteButtonProps {
   packageName: string;

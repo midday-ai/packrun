@@ -1,16 +1,16 @@
 /**
  * GitHub API Client for API Server
  *
- * Uses @v1/data/github. No caching - Cloudflare caches final API responses.
+ * Uses @packrun/data/github. No caching - Cloudflare caches final API responses.
  */
 
-import { fetchGitHubRepoBasic, parseGitHubUrl } from "@v1/data/github";
+import { fetchGitHubRepoBasic, parseGitHubUrl } from "@packrun/data/github";
 
 // Get GitHub token from environment (optional - increases rate limit from 60/hour to 5000/hour)
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 // Re-export types and utilities
-export { type GitHubRepoData, parseGitHubUrl, fetchGitHubReadme } from "@v1/data/github";
+export { type GitHubRepoData, parseGitHubUrl, fetchGitHubReadme } from "@packrun/data/github";
 
 /**
  * Simplified GitHub data for API responses

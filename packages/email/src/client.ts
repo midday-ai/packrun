@@ -81,7 +81,7 @@ export async function sendEmail({ to, subject, react, userId }: SendEmailOptions
   // Add RFC 8058 unsubscribe headers if userId provided
   if (userId) {
     const token = generateUnsubscribeToken(userId);
-    const unsubscribeUrl = `https://v1.run/api/unsubscribe?token=${token}`;
+    const unsubscribeUrl = `https://packrun.dev/api/unsubscribe?token=${token}`;
 
     headers["List-Unsubscribe"] = `<${unsubscribeUrl}>`;
     headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
@@ -89,7 +89,7 @@ export async function sendEmail({ to, subject, react, userId }: SendEmailOptions
 
   try {
     const result = await resend.emails.send({
-      from: "v1.run <notifications@v1.run>",
+      from: "packrun.dev <notifications@packrun.dev>",
       to,
       subject,
       react,

@@ -13,7 +13,7 @@ import {
   inferCategory,
   SEED_CATEGORIES,
   toApiResponse,
-} from "@v1/decisions";
+} from "@packrun/decisions";
 import { comparePackages } from "../tools/compare";
 import { fetchPackageMetrics } from "../lib/metrics";
 import { searchNpmRegistry } from "../lib/clients/npm";

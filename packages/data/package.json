@@ -1,5 +1,5 @@
 {
-  "name": "@v1/data",
+  "name": "@packrun/data",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "./bundlephobia": "./src/bundlephobia.ts"
   },
   "devDependencies": {
-    "@v1/typescript-config": "workspace:*",
+    "@packrun/typescript-config": "workspace:*",
     "typescript": "^5.9.3"
   }
 }

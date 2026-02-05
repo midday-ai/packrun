@@ -1,7 +1,7 @@
 /**
  * Database Queries
  *
- * Reusable query functions for the v1.run database.
+ * Reusable query functions for the packrun.dev database.
  */
 
 import { eq, and } from "drizzle-orm";

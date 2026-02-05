@@ -4,7 +4,7 @@
  * Optimized: Uses Typesense + module-replacements for instant lookups
  */
 
-import { getAlternatives, PACKAGE_ALTERNATIVES } from "@v1/decisions/comparisons";
+import { getAlternatives, PACKAGE_ALTERNATIVES } from "@packrun/decisions/comparisons";
 import { z } from "zod";
 import {
   getDeprecationMessage,

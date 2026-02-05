@@ -4,8 +4,14 @@
  * Adds jobs to the worker's sync queue with BullMQ deduplication via job IDs.
  */
 
-import { closeAllQueues, getConnectionInfo, getQueue, JOB_PRESETS, type Queue } from "@v1/queue";
-import { NPM_SYNC_QUEUE, type SyncJobData } from "@v1/queue/npm-sync";
+import {
+  closeAllQueues,
+  getConnectionInfo,
+  getQueue,
+  JOB_PRESETS,
+  type Queue,
+} from "@packrun/queue";
+import { NPM_SYNC_QUEUE, type SyncJobData } from "@packrun/queue/npm-sync";
 
 let syncQueue: Queue<SyncJobData> | null = null;
 let logged = false;

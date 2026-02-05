@@ -1,5 +1,5 @@
 /**
- * @v1/db - Database package for v1.run
+ * @packrun/db - Database package for packrun.dev
  *
  * Provides schema definitions and database client.
  */

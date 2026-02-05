@@ -6,8 +6,8 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { createId } from "@paralleldrive/cuid2";
 import { eq, and } from "drizzle-orm";
 import { auth } from "../lib/auth";
-import { db } from "@v1/db/client";
-import { integrationConnection } from "@v1/db/schema";
+import { db } from "@packrun/db/client";
+import { integrationConnection } from "@packrun/db/schema";
 import {
   ErrorResponseSchema,
   SuccessResponseSchema,
@@ -28,7 +28,7 @@ const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
 const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
 const SLACK_REDIRECT_URI =
   process.env.NODE_ENV === "production"
-    ? "https://api.v1.run/api/integrations/slack/callback"
+    ? "https://api.packrun.dev/api/integrations/slack/callback"
     : "http://localhost:3001/api/integrations/slack/callback";
 
 // =============================================================================
@@ -370,7 +370,7 @@ export function createIntegrationsRoutes() {
   app.openapi(slackCallbackRoute, async (c) => {
     const { code, error, state } = c.req.query();
     const frontendUrl =
-      process.env.NODE_ENV === "production" ? "https://v1.run" : "http://localhost:3000";
+      process.env.NODE_ENV === "production" ? "https://packrun.dev" : "http://localhost:3000";
 
     if (error) {
       console.error("[Slack] OAuth error:", error);

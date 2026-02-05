@@ -1,7 +1,7 @@
 /**
  * Critical Security Alert Email Template
  *
- * Matches v1.run website design - dark mode, Geist Mono, sharp corners.
+ * Matches packrun.dev website design - dark mode, Geist Mono, sharp corners.
  */
 
 import { Section, Text, Link, Button } from "@react-email/components";
@@ -24,7 +24,7 @@ export function CriticalAlert({
   changelogSnippet,
   unsubscribeUrl,
 }: CriticalAlertProps) {
-  const packageUrl = `https://v1.run/${encodeURIComponent(packageName)}`;
+  const packageUrl = `https://packrun.dev/${encodeURIComponent(packageName)}`;
   const versionText = previousVersion ? `${previousVersion} → ${newVersion}` : newVersion;
 
   return (
@@ -125,7 +125,7 @@ CriticalAlert.PreviewProps = {
   vulnerabilitiesFixed: 2,
   changelogSnippet:
     "## Security\n- Fixed prototype pollution vulnerability in _.set()\n- Fixed ReDoS vulnerability in _.words()",
-  unsubscribeUrl: "https://v1.run/api/unsubscribe?token=example",
+  unsubscribeUrl: "https://packrun.dev/api/unsubscribe?token=example",
 } satisfies CriticalAlertProps;
 
 // Default export for preview

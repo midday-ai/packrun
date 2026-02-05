@@ -12,7 +12,7 @@ describe("Health Check", () => {
 
     const data = (await res.json()) as { status: string; service: string; timestamp: string };
     expect(data.status).toBe("healthy");
-    expect(data.service).toBe("v1-api");
+    expect(data.service).toBe("packrun-api");
     expect(data.timestamp).toBeDefined();
   });
 });
@@ -24,7 +24,7 @@ describe("OpenAPI", () => {
 
     const data = (await res.json()) as { openapi: string; info: { title: string }; paths: unknown };
     expect(data.openapi).toBe("3.1.0");
-    expect(data.info.title).toBe("v1.run API");
+    expect(data.info.title).toBe("packrun.dev API");
     expect(data.paths).toBeDefined();
   });
 

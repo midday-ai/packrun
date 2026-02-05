@@ -3,7 +3,7 @@
  */
 
 import { Hono } from "hono";
-import { sendEmail, Digest, type DigestUpdate } from "@v1/email";
+import { sendEmail, Digest, type DigestUpdate } from "@packrun/email";
 import React from "react";
 
 export function createAdminRoutes() {
@@ -14,7 +14,7 @@ export function createAdminRoutes() {
     return c.json({
       status: "healthy",
       timestamp: new Date().toISOString(),
-      service: "v1-api",
+      service: "packrun-api",
     });
   });
 
@@ -66,7 +66,7 @@ export function createAdminRoutes() {
     const emailElement = React.createElement(Digest, {
       updates,
       period: "daily",
-      unsubscribeUrl: "https://v1.run/api/unsubscribe?token=test",
+      unsubscribeUrl: "https://packrun.dev/api/unsubscribe?token=test",
     });
 
     try {

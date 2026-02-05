@@ -1,13 +1,13 @@
 /**
  * npms.io API Client for API Server
  *
- * Uses @v1/data/npms. Cloudflare edge cache handles response caching.
+ * Uses @packrun/data/npms. Cloudflare edge cache handles response caching.
  */
 
-import { fetchNpmsScores as fetchNpmsScoresRaw, type NpmsScores } from "@v1/data/npms";
+import { fetchNpmsScores as fetchNpmsScoresRaw, type NpmsScores } from "@packrun/data/npms";
 
 // Re-export type
-export type { NpmsScores } from "@v1/data/npms";
+export type { NpmsScores } from "@packrun/data/npms";
 
 /**
  * Fetch scores from npms.io

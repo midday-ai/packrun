@@ -105,7 +105,7 @@ async function fetchPackument(packageName: string): Promise<NpmPackument | null>
   try {
     const headers = {
       ...getNpmHeaders(),
-      "User-Agent": "v1.run-api",
+      "User-Agent": "packrun.dev-api",
     };
 
     const response = await fetch(`${NPM_REGISTRY}/${encodeURIComponent(packageName)}`, {
@@ -321,10 +321,7 @@ async function fetchWithRetry(
  * @param packageName - Package name
  * @param forceLive - If true, skip Typesense and fetch from npm directly
  */
-export async function getWeeklyDownloads(
-  packageName: string,
-  forceLive = false,
-): Promise<number> {
+export async function getWeeklyDownloads(packageName: string, forceLive = false): Promise<number> {
   // Check Typesense first (fast, no rate limit)
   if (!forceLive) {
     const typesenseDownloads = await getPackageDownloads(packageName);

@@ -1,7 +1,7 @@
 /**
  * Daily/Weekly Digest Email Template
  *
- * Matches v1.run website design - dark mode, Geist Mono, sharp corners.
+ * Matches packrun.dev website design - dark mode, Geist Mono, sharp corners.
  */
 
 import { Section, Text, Link, Hr } from "@react-email/components";
@@ -113,7 +113,7 @@ export function Digest({ updates, period, unsubscribeUrl }: DigestProps) {
 }
 
 function UpdateRow({ update }: { update: DigestUpdate }) {
-  const packageUrl = `https://v1.run/${encodeURIComponent(update.packageName)}`;
+  const packageUrl = `https://packrun.dev/${encodeURIComponent(update.packageName)}`;
   const versionText = update.previousVersion
     ? `${update.previousVersion} → ${update.newVersion}`
     : update.newVersion;
@@ -199,7 +199,7 @@ Digest.PreviewProps = {
     },
   ],
   period: "daily",
-  unsubscribeUrl: "https://v1.run/api/unsubscribe?token=example",
+  unsubscribeUrl: "https://packrun.dev/api/unsubscribe?token=example",
 } satisfies DigestProps;
 
 // Default export for preview

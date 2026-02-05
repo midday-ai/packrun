@@ -1,5 +1,5 @@
 {
-  "name": "@v1/email",
+  "name": "@packrun/email",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -21,7 +21,7 @@
   "devDependencies": {
     "@react-email/preview-server": "^5.2.6",
     "@types/react": "^19.2.11",
-    "@v1/typescript-config": "workspace:*",
+    "@packrun/typescript-config": "workspace:*",
     "react-email": "^5.2.6",
     "typescript": "^5.9.3"
   }

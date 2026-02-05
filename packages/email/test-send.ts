@@ -52,7 +52,7 @@ const updates: DigestUpdate[] = [
 const emailElement = React.createElement(Digest, {
   updates,
   period: "daily",
-  unsubscribeUrl: "https://v1.run/api/unsubscribe?token=test",
+  unsubscribeUrl: "https://packrun.dev/api/unsubscribe?token=test",
 });
 
 console.log(`Sending test email to ${email}...`);

@@ -8,8 +8,8 @@
 
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
-import { db } from "@v1/db/client";
-import { notificationPreferences } from "@v1/db/schema";
+import { db } from "@packrun/db/client";
+import { notificationPreferences } from "@packrun/db/schema";
 import { createId } from "@paralleldrive/cuid2";
 import { createHmac } from "crypto";
 
@@ -120,7 +120,7 @@ export function createUnsubscribeRoutes() {
         `<!DOCTYPE html>
         <html>
           <head>
-            <title>Unsubscribe - v1.run</title>
+            <title>Unsubscribe - packrun.dev</title>
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <style>
               body { font-family: -apple-system, system-ui, sans-serif; padding: 40px 20px; max-width: 500px; margin: 0 auto; text-align: center; }
@@ -132,7 +132,7 @@ export function createUnsubscribeRoutes() {
           <body>
             <h1>Invalid Link</h1>
             <p>This unsubscribe link is missing required parameters.</p>
-            <p><a href="https://v1.run/profile">Manage your preferences</a></p>
+            <p><a href="https://packrun.dev/profile">Manage your preferences</a></p>
           </body>
         </html>`,
         400,
@@ -145,7 +145,7 @@ export function createUnsubscribeRoutes() {
         `<!DOCTYPE html>
         <html>
           <head>
-            <title>Unsubscribe - v1.run</title>
+            <title>Unsubscribe - packrun.dev</title>
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <style>
               body { font-family: -apple-system, system-ui, sans-serif; padding: 40px 20px; max-width: 500px; margin: 0 auto; text-align: center; }
@@ -157,7 +157,7 @@ export function createUnsubscribeRoutes() {
           <body>
             <h1>Link Expired</h1>
             <p>This unsubscribe link has expired or is invalid.</p>
-            <p><a href="https://v1.run/profile">Manage your preferences</a></p>
+            <p><a href="https://packrun.dev/profile">Manage your preferences</a></p>
           </body>
         </html>`,
         400,
@@ -171,7 +171,7 @@ export function createUnsubscribeRoutes() {
         `<!DOCTYPE html>
         <html>
           <head>
-            <title>Unsubscribe - v1.run</title>
+            <title>Unsubscribe - packrun.dev</title>
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <style>
               body { font-family: -apple-system, system-ui, sans-serif; padding: 40px 20px; max-width: 500px; margin: 0 auto; text-align: center; }
@@ -183,7 +183,7 @@ export function createUnsubscribeRoutes() {
           <body>
             <h1>Error</h1>
             <p>Something went wrong. Please try again later.</p>
-            <p><a href="https://v1.run/profile">Manage your preferences</a></p>
+            <p><a href="https://packrun.dev/profile">Manage your preferences</a></p>
           </body>
         </html>`,
         500,
@@ -194,7 +194,7 @@ export function createUnsubscribeRoutes() {
       `<!DOCTYPE html>
       <html>
         <head>
-          <title>Unsubscribed - v1.run</title>
+          <title>Unsubscribed - packrun.dev</title>
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <style>
             body { font-family: -apple-system, system-ui, sans-serif; padding: 40px 20px; max-width: 500px; margin: 0 auto; text-align: center; }
@@ -207,9 +207,9 @@ export function createUnsubscribeRoutes() {
         <body>
           <div class="checkmark">✓</div>
           <h1>Unsubscribed</h1>
-          <p>You've been unsubscribed from v1.run email notifications.</p>
+          <p>You've been unsubscribed from packrun.dev email notifications.</p>
           <p>You can still receive in-app notifications when you visit the site.</p>
-          <p style="margin-top: 24px;"><a href="https://v1.run/profile">Manage all preferences</a></p>
+          <p style="margin-top: 24px;"><a href="https://packrun.dev/profile">Manage all preferences</a></p>
         </body>
       </html>`,
       200,

@@ -4,7 +4,7 @@
  * Cloudflare edge cache handles caching of final API responses (6h for compare endpoint)
  */
 
-import type { BundleData, PackageMetrics } from "@v1/decisions/schema";
+import type { BundleData, PackageMetrics } from "@packrun/decisions/schema";
 import { fetchPackageMetadata } from "./clients/npm";
 import { fetchGitHubData } from "./clients/github";
 

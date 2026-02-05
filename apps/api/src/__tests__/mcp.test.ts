@@ -19,7 +19,7 @@ describe("MCP Protocol", () => {
       clientInfo: { name: "test", version: "1.0.0" },
     });
 
-    expect(response.result?.serverInfo.name).toBe("v1-npm-tools");
+    expect(response.result?.serverInfo.name).toBe("packrun-npm-tools");
     expect(response.result?.capabilities.tools).toBeDefined();
   });
 

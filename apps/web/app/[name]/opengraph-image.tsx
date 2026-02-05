@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "v1.run - npm package";
+export const alt = "packrun.dev - npm package";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -46,7 +46,7 @@ export default async function OGImage({ params }: Props) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
 
-  // Fetch package data from v1.run API for richer stats
+  // Fetch package data from packrun.dev API for richer stats
   let packageName = decodedName;
   let version = "";
   let description = "";
@@ -58,10 +58,10 @@ export default async function OGImage({ params }: Props) {
   let stars = 0;
   let vulnerabilities = 0;
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.v1.run";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.packrun.dev";
 
   try {
-    // Try to fetch from v1.run API first for richer data
+    // Try to fetch from packrun.dev API first for richer data
     const healthRes = await fetch(`${apiUrl}/api/package/${encodeURIComponent(decodedName)}`, {
       headers: { Accept: "application/json" },
       next: { revalidate: 3600 }, // Cache for 1 hour
@@ -200,7 +200,7 @@ export default async function OGImage({ params }: Props) {
             </svg>
           </div>
           {/* Domain on right */}
-          <div style={{ display: "flex", color: "#666", fontSize: 14 }}>v1.run</div>
+          <div style={{ display: "flex", color: "#666", fontSize: 14 }}>packrun.dev</div>
         </div>
 
         {/* Main content area */}
@@ -371,7 +371,7 @@ export default async function OGImage({ params }: Props) {
               fontSize: 14,
             }}
           >
-            {`v1.run/${packageNameDisplay}`}
+            {`packrun.dev/${packageNameDisplay}`}
           </div>
         </div>
       </div>

@@ -35,7 +35,7 @@ export async function fetchNpmsScores(packageName: string): Promise<NpmsScores |
     const response = await fetch(`${NPMS_API}/package/${encodeURIComponent(packageName)}`, {
       headers: {
         Accept: "application/json",
-        "User-Agent": "v1.run",
+        "User-Agent": "packrun.dev",
       },
     });
 
@@ -72,7 +72,7 @@ export async function fetchNpmsScoresBatch(
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        "User-Agent": "v1.run",
+        "User-Agent": "packrun.dev",
       },
       body: JSON.stringify(packageNames),
     });

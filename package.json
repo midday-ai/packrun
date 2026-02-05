@@ -1,5 +1,5 @@
 {
-  "name": "v1.run",
+  "name": "packrun.dev",
   "private": true,
   "workspaces": [
     "apps/*",

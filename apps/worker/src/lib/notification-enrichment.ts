@@ -9,8 +9,8 @@
  */
 
 import semver from "semver";
-import { fetchVulnerabilities } from "@v1/data/osv";
-import { fetchGitHubRepoData } from "@v1/data/github";
+import { fetchVulnerabilities } from "@packrun/data/osv";
+import { fetchGitHubRepoData } from "@packrun/data/github";
 
 // =============================================================================
 // Types
@@ -173,7 +173,7 @@ export async function fetchChangelogSnippet(
       const response = await fetch(url, {
         headers: {
           Accept: "application/vnd.github.v3+json",
-          "User-Agent": "v1.run-worker",
+          "User-Agent": "packrun.dev-worker",
           ...(process.env.GITHUB_TOKEN && {
             Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
           }),

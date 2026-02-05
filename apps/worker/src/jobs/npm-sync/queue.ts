@@ -2,13 +2,13 @@
  * npm Sync Queue Instances
  */
 
-import { getQueue, getQueueStats, JOB_PRESETS, type Queue, type QueueStats } from "@v1/queue";
+import { getQueue, getQueueStats, JOB_PRESETS, type Queue, type QueueStats } from "@packrun/queue";
 import {
   type BulkSyncJobData,
   NPM_BULK_SYNC_QUEUE,
   NPM_SYNC_QUEUE,
   type SyncJobData,
-} from "@v1/queue/npm-sync";
+} from "@packrun/queue/npm-sync";
 
 export { NPM_BULK_SYNC_QUEUE, NPM_SYNC_QUEUE, type BulkSyncJobData, type SyncJobData };
 

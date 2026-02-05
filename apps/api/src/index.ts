@@ -1,5 +1,5 @@
 /**
- * v1.run API Server
+ * packrun.dev API Server
  *
  * Hono server with OpenAPI spec and MCP support for AI agents.
  */
@@ -47,7 +47,7 @@ app.use(
   cors({
     origin: (origin) => {
       if (origin?.includes("localhost")) return origin;
-      if (origin?.endsWith(".v1.run") || origin === "https://v1.run") return origin;
+      if (origin?.endsWith(".packrun.dev") || origin === "https://packrun.dev") return origin;
       return origin || "*";
     },
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -94,17 +94,17 @@ app.route("/", createUpdatesRoutes());
 app.doc("/openapi.json", {
   openapi: "3.1.0",
   info: {
-    title: "v1.run API",
+    title: "packrun.dev API",
     version: "1.0.0",
     description:
       "npm package intelligence API - Get health scores, security assessments, and recommendations for npm packages",
     contact: {
-      name: "v1.run",
-      url: "https://v1.run",
+      name: "packrun.dev",
+      url: "https://packrun.dev",
     },
   },
   servers: [
-    { url: "https://api.v1.run", description: "Production" },
+    { url: "https://api.packrun.dev", description: "Production" },
     { url: "http://localhost:3001", description: "Development" },
   ],
   tags: [
@@ -152,7 +152,7 @@ if (auth) {
 // Server Startup
 // =============================================================================
 
-console.log(`v1.run API server starting on port ${PORT}...`);
+console.log(`packrun.dev API server starting on port ${PORT}...`);
 console.log(`  Health:  http://localhost:${PORT}/health`);
 console.log(`  Docs:    http://localhost:${PORT}/docs`);
 console.log(`  OpenAPI: http://localhost:${PORT}/openapi.json`);

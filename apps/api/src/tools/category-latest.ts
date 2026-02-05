@@ -6,11 +6,11 @@
  */
 
 import { z } from "zod";
-import { getCategoryName } from "@v1/decisions/categories";
+import { getCategoryName } from "@packrun/decisions/categories";
 import {
   COMPARISON_CATEGORIES,
   getComparison as getCuratedComparison,
-} from "@v1/decisions/comparisons";
+} from "@packrun/decisions/comparisons";
 import { getLatestWithHealth } from "./latest-health";
 
 export const suggestLatestForCategorySchema = z.object({

@@ -1,5 +1,5 @@
 /**
- * @v1/queue - Generic BullMQ queue infrastructure
+ * @packrun/queue - Generic BullMQ queue infrastructure
  *
  * Provides connection management and utilities for creating queues and workers.
  * Job types and queue names are defined by the consuming apps.

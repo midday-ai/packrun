@@ -118,8 +118,8 @@ export default function UpdatesOverlay() {
           href="/"
           className="text-white hover:text-neutral-300 transition-colors pointer-events-auto"
         >
-          <span className="text-lg font-bold">v1</span>
-          <span className="text-neutral-500">.run</span>
+          <span className="text-lg font-bold">packrun</span>
+          <span className="text-neutral-500">.dev</span>
         </Link>
 
         <div className="flex items-center gap-6 pointer-events-auto">

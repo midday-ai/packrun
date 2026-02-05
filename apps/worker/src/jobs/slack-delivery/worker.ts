@@ -4,13 +4,13 @@
  * Processes Slack notification jobs with rate limiting.
  */
 
-import { createWorker, type Job } from "@v1/queue";
+import { createWorker, type Job } from "@packrun/queue";
 import {
   SLACK_DELIVERY_QUEUE,
   SLACK_RATE_LIMIT,
   type SlackDeliveryJobData,
-} from "@v1/queue/delivery";
-import { db } from "@v1/db/client";
+} from "@packrun/queue/delivery";
+import { db } from "@packrun/db/client";
 
 interface SlackConfig {
   accessToken: string;
@@ -29,7 +29,7 @@ function formatSlackMessage(notification: SlackDeliveryJobData["notification"]):
     notification;
 
   const versionText = previousVersion ? `${previousVersion} → ${newVersion}` : newVersion;
-  const packageUrl = `https://v1.run/${encodeURIComponent(packageName)}`;
+  const packageUrl = `https://packrun.dev/${encodeURIComponent(packageName)}`;
 
   // Emoji based on severity
   let emoji = "📦";
@@ -87,7 +87,7 @@ function formatSlackMessage(notification: SlackDeliveryJobData["notification"]):
         type: "button",
         text: {
           type: "plain_text",
-          text: "View on v1.run",
+          text: "View on packrun.dev",
         },
         url: packageUrl,
       },

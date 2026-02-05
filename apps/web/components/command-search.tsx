@@ -280,7 +280,7 @@ function CommandSearch({ open, setOpen }: CommandSearchProps) {
               <span className="flex items-center gap-1.5">
                 Powered by{" "}
                 <a
-                  href="https://typesense.org?utm_source=v1.run&utm_medium=referral&utm_campaign=search"
+                  href="https://typesense.org?utm_source=packrun.dev&utm_medium=referral&utm_campaign=search"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-muted hover:text-foreground transition-colors"

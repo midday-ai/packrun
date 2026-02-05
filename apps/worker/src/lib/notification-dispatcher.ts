@@ -6,21 +6,21 @@
  */
 
 import { createId } from "@paralleldrive/cuid2";
-import { getQueue } from "@v1/queue";
+import { getQueue } from "@packrun/queue";
 import {
   SLACK_DELIVERY_QUEUE,
   EMAIL_DELIVERY_QUEUE,
   EXTERNAL_API_RETRY,
   type SlackDeliveryJobData,
   type EmailDeliveryJobData,
-} from "@v1/queue/delivery";
-import { db } from "@v1/db/client";
+} from "@packrun/queue/delivery";
+import { db } from "@packrun/db/client";
 import {
   getUsersWithFavoritesForPackage,
   insertNotification,
   getSlackIntegration,
   type UserWithFavoriteAndPreferences,
-} from "@v1/db/queries";
+} from "@packrun/db/queries";
 import type { NotificationEnrichment } from "./notification-enrichment";
 
 // =============================================================================

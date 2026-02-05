@@ -1,5 +1,5 @@
 {
-  "name": "@v1/db",
+  "name": "@packrun/db",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -20,7 +20,7 @@
     "postgres": "^3.4.8"
   },
   "devDependencies": {
-    "@v1/typescript-config": "workspace:*",
+    "@packrun/typescript-config": "workspace:*",
     "drizzle-kit": "^0.31.8",
     "typescript": "^5.9.3"
   }

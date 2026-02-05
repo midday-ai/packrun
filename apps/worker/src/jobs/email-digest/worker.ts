@@ -4,8 +4,8 @@
  * Processes scheduled digest jobs.
  */
 
-import { createWorker, type Job } from "@v1/queue";
-import { EMAIL_DIGEST_QUEUE, type EmailDigestJobData } from "@v1/queue/delivery";
+import { createWorker, type Job } from "@packrun/queue";
+import { EMAIL_DIGEST_QUEUE, type EmailDigestJobData } from "@packrun/queue/delivery";
 import { processDigests } from "./processor";
 
 /**

@@ -2,7 +2,7 @@
  * compare_packages - Compare multiple packages side by side
  */
 
-import { comparePackages as comparePackagesFromDecisions } from "@v1/decisions/comparisons";
+import { comparePackages as comparePackagesFromDecisions } from "@packrun/decisions/comparisons";
 import { z } from "zod";
 import { compareCache } from "../lib/cache";
 import {

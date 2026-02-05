@@ -1,7 +1,7 @@
 /**
  * Database Schema
  *
- * All table definitions and relations for the v1.run database.
+ * All table definitions and relations for the packrun.dev database.
  */
 
 import { relations } from "drizzle-orm";

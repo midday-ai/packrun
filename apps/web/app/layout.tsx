@@ -5,11 +5,11 @@ import { Providers } from "@/components/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://v1.run"),
-  title: "v1.run - npm for agents",
+  metadataBase: new URL("https://packrun.dev"),
+  title: "packrun.dev - npm for agents",
   description: "MCP-first npm registry. Security signals and package health in sub-50ms, globally.",
   alternates: {
-    canonical: "https://v1.run",
+    canonical: "https://packrun.dev",
   },
   robots: {
     index: true,
@@ -23,16 +23,16 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "v1.run - npm for agents",
+    title: "packrun.dev - npm for agents",
     description:
       "MCP-first npm registry. Security signals and package health in sub-50ms, globally.",
-    url: "https://v1.run",
-    siteName: "v1.run",
+    url: "https://packrun.dev",
+    siteName: "packrun.dev",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "v1.run - npm for agents",
+    title: "packrun.dev - npm for agents",
     description:
       "MCP-first npm registry. Security signals and package health in sub-50ms, globally.",
   },
@@ -42,14 +42,14 @@ export const metadata: Metadata = {
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "v1.run",
-  url: "https://v1.run",
+  name: "packrun.dev",
+  url: "https://packrun.dev",
   description: "MCP-first npm registry. Security signals and package health in sub-50ms, globally.",
   potentialAction: {
     "@type": "SearchAction",
     target: {
       "@type": "EntryPoint",
-      urlTemplate: "https://v1.run/{search_term_string}",
+      urlTemplate: "https://packrun.dev/{search_term_string}",
     },
     "query-input": "required name=search_term_string",
   },

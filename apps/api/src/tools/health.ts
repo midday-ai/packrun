@@ -9,7 +9,7 @@
  * Caching: Cloudflare edge cache handles all response caching (24h for health endpoint).
  */
 
-import { inferCategory } from "@v1/decisions";
+import { inferCategory } from "@packrun/decisions";
 import {
   fetchGitHubDataForPackage,
   fetchGitHubReadme,

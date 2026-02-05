@@ -5,7 +5,7 @@
  * Run with: bun run src/worker.ts
  */
 
-import { getConnectionInfo } from "@v1/queue";
+import { getConnectionInfo } from "@packrun/queue";
 import { ensureCollection } from "./clients/typesense";
 import { config } from "./config";
 import { createWorkers, getQueueStats } from "./jobs";

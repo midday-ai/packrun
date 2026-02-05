@@ -11,7 +11,7 @@ export function Header() {
         <Link href="/" className="shrink-0 hover:opacity-80 transition-opacity">
           <Image
             src="/logo.svg"
-            alt="V1"
+            alt="Packrun"
             width={32}
             height={22}
             className="brightness-0 dark:brightness-100"

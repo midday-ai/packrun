@@ -103,7 +103,7 @@ export default function UpdatesPage() {
         <header className="crt-header">
           <div className="flex items-center justify-between">
             <Link href="/" className="crt-link">
-              [v1.run]
+              [packrun.dev]
             </Link>
 
             <div className="flex items-center gap-3 sm:gap-6 text-xs flex-wrap">

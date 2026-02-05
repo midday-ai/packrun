@@ -5,8 +5,8 @@
  * Groups notifications by severity and includes unread updates from the period.
  */
 
-import { sendEmail, Digest, generateUnsubscribeToken, type DigestUpdate } from "@v1/email";
-import { db } from "@v1/db/client";
+import { sendEmail, Digest, generateUnsubscribeToken, type DigestUpdate } from "@packrun/email";
+import { db } from "@packrun/db/client";
 import React from "react";
 
 /**
@@ -77,7 +77,7 @@ async function processUserDigest(
 
   // Generate unsubscribe URL
   const unsubscribeToken = generateUnsubscribeToken(userId, "digest");
-  const unsubscribeUrl = `https://v1.run/api/unsubscribe?token=${unsubscribeToken}`;
+  const unsubscribeUrl = `https://packrun.dev/api/unsubscribe?token=${unsubscribeToken}`;
 
   // Create and send email
   const emailElement = React.createElement(Digest, {

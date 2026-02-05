@@ -5,7 +5,7 @@
  * Creates fresh server + transport per request to avoid conflicts
  * when multiple clients connect simultaneously.
  *
- * This endpoint should be served on a separate subdomain (e.g., mcp.v1.run)
+ * This endpoint should be served on a separate subdomain (e.g., mcp.packrun.dev)
  * that bypasses Cloudflare proxy to avoid SSE timeout issues.
  * See CLOUDFLARE_MCP_FIX.md for setup instructions.
  *

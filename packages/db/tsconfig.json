@@ -1,5 +1,5 @@
 {
-  "extends": "@v1/typescript-config/base.json",
+  "extends": "@packrun/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src"

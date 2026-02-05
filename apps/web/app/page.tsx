@@ -173,7 +173,7 @@ export default function Home() {
           {/* Logo */}
           <Image
             src="/logo.svg"
-            alt="V1"
+            alt="Packrun"
             width={129}
             height={91}
             className="w-20 sm:w-24 lg:w-28 h-auto mb-10 select-none brightness-0 dark:brightness-100"
@@ -280,7 +280,7 @@ export default function Home() {
                   <span className="flex items-center gap-1.5">
                     Powered by{" "}
                     <a
-                      href="https://typesense.org?utm_source=v1.run&utm_medium=referral&utm_campaign=search"
+                      href="https://typesense.org?utm_source=packrun.dev&utm_medium=referral&utm_campaign=search"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-muted hover:text-foreground transition-colors"

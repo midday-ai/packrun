@@ -1,7 +1,7 @@
 /**
  * Shared email layout component
  *
- * Matches v1.run website design:
+ * Matches packrun.dev website design:
  * - Dark mode (#050505 background)
  * - Geist Mono font
  * - Zero border radius
@@ -31,7 +31,7 @@ export interface LayoutProps {
   unsubscribeUrl?: string;
 }
 
-// v1.run color palette
+// packrun.dev color palette
 const colors = {
   bg: "#050505",
   fg: "#ffffff",
@@ -63,7 +63,7 @@ export function Layout({ previewText, children, unsubscribeUrl }: LayoutProps) {
           theme: {
             extend: {
               colors: {
-                v1: colors,
+                packrun: colors,
               },
               fontFamily: {
                 mono: ["Geist Mono", "ui-monospace", "SF Mono", "monospace"],
@@ -90,10 +90,10 @@ export function Layout({ previewText, children, unsubscribeUrl }: LayoutProps) {
             <Section className="px-5 py-4" style={{ borderBottom: `1px solid ${colors.border}` }}>
               <Row>
                 <Column>
-                  <Link href="https://v1.run" className="no-underline">
+                  <Link href="https://packrun.dev" className="no-underline">
                     <Img
-                      src="https://v1.run/logo.svg"
-                      alt="v1.run"
+                      src="https://packrun.dev/logo.svg"
+                      alt="packrun.dev"
                       width="32"
                       height="23"
                       style={{ display: "block" }}
@@ -102,11 +102,11 @@ export function Layout({ previewText, children, unsubscribeUrl }: LayoutProps) {
                 </Column>
                 <Column align="right">
                   <Link
-                    href="https://v1.run"
+                    href="https://packrun.dev"
                     className="text-[11px] no-underline"
                     style={{ color: colors.subtle }}
                   >
-                    v1.run
+                    packrun.dev
                   </Link>
                 </Column>
               </Row>
@@ -119,8 +119,12 @@ export function Layout({ previewText, children, unsubscribeUrl }: LayoutProps) {
             <Section className="pt-8 pb-8 px-5" style={{ borderTop: `1px solid ${colors.border}` }}>
               <Text className="text-[10px] leading-4 m-0 mb-1" style={{ color: colors.subtle }}>
                 You're receiving this because you favorited packages on{" "}
-                <Link href="https://v1.run" className="underline" style={{ color: colors.subtle }}>
-                  v1.run
+                <Link
+                  href="https://packrun.dev"
+                  className="underline"
+                  style={{ color: colors.subtle }}
+                >
+                  packrun.dev
                 </Link>
                 .
               </Text>
@@ -138,7 +142,7 @@ export function Layout({ previewText, children, unsubscribeUrl }: LayoutProps) {
                   </>
                 )}
                 <Link
-                  href="https://v1.run/profile?tab=notifications"
+                  href="https://packrun.dev/profile?tab=notifications"
                   className="underline"
                   style={{ color: colors.subtle }}
                 >

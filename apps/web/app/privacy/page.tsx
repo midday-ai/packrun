@@ -3,8 +3,8 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | v1.run",
-  description: "Privacy policy for v1.run",
+  title: "Privacy Policy | packrun.dev",
+  description: "Privacy policy for packrun.dev",
 };
 
 export default function PrivacyPage() {
@@ -28,8 +28,8 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xs text-foreground mt-6 mb-2">Information We Collect</h2>
             <p>
-              v1.run collects minimal information to provide our service. When you use our website,
-              we may collect:
+              packrun.dev collects minimal information to provide our service. When you use our
+              website, we may collect:
             </p>
             <ul className="list-disc list-inside space-y-1 mt-2">
               <li>Usage data (pages visited, search queries)</li>
@@ -68,8 +68,8 @@ export default function PrivacyPage() {
             <h2 className="text-xs text-foreground mt-6 mb-2">Contact</h2>
             <p>
               For privacy-related questions, contact us at{" "}
-              <a href="mailto:hello@v1.run" className="text-foreground hover:underline">
-                hello@v1.run
+              <a href="mailto:hello@packrun.dev" className="text-foreground hover:underline">
+                hello@packrun.dev
               </a>
             </p>
           </section>

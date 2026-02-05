@@ -9,12 +9,12 @@ const footerLinks = {
   product: [
     { label: "Search", href: "/" },
     { label: "MCP Server", href: "/mcp" },
-    { label: "API", href: "https://api.v1.run/docs", external: true },
+    { label: "API", href: "https://api.packrun.dev/docs", external: true },
     { label: "Live Updates", href: "/updates" },
   ],
   resources: [
     { label: "Sign in", href: "/profile" },
-    { label: "GitHub", href: "https://github.com/midday-ai/v1", external: true },
+    { label: "GitHub", href: "https://github.com/midday-ai/packrun", external: true },
   ],
   company: [{ label: "Midday", href: "https://midday.ai", external: true }],
 };
@@ -57,7 +57,7 @@ export function Footer() {
             <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
               <Image
                 src="/logo.svg"
-                alt="V1"
+                alt="Packrun"
                 width={32}
                 height={22}
                 className="brightness-0 dark:brightness-100"
@@ -161,7 +161,7 @@ export function Footer() {
             {/* Social Icons */}
             <div className="flex items-center gap-3 mt-4">
               <a
-                href="https://github.com/midday-ai/v1"
+                href="https://github.com/midday-ai/packrun"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-subtle hover:text-foreground transition-colors"
@@ -186,7 +186,7 @@ export function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-border">
         <div className="container-page py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <p className="text-subtle">© {new Date().getFullYear()} v1.run</p>
+          <p className="text-subtle">© {new Date().getFullYear()} packrun.dev</p>
 
           <div className="flex items-center gap-6">
             {mounted && (

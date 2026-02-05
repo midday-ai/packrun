@@ -5,8 +5,12 @@
  */
 
 import { Queue } from "bullmq";
-import { getConnection } from "@v1/queue";
-import { EMAIL_DIGEST_QUEUE, DIGEST_JOB_OPTIONS, type EmailDigestJobData } from "@v1/queue/delivery";
+import { getConnection } from "@packrun/queue";
+import {
+  EMAIL_DIGEST_QUEUE,
+  DIGEST_JOB_OPTIONS,
+  type EmailDigestJobData,
+} from "@packrun/queue/delivery";
 
 let digestQueue: Queue<EmailDigestJobData> | null = null;
 

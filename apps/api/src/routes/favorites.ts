@@ -6,8 +6,8 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { createId } from "@paralleldrive/cuid2";
 import { eq, and } from "drizzle-orm";
 import { auth } from "../lib/auth";
-import { db } from "@v1/db/client";
-import { favorite, user as userTable } from "@v1/db/schema";
+import { db } from "@packrun/db/client";
+import { favorite, user as userTable } from "@packrun/db/schema";
 import {
   ErrorResponseSchema,
   FavoriteActionResponseSchema,

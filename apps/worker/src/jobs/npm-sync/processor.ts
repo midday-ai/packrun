@@ -5,7 +5,7 @@
  * Now includes notification creation for package updates.
  */
 
-import { inferCategory } from "@v1/decisions";
+import { inferCategory } from "@packrun/decisions";
 import type { Job } from "bullmq";
 import {
   deletePackage,
@@ -20,7 +20,7 @@ import { extractCompatibility } from "../../lib/compatibility";
 import { getPreviousVersion } from "../../lib/version-tracker";
 import { enrichPackageUpdate } from "../../lib/notification-enrichment";
 import { dispatchNotifications } from "../../lib/notification-dispatcher";
-import { isDatabaseAvailable } from "@v1/db/client";
+import { isDatabaseAvailable } from "@packrun/db/client";
 import type { BulkSyncJobData, SyncJobData } from "./types";
 
 /**

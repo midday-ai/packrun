@@ -95,7 +95,7 @@ export async function fetchGitHubRepoData(
 ): Promise<GitHubRepoData | null> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.v3+json",
-    "User-Agent": "v1.run",
+    "User-Agent": "packrun.dev",
   };
 
   if (token) {
@@ -184,7 +184,7 @@ export async function fetchGitHubRepoData(
 export async function fetchGitHubStars(owner: string, repo: string): Promise<number | undefined> {
   try {
     const response = await fetch(`${UNGH_API}/repos/${owner}/${repo}`, {
-      headers: { "User-Agent": "v1.run" },
+      headers: { "User-Agent": "packrun.dev" },
     });
 
     if (!response.ok) {
@@ -230,7 +230,7 @@ export async function fetchGitHubReadme(owner: string, repo: string): Promise<st
     const response = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/readme`, {
       headers: {
         Accept: "application/vnd.github.raw+json", // Get raw content directly
-        "User-Agent": "v1.run",
+        "User-Agent": "packrun.dev",
       },
     });
 
@@ -260,7 +260,7 @@ export async function fetchGitHubRepoBasic(
 > | null> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.v3+json",
-    "User-Agent": "v1.run",
+    "User-Agent": "packrun.dev",
   };
 
   if (token) {

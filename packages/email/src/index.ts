@@ -1,5 +1,5 @@
 /**
- * @v1/email - Email templates and client for v1.run notifications
+ * @packrun/email - Email templates and client for packrun.dev notifications
  */
 
 export {

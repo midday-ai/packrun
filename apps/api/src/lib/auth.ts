@@ -7,10 +7,10 @@
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "@v1/db/client";
-import * as schema from "@v1/db/schema";
+import { db } from "@packrun/db/client";
+import * as schema from "@packrun/db/schema";
 
-const isProduction = process.env.BETTER_AUTH_URL?.includes("v1.run");
+const isProduction = process.env.BETTER_AUTH_URL?.includes("packrun.dev");
 
 // Only initialize auth if database is available
 export const auth = db
@@ -18,7 +18,7 @@ export const auth = db
       baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3001",
       basePath: "/api/auth",
       database: drizzleAdapter(db, { provider: "pg", schema }),
-      trustedOrigins: ["http://localhost:3000", "https://v1.run", "https://www.v1.run"],
+      trustedOrigins: ["http://localhost:3000", "https://packrun.dev", "https://www.packrun.dev"],
 
       socialProviders: {
         github: {
@@ -49,7 +49,7 @@ export const auth = db
         ? {
             crossSubDomainCookies: {
               enabled: true,
-              domain: ".v1.run", // Share cookies across api.v1.run and v1.run
+              domain: ".packrun.dev", // Share cookies across api.packrun.dev and packrun.dev
             },
             defaultCookieAttributes: {
               secure: true,

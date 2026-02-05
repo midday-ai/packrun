@@ -1,5 +1,5 @@
 {
-  "name": "@v1/decisions",
+  "name": "@packrun/decisions",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
     "./health": "./src/health.ts"
   },
   "devDependencies": {
-    "@v1/typescript-config": "workspace:*",
+    "@packrun/typescript-config": "workspace:*",
     "typescript": "^5.9.3"
   }
 }

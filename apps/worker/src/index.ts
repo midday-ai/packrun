@@ -5,7 +5,7 @@
  * Run with: bun run src/index.ts
  */
 
-import { getConnectionInfo } from "@v1/queue";
+import { getConnectionInfo } from "@packrun/queue";
 import { config } from "./config";
 import { getCombinedStats, queuePackageSync } from "./jobs/npm-sync";
 import { invalidatePackageCache } from "./lib/cache-invalidation";

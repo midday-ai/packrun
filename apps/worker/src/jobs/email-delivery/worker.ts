@@ -4,9 +4,13 @@
  * Processes immediate email notification jobs (critical alerts).
  */
 
-import { createWorker, type Job } from "@v1/queue";
-import { EMAIL_DELIVERY_QUEUE, EMAIL_RATE_LIMIT, type EmailDeliveryJobData } from "@v1/queue/delivery";
-import { sendEmail, CriticalAlert, generateUnsubscribeToken } from "@v1/email";
+import { createWorker, type Job } from "@packrun/queue";
+import {
+  EMAIL_DELIVERY_QUEUE,
+  EMAIL_RATE_LIMIT,
+  type EmailDeliveryJobData,
+} from "@packrun/queue/delivery";
+import { sendEmail, CriticalAlert, generateUnsubscribeToken } from "@packrun/email";
 import React from "react";
 
 /**
@@ -22,7 +26,7 @@ async function processEmailDelivery(job: Job<EmailDeliveryJobData>): Promise<voi
 
   // Generate unsubscribe URL
   const unsubscribeToken = generateUnsubscribeToken(userId);
-  const unsubscribeUrl = `https://v1.run/api/unsubscribe?token=${unsubscribeToken}`;
+  const unsubscribeUrl = `https://packrun.dev/api/unsubscribe?token=${unsubscribeToken}`;
 
   // Create React element for the email
   const emailElement = React.createElement(CriticalAlert, {
@@ -43,7 +47,9 @@ async function processEmailDelivery(job: Job<EmailDeliveryJobData>): Promise<voi
   });
 
   if (result) {
-    console.log(`[Email] Sent critical alert for ${props.packageName}@${props.newVersion} to ${to}`);
+    console.log(
+      `[Email] Sent critical alert for ${props.packageName}@${props.newVersion} to ${to}`,
+    );
   } else {
     console.log(`[Email] Skipped (not configured) for ${props.packageName}@${props.newVersion}`);
   }
