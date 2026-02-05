@@ -5,10 +5,11 @@
  * outdated packages, security vulnerabilities, and prioritize upgrades.
  */
 
+import { api as log } from "@packrun/logger";
 import { z } from "zod";
+import { getLatestWithHealth } from "./latest-health";
 import { getPackageVersion } from "./version";
 import { checkVersionHealth } from "./version-health";
-import { getLatestWithHealth } from "./latest-health";
 
 export const auditOutdatedPackagesSchema = z.object({
   packageJson: z
@@ -181,7 +182,7 @@ export async function auditOutdatedPackages(
       };
     } catch (error) {
       // Package not found or error - skip it
-      console.error(`Failed to audit ${name}:`, error);
+      log.error(`Failed to audit ${name}:`, error);
       return null;
     }
   });

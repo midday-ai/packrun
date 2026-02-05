@@ -1,2 +1,2 @@
 // Re-export the OG image as Twitter image
-export { default, alt, size, contentType } from "./opengraph-image";
+export { alt, contentType, default, size } from "./opengraph-image";

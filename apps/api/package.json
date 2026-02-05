@@ -1,34 +1,38 @@
 {
-  "name": "api",
+  "name": "@packrun/api-server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./procedures": "./src/procedures/index.ts"
+  },
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
     "test": "bun test",
-    "check-types": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "bun run scripts/migrate.ts",
-    "db:migrate:dev": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@hono/mcp": "^0.2.3",
-    "@hono/zod-openapi": "^1.2.1",
     "@modelcontextprotocol/sdk": "^1.25.3",
+    "@orpc/openapi": "^1.13.4",
+    "@orpc/server": "^1.13.4",
+    "@orpc/zod": "^1.13.4",
+    "@packrun/api": "workspace:*",
+    "@packrun/data": "workspace:*",
+    "@packrun/db": "workspace:*",
+    "@packrun/decisions": "workspace:*",
+    "@packrun/email": "workspace:*",
+    "@packrun/logger": "workspace:*",
+    "@packrun/queue": "workspace:*",
     "@paralleldrive/cuid2": "^3.3.0",
-    "@scalar/hono-api-reference": "^0.9.40",
-    "@v1/data": "workspace:*",
-    "@v1/decisions": "workspace:*",
-    "@v1/queue": "workspace:*",
     "better-auth": "^1.4.18",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.7",
     "ioredis": "^5.9.2",
     "module-replacements": "^2.11.0",
-    "postgres": "^3.4.8",
     "semver": "^7.6.3",
     "striptags": "^3.2.0",
     "typesense": "^2.1.0",
@@ -36,8 +40,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@v1/typescript-config": "workspace:*",
-    "drizzle-kit": "^0.31.8",
+    "@packrun/typescript-config": "workspace:*",
     "typescript": "^5.9.3"
   }
 }

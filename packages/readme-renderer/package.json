@@ -1,5 +1,5 @@
 {
-  "name": "@v1/readme-renderer",
+  "name": "@packrun/readme-renderer",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,6 +8,11 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "check-types": "tsc --noEmit"
+  },
   "dependencies": {
     "emoji-regex": "^10.6.0",
     "marked": "^17.0.1",
@@ -15,7 +20,7 @@
     "shiki": "^3.22.0"
   },
   "devDependencies": {
-    "@v1/typescript-config": "workspace:*",
+    "@packrun/typescript-config": "workspace:*",
     "@types/sanitize-html": "^2.16.0",
     "typescript": "^5.9.3"
   }

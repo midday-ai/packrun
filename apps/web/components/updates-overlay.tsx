@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  getRandomLocation,
   addPackageToStore,
+  getRandomLocation,
   type PackageUpdate,
 } from "@/components/globe-visualization";
 
@@ -62,10 +62,10 @@ export default function UpdatesOverlay() {
     const connect = () => {
       if (!isMounted) return;
 
-      console.log(`[SSE] Connecting to ${API_URL}/api/updates/stream...`);
+      console.log(`[SSE] Connecting to ${API_URL}/v1/updates/stream...`);
 
       try {
-        eventSource = new EventSource(`${API_URL}/api/updates/stream`);
+        eventSource = new EventSource(`${API_URL}/v1/updates/stream`);
       } catch (e) {
         console.error("[SSE] Failed to create EventSource:", e);
         return;
@@ -118,8 +118,8 @@ export default function UpdatesOverlay() {
           href="/"
           className="text-white hover:text-neutral-300 transition-colors pointer-events-auto"
         >
-          <span className="text-lg font-bold">v1</span>
-          <span className="text-neutral-500">.run</span>
+          <span className="text-lg font-bold">packrun</span>
+          <span className="text-neutral-500">.dev</span>
         </Link>
 
         <div className="flex items-center gap-6 pointer-events-auto">

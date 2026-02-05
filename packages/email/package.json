@@ -1,0 +1,31 @@
+{
+  "name": "@packrun/email",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./templates/critical": "./src/templates/critical.tsx",
+    "./templates/digest": "./src/templates/digest.tsx"
+  },
+  "scripts": {
+    "dev": "email dev --dir src/templates --port 3003",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-email/components": "^1.0.7",
+    "@react-email/tailwind": "^2.0.4",
+    "resend": "^6.9.1",
+    "react": "^19.2.4"
+  },
+  "devDependencies": {
+    "@react-email/preview-server": "^5.2.6",
+    "@types/react": "^19.2.11",
+    "@packrun/typescript-config": "workspace:*",
+    "react-email": "^5.2.6",
+    "typescript": "^5.9.3"
+  }
+}

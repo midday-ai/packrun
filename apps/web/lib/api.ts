@@ -1,34 +1,15 @@
+/**
+ * Server-side API utilities
+ *
+ * This file is for SERVER-SIDE data fetching with Next.js ISR caching.
+ * For CLIENT-SIDE API calls, use the oRPC client in lib/orpc/
+ *
+ * Server-side fetch uses Next.js built-in caching (next: { revalidate })
+ * to enable ISR for static pages.
+ */
+
 // API URL (NEXT_PUBLIC_ works on both client and server)
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-// Search API
-export interface SearchResult {
-  name: string;
-  description?: string;
-  version: string;
-  downloads: number;
-  hasTypes?: boolean;
-}
-
-export async function searchPackages(query: string): Promise<SearchResult[]> {
-  if (!query.trim()) return [];
-  if (!API_URL) {
-    console.warn("[api] NEXT_PUBLIC_API_URL not configured");
-    return [];
-  }
-
-  const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}&limit=10`);
-  if (!res.ok) throw new Error("Search failed");
-
-  const data = await res.json();
-  return (data.hits || []).map((hit: Record<string, unknown>) => ({
-    name: hit.name || hit.id,
-    description: hit.description || "",
-    version: hit.version || "",
-    downloads: hit.downloads || 0,
-    hasTypes: hit.hasTypes || false,
-  }));
-}
 
 // Package Health API
 export interface PackageHealthResponse {
@@ -127,7 +108,7 @@ export async function fetchPackageHealth(name: string): Promise<PackageHealthRes
 
     // Use absolute URL - Next.js will cache this response
     // Cloudflare caches the API response (24h), then Next.js ISR caches the page (24h)
-    const url = `${API_URL}/api/package/${encodeURIComponent(name)}`;
+    const url = `${API_URL}/v1/package/${encodeURIComponent(name)}`;
     const res = await fetch(url, {
       // Use Next.js fetch caching - respects Cache-Control headers from API
       // API sets s-maxage=86400 (24h) for Cloudflare, Next.js will respect this
@@ -149,46 +130,52 @@ export async function fetchPackageHealth(name: string): Promise<PackageHealthRes
   }
 }
 
-// Alternatives API
-export interface Alternative {
+// Vulnerability API
+export interface VulnerabilityData {
+  total: number;
+  critical: number;
+  high: number;
+  moderate: number;
+  low: number;
+}
+
+export interface VulnerabilityResponse {
   name: string;
-  score: number;
-  badges: string[];
+  version: string;
+  vulnerabilities: VulnerabilityData;
+  hasVulnerabilities: boolean;
+  severity: "none" | "low" | "moderate" | "high" | "critical";
 }
 
-export interface AlternativesData {
-  package: string;
-  category: string;
-  categoryName: string;
-  alternatives: Alternative[];
-  message?: string;
-}
-
-export async function fetchAlternatives(packageName: string): Promise<AlternativesData | null> {
-  if (!API_URL) return null;
-  const res = await fetch(`${API_URL}/api/compare?package=${encodeURIComponent(packageName)}`);
-  if (!res.ok) return null;
-  return res.json();
-}
-
-// Install Size API
-export interface InstallSizeResponse {
-  selfSize: number;
-  totalSize: number;
-  dependencyCount: number;
-}
-
-export async function fetchInstallSize(
+export async function fetchVulnerabilities(
   name: string,
   version?: string,
-): Promise<InstallSizeResponse | null> {
-  if (!API_URL) return null;
-  const url = `${API_URL}/api/package/${encodeURIComponent(name)}/install-size${
-    version ? `?version=${encodeURIComponent(version)}` : ""
-  }`;
-  const res = await fetch(url);
-  if (!res.ok) return null;
-  return res.json();
+): Promise<VulnerabilityResponse | null> {
+  try {
+    if (!API_URL) {
+      console.warn("[api] NEXT_PUBLIC_API_URL not configured");
+      return null;
+    }
+
+    const params = version ? `?version=${encodeURIComponent(version)}` : "";
+    const url = `${API_URL}/v1/package/${encodeURIComponent(name)}/vulnerabilities${params}`;
+    const res = await fetch(url, {
+      next: { revalidate: 3600 }, // 1 hour - shorter than health since vulns change more often
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      throw new Error(`API returned ${res.status}`);
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error(`[api] Failed to fetch vulnerabilities for ${name}:`, error);
+    return null;
+  }
 }
 
 // Utils

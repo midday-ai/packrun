@@ -1,4 +1,4 @@
-# v1.run
+# packrun.dev
 
 **The npm registry for AI agents**
 
@@ -27,7 +27,7 @@ Packages are scored automatically (0-100) based on:
 ## Project Structure
 
 ```
-v1.run/
+packrun.dev/
 ├── apps/
 │   ├── web/          # Next.js frontend
 │   ├── sync/         # Data sync worker
@@ -43,14 +43,14 @@ v1.run/
 
 For AI coding assistants (Cursor, Claude, etc.):
 
-**Endpoint**: `https://mcp.v1.run/mcp`
+**Endpoint**: `https://mcp.packrun.dev/mcp`
 
 **Configuration** (for Cursor, Claude Desktop, etc.):
 ```json
 {
   "mcpServers": {
-    "v1": {
-      "url": "https://mcp.v1.run/mcp"
+    "packrun": {
+      "url": "https://mcp.packrun.dev/mcp"
     }
   }
 }
@@ -138,8 +138,8 @@ GET /api/compare?list=categories
 ### Installation
 
 ```bash
-git clone https://github.com/your-org/v1.run
-cd v1.run
+git clone https://github.com/your-org/packrun.dev
+cd packrun.dev
 bun install
 ```
 

@@ -5,7 +5,8 @@
  * Run with: bun run src/index.ts
  */
 
-import { getConnectionInfo } from "@v1/queue";
+import { colors, worker as log } from "@packrun/logger";
+import { getConnectionInfo } from "@packrun/queue";
 import { config } from "./config";
 import { getCombinedStats, queuePackageSync } from "./jobs/npm-sync";
 import { invalidatePackageCache } from "./lib/cache-invalidation";
@@ -19,8 +20,8 @@ async function logStats() {
   const elapsed = (Date.now() - lastStatsTime) / 1000;
   const rate = jobsQueued / elapsed;
 
-  console.log(
-    `[Listener] Queued ${jobsQueued} jobs (${rate.toFixed(1)}/s) | ` +
+  log.info(
+    `Queued ${jobsQueued} jobs (${rate.toFixed(1)}/s) | ` +
       `Queue: ${stats.sync.waiting} waiting, ${stats.sync.active} active, ${stats.sync.failed} failed`,
   );
 
@@ -46,26 +47,24 @@ async function processChanges(changes: NpmChange[]): Promise<void> {
   }
 
   if (changes.length > 0) {
-    console.log(
-      `[Listener] Queued ${changes.length} changes (last seq: ${changes[changes.length - 1]?.seq})`,
-    );
+    log.info(`Queued ${changes.length} changes (last seq: ${changes[changes.length - 1]?.seq})`);
   }
 }
 
 async function runChangesListener() {
-  console.log("Starting npm changes listener...");
+  log.start("Starting npm changes listener...");
 
   // Get current sequence to start from
   const initialSeq = await getCurrentSeq();
-  console.log(`Current npm registry sequence: ${initialSeq}`);
-  console.log("Polling for changes (npm deprecated continuous streaming)...");
+  log.info(`Current npm registry sequence: ${initialSeq}`);
+  log.info("Polling for changes (npm deprecated continuous streaming)...");
 
   // Poll for changes - this runs forever
   await pollChanges(initialSeq, processChanges, 5000);
 }
 
 async function shutdown() {
-  console.log("\nShutting down listener...");
+  log.warn("Shutting down listener...");
   await logStats();
   process.exit(0);
 }
@@ -74,19 +73,23 @@ process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
 async function main() {
-  console.log("Worker Listener starting...");
-  console.log(
-    `Typesense: ${config.typesense.nearestNode.host}:${config.typesense.nearestNode.port}`,
-  );
   const redisInfo = getConnectionInfo();
-  console.log(`Redis: ${redisInfo.host}:${redisInfo.port}`);
+
+  const c = colors;
+  log.box({
+    title: c.bold("Worker Listener"),
+    message: [
+      `${c.cyan("Typesense")} ${c.gray("→")} ${c.whiteBright(`${config.typesense.nearestNode.host}:${config.typesense.nearestNode.port}`)}`,
+      `${c.red("Redis")}     ${c.gray("→")} ${c.whiteBright(`${redisInfo.host}:${redisInfo.port}`)}`,
+    ].join("\n"),
+  });
 
   setInterval(logStats, 30000);
 
   try {
     await runChangesListener();
   } catch (error) {
-    console.error("Fatal error:", error);
+    log.error("Fatal error:", error);
     process.exit(1);
   }
 }

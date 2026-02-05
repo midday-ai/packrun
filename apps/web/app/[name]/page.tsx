@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { FavoriteButton } from "@/components/favorite-button";
+import { FollowButton } from "@/components/follow-button";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { HealthScoreTooltip, HealthScoreTooltipTrigger } from "@/components/health-score-tooltip";
 import { InstallSizeStatCell } from "@/components/install-size-stat";
 import { InstallTabs } from "@/components/install-tabs";
 import { TimeAgo } from "@/components/time-ago";
+import { UpcomingReleaseAlert } from "@/components/upcoming-release-alert";
 import { WeeklyDownloads } from "@/components/weekly-downloads";
+import { client } from "@/lib/orpc/client";
 import { formatNumber, getPackage } from "@/lib/packages";
 import { getStaticPackages } from "@/lib/popular-packages";
 
@@ -38,9 +40,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // Create SEO-optimized title (aim for 50-60 chars)
-  // Format: "package - brief description | v1.run"
+  // Format: "package - brief description | packrun.dev"
   const maxTitleLength = 60;
-  const suffix = " | v1.run"; // 9 chars
+  const suffix = " | packrun.dev"; // 9 chars
   const separator = " - "; // 3 chars
   const availableForDesc = maxTitleLength - pkg.name.length - suffix.length - separator.length;
 
@@ -63,13 +65,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: {
-      canonical: `https://v1.run/${encodeURIComponent(pkg.name)}`,
+      canonical: `https://packrun.dev/${encodeURIComponent(pkg.name)}`,
     },
     openGraph: {
       title: pkg.name,
       description,
-      url: `https://v1.run/${encodeURIComponent(pkg.name)}`,
-      siteName: "v1.run",
+      url: `https://packrun.dev/${encodeURIComponent(pkg.name)}`,
+      siteName: "packrun.dev",
       type: "website",
     },
     twitter: {
@@ -91,13 +93,28 @@ export default async function PackagePage({ params }: PageProps) {
 
   const deps = Object.keys(pkg.dependencies || {});
 
+  // Fetch upcoming releases for this package
+  let upcomingRelease = null;
+  try {
+    const result = await client.releases.list({
+      status: "upcoming",
+      packageName: decodedName,
+      limit: 1,
+    });
+    if (result.releases.length > 0) {
+      upcomingRelease = result.releases[0];
+    }
+  } catch {
+    // Ignore errors fetching releases
+  }
+
   const softwareJsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareSourceCode",
     name: pkg.name,
     version: pkg.version,
     description: pkg.description,
-    url: `https://v1.run/${encodeURIComponent(pkg.name)}`,
+    url: `https://packrun.dev/${encodeURIComponent(pkg.name)}`,
     codeRepository: pkg.repository,
     programmingLanguage: "JavaScript",
     runtimePlatform: "Node.js",
@@ -114,13 +131,13 @@ export default async function PackagePage({ params }: PageProps) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://v1.run",
+        item: "https://packrun.dev",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: pkg.name,
-        item: `https://v1.run/${encodeURIComponent(pkg.name)}`,
+        item: `https://packrun.dev/${encodeURIComponent(pkg.name)}`,
       },
     ],
   };
@@ -143,15 +160,15 @@ export default async function PackagePage({ params }: PageProps) {
           <div className="container-page py-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl lg:text-3xl font-bold text-foreground tracking-tight">
-                    {pkg.name}
-                  </h1>
-                  <FavoriteButton packageName={pkg.name} />
-                </div>
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground tracking-tight">
+                  {pkg.name}
+                </h1>
                 {pkg.description && (
                   <p className="mt-2 text-sm text-muted max-w-2xl">{pkg.description}</p>
                 )}
+                <div className="mt-3">
+                  <FollowButton packageName={pkg.name} />
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-xs text-subtle uppercase tracking-wider">version</div>
@@ -249,6 +266,13 @@ export default async function PackagePage({ params }: PageProps) {
           <div className="flex flex-col lg:flex-row">
             {/* Left: Main Content */}
             <div className="flex-1 min-w-0 lg:border-r border-border">
+              {/* Upcoming Release Alert */}
+              {upcomingRelease && (
+                <section className="border-b border-border py-4 lg:pr-8">
+                  <UpcomingReleaseAlert release={upcomingRelease} />
+                </section>
+              )}
+
               {/* Install Section */}
               <section className="border-b border-border py-6 lg:pr-8">
                 <InstallTabs packageName={pkg.name} hasTypes={pkg.hasTypes} />
@@ -468,7 +492,7 @@ export default async function PackagePage({ params }: PageProps) {
               {/* Install MCP */}
               <div className="py-4">
                 <Link
-                  href="cursor://anysphere.cursor-deeplink/mcp/install?name=v1&config=eyJ1cmwiOiJodHRwczovL2FwaS52MS5ydW4vbWNwIn0="
+                  href="cursor://anysphere.cursor-deeplink/mcp/install?name=packrun&config=eyJ1cmwiOiJodHRwczovL2FwaS5wYWNrcnVuLmRldi9tY3AifQ=="
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-border text-xs text-muted hover:text-foreground hover:border-subtle transition-colors"
                 >
                   <svg
@@ -570,21 +594,13 @@ function getGradeColor(grade: string): string {
 }
 
 async function VulnStatCell({ packageName, version }: { packageName: string; version: string }) {
+  const { fetchVulnerabilities } = await import("@/lib/api");
+
   try {
-    const res = await fetch("https://api.osv.dev/v1/query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        package: { name: packageName, ecosystem: "npm" },
-        version,
-      }),
-      next: { revalidate: 3600 },
-    });
+    const response = await fetchVulnerabilities(packageName, version);
+    if (!response) return <StatCell label="vulns" value="—" />;
 
-    if (!res.ok) return <StatCell label="vulns" value="—" />;
-
-    const data = await res.json();
-    const count = data.vulns?.length || 0;
+    const count = response.vulnerabilities.total;
 
     return (
       <div className="flex-1 min-w-[64px] sm:min-w-[80px] px-3 py-3">

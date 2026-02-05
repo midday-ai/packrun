@@ -6,7 +6,7 @@ import {
   COMPARISON_CATEGORIES,
   getAlternatives,
   getComparisonForPackage,
-} from "@v1/decisions/comparisons";
+} from "@packrun/decisions/comparisons";
 import { z } from "zod";
 
 export const findAlternativesSchema = z.object({

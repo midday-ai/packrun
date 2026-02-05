@@ -1,10 +1,3 @@
-/**
- * Preview script to test OG image generation for a package
- * Run with: bun run apps/web/app/[name]/og-preview.tsx react
- */
-
-import { ImageResponse } from "next/og";
-
 // Helper to format downloads
 function formatDownloads(count: number): string {
   if (count >= 1000000) {
@@ -31,7 +24,7 @@ function getHealthColor(grade: string): string {
 async function generateOGImage(packageName: string) {
   const decodedName = packageName;
 
-  // Fetch package data from v1.run API for richer stats
+  // Fetch package data from packrun.dev API for richer stats
   let packageNameDisplay = decodedName;
   let version = "";
   let description = "";
@@ -43,11 +36,11 @@ async function generateOGImage(packageName: string) {
   let stars = 0;
   let vulnerabilities = 0;
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.v1.run";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.packrun.dev";
 
   try {
-    // Try to fetch from v1.run API first for richer data
-    const healthRes = await fetch(`${apiUrl}/api/package/${encodeURIComponent(decodedName)}`, {
+    // Try to fetch from packrun.dev API first for richer data
+    const healthRes = await fetch(`${apiUrl}/v1/package/${encodeURIComponent(decodedName)}`, {
       headers: { Accept: "application/json" },
     });
 

@@ -5,28 +5,28 @@
  * Uses cookieCache for fast session lookups (no LRU cache needed).
  */
 
+import { db } from "@packrun/db/client";
+import * as schema from "@packrun/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "./db";
-import * as schema from "./auth-schema";
 
-const isProduction = process.env.BETTER_AUTH_URL?.includes("v1.run");
+const isProduction = process.env.BETTER_AUTH_URL?.includes("packrun.dev");
 
 // Only initialize auth if database is available
 export const auth = db
   ? betterAuth({
       baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3001",
-      basePath: "/api/auth",
+      basePath: "/v1/auth",
       database: drizzleAdapter(db, { provider: "pg", schema }),
-      trustedOrigins: ["http://localhost:3000", "https://v1.run", "https://www.v1.run"],
+      trustedOrigins: ["http://localhost:3000", "https://packrun.dev", "https://www.packrun.dev"],
 
       socialProviders: {
         github: {
           clientId: process.env.GITHUB_CLIENT_ID!,
           clientSecret: process.env.GITHUB_CLIENT_SECRET!,
           redirectURI: process.env.BETTER_AUTH_URL
-            ? `${process.env.BETTER_AUTH_URL}/api/auth/callback/github`
-            : "http://localhost:3001/api/auth/callback/github",
+            ? `${process.env.BETTER_AUTH_URL}/v1/auth/callback/github`
+            : "http://localhost:3001/v1/auth/callback/github",
         },
       },
 
@@ -49,7 +49,7 @@ export const auth = db
         ? {
             crossSubDomainCookies: {
               enabled: true,
-              domain: ".v1.run", // Share cookies across api.v1.run and v1.run
+              domain: ".packrun.dev", // Share cookies across api.packrun.dev and packrun.dev
             },
             defaultCookieAttributes: {
               secure: true,

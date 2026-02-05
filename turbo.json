@@ -10,6 +10,10 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
+    "lint:fix": {
+      "dependsOn": ["^lint:fix"],
+      "cache": false
+    },
     "check-types": {
       "dependsOn": ["^check-types"]
     },

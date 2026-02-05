@@ -50,7 +50,7 @@ export function AlternativesSection({ packageName }: { packageName: string }) {
             <div className="flex items-center gap-2">
               <span className="font-mono text-sm">{alt.name}</span>
               <div className="flex gap-1">
-                {alt.badges.slice(0, 2).map((badge) => (
+                {alt.badges?.slice(0, 2).map((badge) => (
                   <Badge
                     key={badge}
                     variant="outline"
@@ -69,14 +69,14 @@ export function AlternativesSection({ packageName }: { packageName: string }) {
             </div>
             <span
               className={`font-mono text-sm ${
-                alt.score >= 70
+                (alt.score ?? 0) >= 70
                   ? "text-green-500"
-                  : alt.score >= 50
+                  : (alt.score ?? 0) >= 50
                     ? "text-yellow-500"
                     : "text-muted-foreground"
               }`}
             >
-              {alt.score}/100
+              {alt.score ?? 0}/100
             </span>
           </Link>
         ))}

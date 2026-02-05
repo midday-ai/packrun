@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 const PACKAGE_MANAGERS = ["npm", "pnpm", "yarn", "bun", "deno", "vlt"] as const;
 type PackageManager = (typeof PACKAGE_MANAGERS)[number];
 
-const STORAGE_KEY = "v1.run:pm";
+const STORAGE_KEY = "packrun.dev:pm";
 
 function getStoredPm(): PackageManager {
   if (typeof window === "undefined") return "npm";

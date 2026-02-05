@@ -4,11 +4,11 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ v1.run                                                      │
+│ packrun.dev                                                      │
 │                                                              │
 │                                                              │
 │                        ┌─────┐                              │
-│                        │  v1 │  ← Logo (centered)           │
+│                        │ packrun │  ← Logo (centered)        │
 │                        └─────┘                              │
 │                                                              │
 │                         react                                │
@@ -22,7 +22,7 @@
 │        React is a JavaScript library for building           │
 │              user interfaces.                                │
 │                                                              │
-│                                          v1.run/react        │
+│                                          packrun.dev/react        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,11 +45,11 @@
 ## Design Elements
 
 - **Background**: Dark (#050505) with scanlines pattern
-- **Logo**: Centered v1 logo (white)
+- **Logo**: Centered packrun logo (white)
 - **Package Name**: Large, bold, white text (64px for short names)
 - **Stats**: Grid layout with colored values and gray labels
 - **Description**: Gray text below stats
-- **Branding**: "v1.run" in top-left, URL in bottom-right
+- **Branding**: "packrun.dev" in top-left, URL in bottom-right
 
 ## How to View
 
@@ -60,4 +60,4 @@
 ## Example URLs
 
 - Local: `http://localhost:3000/react/opengraph-image`
-- Production: `https://v1.run/react/opengraph-image`
+- Production: `https://packrun.dev/react/opengraph-image`

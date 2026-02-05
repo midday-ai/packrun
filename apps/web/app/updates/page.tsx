@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface PackageEvent {
   id: string;
@@ -50,7 +50,7 @@ export default function UpdatesPage() {
     const connect = () => {
       if (!isMounted) return;
 
-      eventSource = new EventSource(`${API_URL}/api/updates/stream`);
+      eventSource = new EventSource(`${API_URL}/v1/updates/stream`);
 
       eventSource.addEventListener("connected", () => {
         setConnected(true);
@@ -103,7 +103,7 @@ export default function UpdatesPage() {
         <header className="crt-header">
           <div className="flex items-center justify-between">
             <Link href="/" className="crt-link">
-              [v1.run]
+              [packrun.dev]
             </Link>
 
             <div className="flex items-center gap-3 sm:gap-6 text-xs flex-wrap">

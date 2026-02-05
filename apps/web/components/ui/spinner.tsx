@@ -11,7 +11,7 @@ export function Spinner({ className }: { className?: string }) {
       setFrame((f) => (f + 1) % frames.length);
     }, 80);
     return () => clearInterval(interval);
-  }, [frames.length]);
+  });
 
   return <span className={className ?? "text-muted"}>{frames[frame]}</span>;
 }

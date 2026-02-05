@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { TypesenseLogo } from "@/components/typesense-logo";
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { Spinner } from "@/components/ui/spinner";
-import { useSearch } from "@/lib/hooks";
 import { formatDownloads } from "@/lib/api";
-import { TypesenseLogo } from "@/components/typesense-logo";
+import { useSearch } from "@/lib/hooks";
 
 // Popular packages to show by default
 const POPULAR_PACKAGES = [
@@ -74,10 +74,10 @@ const POPULAR_PACKAGES = [
     hasTypes: true,
   },
   {
-    name: "vite",
-    description: "Next Generation Frontend Tooling",
-    version: "5.0.12",
-    downloads: 14000000,
+    name: "resend",
+    description: "The best API to reach humans instead of spam folders",
+    version: "4.0.0",
+    downloads: 500000,
     hasTypes: true,
   },
 ];
@@ -234,7 +234,7 @@ function CommandSearch({ open, setOpen }: CommandSearchProps) {
             {/* Results - responsive height */}
             <CommandList className="h-[50vh] sm:h-[320px] max-h-[320px] overflow-y-auto scrollbar-none p-2">
               {isLoading ? (
-                <div className="py-12 flex items-center justify-center gap-2 text-sm text-muted">
+                <div className="py-12 flex items-center justify-center gap-2 text-xs text-muted">
                   <Spinner /> searching
                 </div>
               ) : displayItems.length > 0 ? (
@@ -280,7 +280,7 @@ function CommandSearch({ open, setOpen }: CommandSearchProps) {
               <span className="flex items-center gap-1.5">
                 Powered by{" "}
                 <a
-                  href="https://typesense.org?utm_source=v1.run&utm_medium=referral&utm_campaign=search"
+                  href="https://typesense.org?utm_source=packrun.dev&utm_medium=referral&utm_campaign=search"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-muted hover:text-foreground transition-colors"

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SearchTrigger } from "@/components/command-search";
+import { NotificationBell } from "@/components/notification-bell";
 import { UserProfile } from "@/components/user-profile";
 
 export function Header() {
@@ -10,7 +11,7 @@ export function Header() {
         <Link href="/" className="shrink-0 hover:opacity-80 transition-opacity">
           <Image
             src="/logo.svg"
-            alt="V1"
+            alt="Packrun"
             width={32}
             height={22}
             className="brightness-0 dark:brightness-100"
@@ -30,6 +31,13 @@ export function Header() {
         >
           MCP
         </Link>
+        <Link
+          href="/releases"
+          className="hidden sm:block text-xs uppercase tracking-wider text-subtle hover:text-foreground transition-colors"
+        >
+          Releases
+        </Link>
+        <NotificationBell />
         <UserProfile />
       </div>
     </header>

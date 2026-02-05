@@ -2,76 +2,21 @@
  * Vulnerabilities Component
  *
  * Async server component that checks for security vulnerabilities.
- * This streams via Suspense since it requires calling the OSV API.
+ * This streams via Suspense since it uses the packrun API.
  */
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchVulnerabilities, type VulnerabilityData } from "@/lib/api";
 
 interface VulnerabilitiesProps {
   packageName: string;
   version: string;
 }
 
-interface VulnerabilityData {
-  total: number;
-  critical: number;
-  high: number;
-  moderate: number;
-  low: number;
-}
-
-/**
- * Query the OSV API for vulnerabilities.
- */
-async function analyzeVulnerabilities(
-  name: string,
-  version: string,
-): Promise<VulnerabilityData | null> {
-  try {
-    const res = await fetch("https://api.osv.dev/v1/query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        package: { name, ecosystem: "npm" },
-        version,
-      }),
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    });
-
-    if (!res.ok) return null;
-
-    const data = await res.json();
-    const vulns = data.vulns || [];
-
-    // Count by severity
-    let critical = 0;
-    let high = 0;
-    let moderate = 0;
-    let low = 0;
-
-    for (const vuln of vulns) {
-      const severity = vuln.database_specific?.severity?.toLowerCase() || "";
-      if (severity === "critical") critical++;
-      else if (severity === "high") high++;
-      else if (severity === "moderate" || severity === "medium") moderate++;
-      else low++;
-    }
-
-    return {
-      total: vulns.length,
-      critical,
-      high,
-      moderate,
-      low,
-    };
-  } catch {
-    return null;
-  }
-}
-
 export async function Vulnerabilities({ packageName, version }: VulnerabilitiesProps) {
-  const data = await analyzeVulnerabilities(packageName, version);
+  const response = await fetchVulnerabilities(packageName, version);
+  const data: VulnerabilityData | null = response?.vulnerabilities ?? null;
 
   if (!data) {
     return (

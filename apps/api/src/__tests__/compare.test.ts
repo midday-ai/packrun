@@ -6,8 +6,8 @@ import { describe, expect, test } from "bun:test";
 import { request } from "./helpers";
 
 describe("Compare API", () => {
-  test("GET /api/compare?packages= compares multiple packages", async () => {
-    const res = await request("/api/compare?packages=react,vue");
+  test("GET /v1/compare/packages?names= compares multiple packages", async () => {
+    const res = await request("/v1/compare/packages?names=react,vue");
     expect(res.status).toBe(200);
 
     const data = (await res.json()) as { packages: Array<{ name: string }> };
@@ -16,8 +16,8 @@ describe("Compare API", () => {
     expect(data.packages.map((p) => p.name)).toContain("vue");
   });
 
-  test("GET /api/compare?list=categories returns all categories", async () => {
-    const res = await request("/api/compare?list=categories");
+  test("GET /v1/compare/categories returns all categories", async () => {
+    const res = await request("/v1/compare/categories");
     expect(res.status).toBe(200);
 
     const data = (await res.json()) as { categories: Array<{ id: string; name: string }> };

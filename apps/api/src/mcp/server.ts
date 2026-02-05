@@ -17,7 +17,7 @@ import {
   getLatestWithHealth,
   getPackageVersion,
   suggestLatestForCategory,
-} from "../tools/index";
+} from "../tools";
 import { getPackageHealth } from "../tools/health";
 
 /**
@@ -26,7 +26,7 @@ import { getPackageHealth } from "../tools/health";
 export function createMcpServer(): McpServer {
   const server = new McpServer(
     {
-      name: "v1-npm-tools",
+      name: "packrun-npm-tools",
       version: "1.0.0",
     },
     {
@@ -208,7 +208,10 @@ function registerTools(server: McpServer): void {
       try {
         const result = await getPackageHealth(name);
         if (!result) {
-          return { content: [{ type: "text" as const, text: '{"error":"Package not found"}' }], isError: true };
+          return {
+            content: [{ type: "text" as const, text: '{"error":"Package not found"}' }],
+            isError: true,
+          };
         }
         return toolResult(result);
       } catch (error) {
@@ -227,7 +230,11 @@ function registerTools(server: McpServer): void {
       inputSchema: {
         name: z.string().describe("The npm package name"),
         version: z.string().optional().describe("Current version to check"),
-        checkLatest: z.boolean().optional().default(true).describe("Whether to compare against latest version"),
+        checkLatest: z
+          .boolean()
+          .optional()
+          .default(true)
+          .describe("Whether to compare against latest version"),
       },
     },
     async ({ name, version, checkLatest }) => {
@@ -248,7 +255,11 @@ function registerTools(server: McpServer): void {
         "Always get the latest version of a package with comprehensive health check, security status, and safety assessment.",
       inputSchema: {
         name: z.string().describe("The npm package name"),
-        includeAlternatives: z.boolean().optional().default(false).describe("Include alternative package recommendations"),
+        includeAlternatives: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Include alternative package recommendations"),
       },
     },
     async ({ name, includeAlternatives }) => {
@@ -272,7 +283,11 @@ function registerTools(server: McpServer): void {
           .string()
           .or(z.record(z.string(), z.unknown()))
           .describe("package.json content as string or parsed object"),
-        includeDevDependencies: z.boolean().optional().default(false).describe("Check devDependencies too"),
+        includeDevDependencies: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Check devDependencies too"),
         minSeverity: z
           .enum(["low", "moderate", "high", "critical"])
           .optional()
@@ -282,7 +297,9 @@ function registerTools(server: McpServer): void {
     },
     async ({ packageJson, includeDevDependencies, minSeverity }) => {
       try {
-        return toolResult(await auditOutdatedPackages({ packageJson, includeDevDependencies, minSeverity }));
+        return toolResult(
+          await auditOutdatedPackages({ packageJson, includeDevDependencies, minSeverity }),
+        );
       } catch (error) {
         return errorResult(error);
       }
@@ -297,9 +314,23 @@ function registerTools(server: McpServer): void {
       description:
         "Get latest versions of top packages in a category with health scores and recommendations.",
       inputSchema: {
-        category: z.string().describe("Category ID (e.g., 'http-client', 'date-library', 'validation')"),
-        limit: z.number().min(1).max(10).optional().default(5).describe("Number of packages to return (1-10)"),
-        minHealthScore: z.number().min(0).max(100).optional().default(60).describe("Minimum health score (0-100)"),
+        category: z
+          .string()
+          .describe("Category ID (e.g., 'http-client', 'date-library', 'validation')"),
+        limit: z
+          .number()
+          .min(1)
+          .max(10)
+          .optional()
+          .default(5)
+          .describe("Number of packages to return (1-10)"),
+        minHealthScore: z
+          .number()
+          .min(0)
+          .max(100)
+          .optional()
+          .default(60)
+          .describe("Minimum health score (0-100)"),
       },
     },
     async ({ category, limit, minHealthScore }) => {

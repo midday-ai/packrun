@@ -4,6 +4,9 @@
  * Stores real-time health metrics for npm packages
  */
 
+// Re-export GitHubRepoData from the canonical source
+export type { GitHubRepoData } from "@packrun/data/github";
+
 export interface PackageHealth {
   /** Package name */
   name: string;
@@ -64,22 +67,6 @@ export interface HealthSignals {
   deprecated?: boolean;
   /** Deprecation message */
   deprecatedMessage?: string;
-}
-
-/**
- * GitHub repository data for health calculation
- */
-export interface GitHubRepoData {
-  owner: string;
-  repo: string;
-  stars: number;
-  forks: number;
-  openIssues: number;
-  openPRs: number;
-  lastCommit: Date;
-  contributors: number;
-  recentCommits: number; // commits in last 6 months
-  recentReleases: number; // releases in last 6 months
 }
 
 /**

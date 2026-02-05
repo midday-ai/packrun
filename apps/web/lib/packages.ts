@@ -1,7 +1,7 @@
 /**
  * Package data access layer
  *
- * Fetches package data from the v1.run API, with fallback to npm registry.
+ * Fetches package data from the packrun.dev API, with fallback to npm registry.
  * Caching is handled by Next.js ISR and Cloudflare CDN.
  */
 
@@ -91,7 +91,7 @@ async function renderReadme(
   repository?: string,
 ): Promise<string | undefined> {
   try {
-    const { renderReadmeHtml, parseRepositoryInfo } = await import("@v1/readme-renderer");
+    const { renderReadmeHtml, parseRepositoryInfo } = await import("@packrun/readme-renderer");
     const repoInfo = parseRepositoryInfo(repository);
     const result = await renderReadmeHtml(readme, packageName, repoInfo);
     return result.html || undefined;

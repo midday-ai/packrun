@@ -14,18 +14,25 @@
     "sync:phase1": "bun run src/priority-sync.ts 1",
     "sync:phase2": "bun run src/priority-sync.ts 2",
     "sync:phase3": "bun run src/priority-sync.ts 3",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@v1/data": "workspace:*",
-    "@v1/decisions": "workspace:*",
-    "@v1/queue": "workspace:*",
+    "@packrun/data": "workspace:*",
+    "@packrun/db": "workspace:*",
+    "@packrun/decisions": "workspace:*",
+    "@packrun/email": "workspace:*",
+    "@packrun/logger": "workspace:*",
+    "@packrun/queue": "workspace:*",
     "ioredis": "^5.6.1",
+    "semver": "^7.6.3",
     "typesense": "^2.1.0"
   },
   "devDependencies": {
-    "@v1/typescript-config": "workspace:*",
+    "@packrun/typescript-config": "workspace:*",
     "@types/bun": "latest",
+    "@types/semver": "^7.5.8",
     "typescript": "^5.9.3"
   }
 }

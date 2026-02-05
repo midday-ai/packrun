@@ -1,5 +1,5 @@
 {
-  "name": "@v1/data",
+  "name": "@packrun/data",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,8 +11,13 @@
     "./npms": "./src/npms.ts",
     "./bundlephobia": "./src/bundlephobia.ts"
   },
+  "scripts": {
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
-    "@v1/typescript-config": "workspace:*",
+    "@packrun/typescript-config": "workspace:*",
     "typescript": "^5.9.3"
   }
 }

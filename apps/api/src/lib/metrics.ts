@@ -4,9 +4,10 @@
  * Cloudflare edge cache handles caching of final API responses (6h for compare endpoint)
  */
 
-import type { BundleData, PackageMetrics } from "@v1/decisions/schema";
-import { fetchPackageMetadata } from "./clients/npm";
+import type { BundleData, PackageMetrics } from "@packrun/decisions/schema";
+import { api as log } from "@packrun/logger";
 import { fetchGitHubData } from "./clients/github";
+import { fetchPackageMetadata } from "./clients/npm";
 
 const BUNDLEPHOBIA_API = "https://bundlephobia.com/api/size";
 const NPM_DOWNLOADS = "https://api.npmjs.org/downloads";
@@ -36,7 +37,7 @@ export async function fetchPackageMetrics(packageName: string): Promise<PackageM
 
     return metrics;
   } catch (error) {
-    console.error(`Error fetching metrics for ${packageName}:`, error);
+    log.error(`Error fetching metrics for ${packageName}:`, error);
     return null;
   }
 }

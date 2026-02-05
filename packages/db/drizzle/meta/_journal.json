@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1770074350402,
+      "tag": "0000_superb_invaders",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770236132048,
+      "tag": "0001_secret_reptil",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770243141748,
+      "tag": "0002_dark_mad_thinker",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770330000000,
+      "tag": "0003_rename_favorite_to_package_follow",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770330100000,
+      "tag": "0004_add_upcoming_releases",
+      "breakpoints": true
+    }
+  ]
+}

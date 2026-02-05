@@ -1,12 +1,8 @@
 @import "tailwindcss";
-
-/* Source files for Tailwind to scan */
-@source "../components/**/*.tsx";
-@source "../app/**/*.tsx";
-@source "../lib/**/*.ts";
+@import "tw-animate-css";
 
 /* Dark mode uses class strategy (for next-themes) */
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:is(.dark *));
 
 /* Tailwind v4 Theme Configuration */
 @theme {
@@ -106,6 +102,17 @@ html.light {
     padding: 0;
   }
 
+  /* Prevent Radix scroll-lock from causing layout shift */
+  html[data-scroll-locked] {
+    margin-right: 0 !important;
+    overflow-y: scroll !important;
+  }
+
+  body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+
   /* Selection - dark mode */
   html.dark ::selection {
     background: #ffffff;
@@ -161,6 +168,13 @@ html.light {
     max-width: var(--container-max);
     margin-inline: auto;
     padding-inline: 1rem;
+    width: 100%;
+  }
+
+  /* Pixelated/crisp image rendering for retro icons */
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
   }
 
   @media (min-width: 375px) {
@@ -482,4 +496,20 @@ html.light {
 .shiki span {
   color: var(--color-muted) !important;
   background-color: transparent !important;
+}
+
+/* Home page screen flicker effect */
+.screen-flicker {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99;
+  background: transparent;
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.97; }
+  50% { opacity: 1; }
+  100% { opacity: 0.98; }
 }

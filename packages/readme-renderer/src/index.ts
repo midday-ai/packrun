@@ -3,11 +3,11 @@
  * Shared package used by both sync and web apps.
  */
 
+import emojiRegex from "emoji-regex";
 import { marked, type Tokens } from "marked";
 import sanitizeHtml from "sanitize-html";
 import { createHighlighterCore, type HighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-import emojiRegex from "emoji-regex";
 
 // =============================================================================
 // Shiki Highlighter

@@ -3,8 +3,8 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | v1.run",
-  description: "Terms of service for v1.run",
+  title: "Terms of Service | packrun.dev",
+  description: "Terms of service for packrun.dev",
 };
 
 export default function TermsPage() {
@@ -28,25 +28,25 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xs text-foreground mt-6 mb-2">Acceptance of Terms</h2>
             <p>
-              By accessing and using v1.run, you agree to be bound by these Terms of Service. If you
-              do not agree to these terms, please do not use our service.
+              By accessing and using packrun.dev, you agree to be bound by these Terms of Service.
+              If you do not agree to these terms, please do not use our service.
             </p>
           </section>
 
           <section>
             <h2 className="text-xs text-foreground mt-6 mb-2">Description of Service</h2>
             <p>
-              v1.run provides an npm package registry interface with MCP (Model Context Protocol)
-              integration, security signals, and package health information for developers and AI
-              agents.
+              packrun.dev provides an npm package registry interface with MCP (Model Context
+              Protocol) integration, security signals, and package health information for developers
+              and AI agents.
             </p>
           </section>
 
           <section>
             <h2 className="text-xs text-foreground mt-6 mb-2">Use of Service</h2>
             <p>
-              You agree to use v1.run only for lawful purposes and in accordance with these terms.
-              You agree not to:
+              You agree to use packrun.dev only for lawful purposes and in accordance with these
+              terms. You agree not to:
             </p>
             <ul className="list-disc list-inside space-y-1 mt-2">
               <li>Use the service in any way that violates applicable laws</li>
@@ -67,17 +67,17 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xs text-foreground mt-6 mb-2">Data Accuracy</h2>
             <p>
-              While we strive to provide accurate package information, v1.run aggregates data from
-              third-party sources (npm, GitHub, OSV). We make no guarantees about the accuracy or
-              completeness of this data.
+              While we strive to provide accurate package information, packrun.dev aggregates data
+              from third-party sources (npm, GitHub, OSV). We make no guarantees about the accuracy
+              or completeness of this data.
             </p>
           </section>
 
           <section>
             <h2 className="text-xs text-foreground mt-6 mb-2">Limitation of Liability</h2>
             <p>
-              v1.run is provided "as is" without warranties of any kind. We are not liable for any
-              damages arising from your use of the service.
+              packrun.dev is provided "as is" without warranties of any kind. We are not liable for
+              any damages arising from your use of the service.
             </p>
           </section>
 
@@ -93,8 +93,8 @@ export default function TermsPage() {
             <h2 className="text-xs text-foreground mt-6 mb-2">Contact</h2>
             <p>
               For questions about these terms, contact us at{" "}
-              <a href="mailto:hello@v1.run" className="text-foreground hover:underline">
-                hello@v1.run
+              <a href="mailto:hello@packrun.dev" className="text-foreground hover:underline">
+                hello@packrun.dev
               </a>
             </p>
           </section>

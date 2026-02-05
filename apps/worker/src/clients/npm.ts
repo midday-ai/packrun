@@ -1,11 +1,11 @@
 /**
  * npm Registry API Client for Worker
  *
- * Re-exports from @v1/data/npm with worker-specific additions.
+ * Re-exports from @packrun/data/npm with worker-specific additions.
  * Includes Redis-cached versions of download fetching.
  */
 
-import { fetchDownloadsBatch } from "@v1/data/npm";
+import { fetchDownloadsBatch } from "@packrun/data/npm";
 import { getCachedDownloadsBatch, setCachedDownloadsBatch } from "../lib/redis-cache";
 
 // Re-export everything from shared package
@@ -28,7 +28,7 @@ export {
   type NpmDownloadsResponse,
   type NpmPackageMetadata,
   type NpmVersionData,
-} from "@v1/data/npm";
+} from "@packrun/data/npm";
 
 /**
  * Fetch downloads with Redis cache (24h TTL)
@@ -76,7 +76,7 @@ export async function fetchDownloads(names: string[]): Promise<Map<string, numbe
 export async function checkTypesPackagesBatch(
   packages: Array<{ name: string; hasTypes: boolean }>,
 ): Promise<Map<string, string>> {
-  const { checkTypesPackage } = await import("@v1/data/npm");
+  const { checkTypesPackage } = await import("@packrun/data/npm");
   const results = new Map<string, string>();
   const packagesWithoutTypes = packages.filter((p) => !p.hasTypes);
   const batchSize = 20;

@@ -1,11 +1,11 @@
 /**
  * OSV API Client for Worker
  *
- * Re-exports from @v1/data/osv.
+ * Re-exports from @packrun/data/osv.
  */
 
 export {
   fetchVulnerabilities,
   fetchVulnerabilitiesBatch,
   type VulnerabilityData,
-} from "@v1/data/osv";
+} from "@packrun/data/osv";

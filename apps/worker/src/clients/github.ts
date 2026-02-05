@@ -1,7 +1,7 @@
 /**
  * GitHub API Client for Worker
  *
- * Re-exports from @v1/data/github with worker-specific additions.
+ * Re-exports from @packrun/data/github with worker-specific additions.
  */
 
 // Re-export everything from shared package
@@ -13,4 +13,4 @@ export {
   fetchGitHubStarsBatch,
   type GitHubRepoData,
   parseGitHubUrl,
-} from "@v1/data/github";
+} from "@packrun/data/github";

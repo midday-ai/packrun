@@ -621,7 +621,7 @@ async function main() {
   const phase = args[0] || "all";
 
   console.log("╔═══════════════════════════════════════════════════════════╗");
-  console.log("║           V1.RUN PRIORITY SYNC                            ║");
+  console.log("║           PACKRUN PRIORITY SYNC                            ║");
   console.log("╚═══════════════════════════════════════════════════════════╝");
 
   await ensureCollection();

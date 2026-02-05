@@ -1,6 +1,6 @@
 # Infrastructure Setup
 
-This document describes how to deploy v1.run to Railway with multi-region support.
+This document describes how to deploy packrun.dev to Railway with multi-region support.
 
 ## Architecture Overview
 
@@ -98,7 +98,7 @@ User Request → Web App (ISR) → API /api/package/:name/health
 ### Monorepo Structure
 
 ```
-v1.run/
+packrun.dev/
 ├── apps/
 │   ├── web/          # Next.js web app (package pages, search UI)
 │   ├── api/          # Hono API server (MCP + REST)
@@ -111,17 +111,17 @@ v1.run/
     └── typescript-config/ # Shared TypeScript configs
 ```
 
-### Shared Data Clients (`@v1/data`)
+### Shared Data Clients (`@packrun/data`)
 
 Centralized API clients used by both worker and API:
 
 | Client | Purpose |
 |--------|---------|
-| `@v1/data/npm` | npm registry metadata & downloads |
-| `@v1/data/github` | GitHub repo data (stars, issues, commits) |
-| `@v1/data/osv` | Vulnerability data from OSV |
-| `@v1/data/npms` | Quality scores from npms.io |
-| `@v1/data/bundlephobia` | Bundle size metrics |
+| `@packrun/data/npm` | npm registry metadata & downloads |
+| `@packrun/data/github` | GitHub repo data (stars, issues, commits) |
+| `@packrun/data/osv` | Vulnerability data from OSV |
+| `@packrun/data/npms` | Quality scores from npms.io |
+| `@packrun/data/bundlephobia` | Bundle size metrics |
 
 ## Caching Strategy
 
@@ -172,7 +172,7 @@ Centralized API clients used by both worker and API:
 ### Project Structure
 
 ```
-v1-run (Project)
+packrun (Project)
 ├── web (Service) - 3 replicas (Amsterdam, Virginia, California)
 ├── api (Service) - 3 replicas (Amsterdam, Virginia, California) [in-memory cache]
 ├── listener (Service) - npm changes listener (producer)
@@ -218,7 +218,7 @@ Railway auto-detects JavaScript monorepos. When you import the repo:
 
 1. Go to [Railway Dashboard](https://railway.com/new)
 2. Select **Deploy from GitHub repo**
-3. Choose the `v1.run` repository
+3. Choose the `packrun.dev` repository
 4. Railway will auto-detect services from `railway.json` files
 5. Click **Deploy** to create all services
 
@@ -245,7 +245,7 @@ If auto-import doesn't work:
 | `TYPESENSE_API_KEY` | Admin API key from Typesense Cloud |
 | `TYPESENSE_HOST` | Typesense Cloud nearest node host |
 | `NEXT_PUBLIC_TYPESENSE_SEARCH_API_KEY` | Search-only API key (public) |
-| `NEXT_PUBLIC_API_URL` | API server URL (e.g., `https://api.v1.run`) |
+| `NEXT_PUBLIC_API_URL` | API server URL (e.g., `https://api.packrun.dev`) |
 | `REVALIDATE_TOKEN` | Secret token for on-demand ISR cache revalidation |
 
 ### API Service
@@ -274,7 +274,7 @@ If auto-import doesn't work:
 ### Add Domain to Cloudflare
 
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. Add your domain (e.g., `v1.run`)
+2. Add your domain (e.g., `packrun.dev`)
 3. Update nameservers at your registrar
 
 ### Configure DNS
@@ -301,17 +301,17 @@ If auto-import doesn't work:
 
 1. In Railway, go to Web service → **Settings** → **Networking**
 2. Click **Add Custom Domain**
-3. Enter your domain (e.g., `v1.run`)
+3. Enter your domain (e.g., `packrun.dev`)
 4. For API service, add two custom domains:
-   - `api.v1.run` (for REST API endpoints with Cloudflare caching)
-   - `mcp.v1.run` (for MCP endpoint, bypasses Cloudflare to avoid SSE timeout)
+   - `api.packrun.dev` (for REST API endpoints with Cloudflare caching)
+   - `mcp.packrun.dev` (for MCP endpoint, bypasses Cloudflare to avoid SSE timeout)
 
 ## Verification
 
 ### Check Web Health
 
 ```bash
-curl https://v1.run/api/health
+curl https://packrun.dev/api/health
 ```
 
 Expected:
@@ -326,7 +326,7 @@ Expected:
 ### Check API Health
 
 ```bash
-curl https://api.v1.run/health
+curl https://api.packrun.dev/health
 ```
 
 Expected:
@@ -340,7 +340,7 @@ Expected:
 ### Check Package Health Endpoint
 
 ```bash
-curl https://api.v1.run/api/package/react/health | jq '.health'
+curl https://api.packrun.dev/api/package/react/health | jq '.health'
 ```
 
 Expected:
@@ -360,7 +360,7 @@ Expected:
 ### Check Cache Headers
 
 ```bash
-curl -I https://v1.run/react
+curl -I https://packrun.dev/react
 ```
 
 Look for:

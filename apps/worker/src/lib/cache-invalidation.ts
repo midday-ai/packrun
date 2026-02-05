@@ -7,7 +7,7 @@
 
 const CF_ZONE_ID = process.env.CLOUDFLARE_ZONE_ID;
 const CF_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
-const API_DOMAIN = process.env.API_DOMAIN || "https://api.v1.run";
+const API_DOMAIN = process.env.API_DOMAIN || "https://api.packrun.dev";
 const WEB_REVALIDATE_URL = process.env.WEB_REVALIDATE_URL;
 const REVALIDATE_SECRET = process.env.REVALIDATE_SECRET;
 
@@ -32,12 +32,12 @@ export async function purgeCloudflareCache(packageName: string): Promise<boolean
 
   const encodedName = encodeURIComponent(packageName);
   const urls = [
-    `${API_DOMAIN}/api/package/${encodedName}`,
-    `${API_DOMAIN}/api/package/${encodedName}/version`,
-    `${API_DOMAIN}/api/package/${encodedName}/vulnerabilities`,
-    `${API_DOMAIN}/api/package/${encodedName}/alternatives`,
-    `${API_DOMAIN}/api/package/${encodedName}/deprecated`,
-    `${API_DOMAIN}/api/package/${encodedName}/types`,
+    `${API_DOMAIN}/v1/package/${encodedName}`,
+    `${API_DOMAIN}/v1/package/${encodedName}/version`,
+    `${API_DOMAIN}/v1/package/${encodedName}/vulnerabilities`,
+    `${API_DOMAIN}/v1/package/${encodedName}/alternatives`,
+    `${API_DOMAIN}/v1/package/${encodedName}/deprecated`,
+    `${API_DOMAIN}/v1/package/${encodedName}/types`,
   ];
 
   try {

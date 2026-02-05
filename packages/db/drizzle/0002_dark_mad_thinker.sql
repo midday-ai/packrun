@@ -1,0 +1,1 @@
+CREATE INDEX "favorite_packageName_idx" ON "favorite" USING btree ("package_name");

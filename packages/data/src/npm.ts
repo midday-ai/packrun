@@ -261,6 +261,46 @@ export function getRepositoryUrl(pkg: NpmPackageMetadata): string | null {
     .replace(/\.git$/, "");
 }
 
+// --- Logo / Avatar ---
+
+/**
+ * Get a logo URL for a package (GitHub avatar or favicon)
+ */
+export function getPackageLogo(pkg: NpmPackageMetadata): string | null {
+  // Try GitHub avatar first (most npm packages have GitHub repos)
+  const repoUrl = getRepositoryUrl(pkg);
+  if (repoUrl?.includes("github.com")) {
+    const match = repoUrl.match(/github\.com\/([^\/]+)/);
+    if (match?.[1]) {
+      return `https://github.com/${match[1]}.png?size=64`;
+    }
+  }
+
+  // Fall back to favicon from homepage
+  if (pkg.homepage) {
+    try {
+      const domain = new URL(pkg.homepage).hostname;
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    } catch {
+      // Invalid URL
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Get logo URL from a repository URL string
+ */
+export function getLogoFromRepoUrl(repoUrl: string | null): string | null {
+  if (!repoUrl?.includes("github.com")) return null;
+  const match = repoUrl.match(/github\.com\/([^\/]+)/);
+  if (match?.[1]) {
+    return `https://github.com/${match[1]}.png?size=64`;
+  }
+  return null;
+}
+
 // --- Utilities ---
 
 function chunkArray<T>(array: T[], size: number): T[][] {

@@ -9,6 +9,12 @@ export {
   findAlternativesSchema,
 } from "./alternatives";
 export {
+  type SuggestLatestForCategoryInput,
+  type SuggestLatestForCategoryResult,
+  suggestLatestForCategory,
+  suggestLatestForCategorySchema,
+} from "./category-latest";
+export {
   type ComparePackagesInput,
   type ComparePackagesResult,
   comparePackages,
@@ -20,30 +26,6 @@ export {
   checkDeprecated,
   checkDeprecatedSchema,
 } from "./deprecated";
-export {
-  type CheckTypesInput,
-  type CheckTypesResult,
-  checkTypes,
-  checkTypesSchema,
-} from "./types";
-export {
-  type GetPackageVersionInput,
-  type GetPackageVersionResult,
-  getPackageVersion,
-  getPackageVersionSchema,
-} from "./version";
-export {
-  type CheckVulnerabilitiesInput,
-  type CheckVulnerabilitiesResult,
-  checkVulnerabilities,
-  checkVulnerabilitiesSchema,
-} from "./vulnerabilities";
-export {
-  type CheckVersionHealthInput,
-  type CheckVersionHealthResult,
-  checkVersionHealth,
-  checkVersionHealthSchema,
-} from "./version-health";
 export {
   type GetLatestWithHealthInput,
   type GetLatestWithHealthResult,
@@ -57,8 +39,26 @@ export {
   auditOutdatedPackagesSchema,
 } from "./outdated-audit";
 export {
-  type SuggestLatestForCategoryInput,
-  type SuggestLatestForCategoryResult,
-  suggestLatestForCategory,
-  suggestLatestForCategorySchema,
-} from "./category-latest";
+  type CheckTypesInput,
+  type CheckTypesResult,
+  checkTypes,
+  checkTypesSchema,
+} from "./types";
+export {
+  type GetPackageVersionInput,
+  type GetPackageVersionResult,
+  getPackageVersion,
+  getPackageVersionSchema,
+} from "./version";
+export {
+  type CheckVersionHealthInput,
+  type CheckVersionHealthResult,
+  checkVersionHealth,
+  checkVersionHealthSchema,
+} from "./version-health";
+export {
+  type CheckVulnerabilitiesInput,
+  type CheckVulnerabilitiesResult,
+  checkVulnerabilities,
+  checkVulnerabilitiesSchema,
+} from "./vulnerabilities";

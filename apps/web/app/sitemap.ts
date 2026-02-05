@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { POPULAR_PACKAGES } from "@/lib/popular-packages";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://v1.run";
+  const baseUrl = "https://packrun.dev";
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [

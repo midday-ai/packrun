@@ -1,151 +1,200 @@
 /**
- * v1.run API Server
+ * packrun.dev API Server
  *
- * Hono server with OpenAPI spec and MCP support for AI agents.
+ * Bun server with oRPC for type-safe RPC and OpenAPI endpoints.
+ * Special handlers for SSE streaming, MCP, and unsubscribe pages.
  */
 
-import { OpenAPIHono } from "@hono/zod-openapi";
-import { apiReference } from "@scalar/hono-api-reference";
-import { cors } from "hono/cors";
-import { logger } from "hono/logger";
-
+import { colors, api as log } from "@packrun/logger";
+import { handleMcp, handleUnsubscribe, handleUpdatesStream } from "./handlers";
 import { auth } from "./lib/auth";
 import { getReplacementStats, initReplacements } from "./lib/replacements";
-import {
-  createAdminRoutes,
-  createCompareRoutes,
-  createFavoritesRoutes,
-  createMcpRoutes,
-  createPackageRoutes,
-  createUpdatesRoutes,
-} from "./routes/index";
+import { handleOpenAPI, handleRPC } from "./orpc-handler";
 
 // =============================================================================
-// App Setup
+// Initialization
 // =============================================================================
 
-const app = new OpenAPIHono();
 const PORT = process.env.PORT || 3001;
 
 // Initialize replacements data
 initReplacements();
 const replacementStats = getReplacementStats();
-console.log(
-  `[Startup] Loaded ${replacementStats.totalModules} modules (${replacementStats.nativeModules} native)`,
+log.ready(
+  `Loaded ${replacementStats.totalModules} modules (${replacementStats.nativeModules} native)`,
 );
 
 // =============================================================================
-// Middleware
+// CORS Helper
 // =============================================================================
 
-app.use("*", logger());
-app.use(
-  "*",
-  cors({
-    origin: (origin) => {
-      if (origin?.includes("localhost")) return origin;
-      if (origin?.endsWith(".v1.run") || origin === "https://v1.run") return origin;
-      return origin || "*";
-    },
-    allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Cache-Control"],
-    credentials: true,
-  }),
-);
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  let allowOrigin = "*";
+  if (origin?.includes("localhost")) {
+    allowOrigin = origin;
+  } else if (origin?.endsWith(".packrun.dev") || origin === "https://packrun.dev") {
+    allowOrigin = origin;
+  }
+
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "GET, HEAD, PUT, POST, DELETE, PATCH, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Cache-Control, Authorization",
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Max-Age": "86400",
+  };
+}
+
+/**
+ * Add CORS headers to a response
+ */
+function withCors(response: Response, origin: string | null): Response {
+  const corsHeaders = getCorsHeaders(origin);
+  for (const [key, value] of Object.entries(corsHeaders)) {
+    response.headers.set(key, value);
+  }
+  return response;
+}
 
 // =============================================================================
-// Routes
+// Request Handler
 // =============================================================================
 
-// Admin (health check)
-app.route("/", createAdminRoutes());
+async function handleRequest(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  const origin = request.headers.get("origin");
 
-// Package routes
-app.route("/", createPackageRoutes());
+  // Handle CORS preflight
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: getCorsHeaders(origin),
+    });
+  }
 
-// Compare and search routes
-app.route("/", createCompareRoutes());
+  // Route the request and add CORS headers to response
+  const response = await routeRequest(request, url);
+  return withCors(response, origin);
+}
 
-// Favorites routes (authenticated)
-app.route("/", createFavoritesRoutes());
+/**
+ * Route request to appropriate handler
+ */
+async function routeRequest(request: Request, url: URL): Promise<Response> {
+  // ==========================================================================
+  // Special Handlers (non-oRPC)
+  // ==========================================================================
 
-// MCP endpoint
-app.route("/", createMcpRoutes());
+  // MCP endpoint (uses Hono internally for @hono/mcp)
+  if (url.pathname === "/mcp") {
+    return handleMcp(request);
+  }
 
-// Live updates SSE stream
-app.route("/", createUpdatesRoutes());
+  // Updates SSE stream
+  if (url.pathname === "/v1/updates/stream") {
+    return handleUpdatesStream(request);
+  }
 
-// =============================================================================
-// OpenAPI Documentation
-// =============================================================================
+  // Unsubscribe HTML pages
+  if (url.pathname === "/v1/unsubscribe") {
+    return handleUnsubscribe(request);
+  }
 
-app.doc("/openapi.json", {
-  openapi: "3.1.0",
-  info: {
-    title: "v1.run API",
-    version: "1.0.0",
-    description:
-      "npm package intelligence API - Get health scores, security assessments, and recommendations for npm packages",
-    contact: {
-      name: "v1.run",
-      url: "https://v1.run",
-    },
-  },
-  servers: [
-    { url: "https://api.v1.run", description: "Production" },
-    { url: "http://localhost:3001", description: "Development" },
-  ],
-  tags: [
-    { name: "Package", description: "Package information and health assessment" },
-    { name: "Compare", description: "Package comparison and alternatives" },
-    { name: "Search", description: "Package search" },
-    { name: "Favorites", description: "User favorites management" },
-    { name: "Account", description: "User account management" },
-  ],
-});
+  // ==========================================================================
+  // Better Auth
+  // ==========================================================================
 
-app.get(
-  "/docs",
-  apiReference({
-    url: "/openapi.json",
-    theme: "moon",
-    layout: "modern",
-    defaultHttpClient: {
-      targetKey: "js",
-      clientKey: "fetch",
-    },
-  }),
-);
-
-// =============================================================================
-// Better Auth Routes
-// =============================================================================
-
-if (auth) {
-  const authHandler = auth.handler;
-  app.on(["POST", "GET"], "/api/auth/*", async (c) => {
-    const response = await authHandler(c.req.raw);
+  if (url.pathname.startsWith("/v1/auth/") && auth) {
+    const response = await auth.handler(request);
     response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
     response.headers.set("Pragma", "no-cache");
     return response;
-  });
-  console.log("[Auth] Better Auth routes mounted at /api/auth/*");
-} else {
-  console.log("[Auth] Skipped - DATABASE_URL not configured");
+  }
+
+  // ==========================================================================
+  // oRPC Handlers
+  // ==========================================================================
+
+  // RPC endpoint (type-safe internal clients)
+  if (url.pathname.startsWith("/rpc")) {
+    const response = await handleRPC(request);
+    if (response) {
+      return response;
+    }
+  }
+
+  // OpenAPI endpoint (REST consumers)
+  // Matches /v1/*, /search, /docs, /openapi.json
+  if (
+    url.pathname.startsWith("/v1/") ||
+    url.pathname === "/search" ||
+    url.pathname === "/docs" ||
+    url.pathname === "/openapi.json"
+  ) {
+    const response = await handleOpenAPI(request);
+    if (response) {
+      return response;
+    }
+  }
+
+  // ==========================================================================
+  // Health check (for backwards compatibility)
+  // ==========================================================================
+
+  if (url.pathname === "/health") {
+    return new Response(
+      JSON.stringify({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        service: "packrun-api",
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  // ==========================================================================
+  // Not Found
+  // ==========================================================================
+
+  return new Response(
+    JSON.stringify({
+      error: "Not Found",
+      path: url.pathname,
+    }),
+    {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    },
+  );
 }
 
 // =============================================================================
 // Server Startup
 // =============================================================================
 
-console.log(`v1.run API server starting on port ${PORT}...`);
-console.log(`  Health:  http://localhost:${PORT}/health`);
-console.log(`  Docs:    http://localhost:${PORT}/docs`);
-console.log(`  OpenAPI: http://localhost:${PORT}/openapi.json`);
-console.log(`  MCP:     http://localhost:${PORT}/mcp`);
-console.log(`  REST:    http://localhost:${PORT}/api/package/:name`);
+const c = colors;
+const endpoints = [
+  `${c.cyan("Docs")}    ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/docs`)}`,
+  `${c.green("Health")}  ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/health`)}`,
+  `${c.magenta("MCP")}     ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/mcp`)}`,
+  `${c.blue("RPC")}     ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/rpc`)}`,
+  `${c.yellow("REST")}    ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/v1/*`)}`,
+];
+if (auth) {
+  endpoints.push(
+    `${c.red("Auth")}    ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/v1/auth/*`)}`,
+  );
+}
+
+log.box({
+  title: c.bold(`packrun.dev API :${PORT}`),
+  message: endpoints.join("\n"),
+});
 
 export default {
   port: PORT,
-  fetch: app.fetch,
+  fetch: handleRequest,
 };

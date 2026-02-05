@@ -1,7 +1,7 @@
 /**
  * npm Registry API client for API Server
  *
- * Re-exports from @v1/data/npm with additional aliases for compatibility.
+ * Re-exports from @packrun/data/npm with additional aliases for compatibility.
  */
 
 // Also export the types with API-compatible names
@@ -9,7 +9,7 @@ export type {
   NpmDownloadsResponse as DownloadsData,
   NpmPackageMetadata as PackageMetadata,
   NpmSearchResult,
-} from "@v1/data/npm";
+} from "@packrun/data/npm";
 // Re-export everything from shared package
 // Re-export with API-compatible names
 export {
@@ -30,8 +30,8 @@ export {
   isCJS,
   isDeprecated,
   isESM,
-  searchNpmRegistry,
   type NpmDownloadsResponse,
   type NpmPackageMetadata,
   type NpmVersionData,
-} from "@v1/data/npm";
+  searchNpmRegistry,
+} from "@packrun/data/npm";

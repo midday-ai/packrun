@@ -4,7 +4,7 @@
  * Computes a 0-100 health score from various signals.
  */
 
-import type { NpmsScores } from "./clients/npms";
+import type { NpmsScores } from "@packrun/data/npms";
 import type { PackageDocument } from "./clients/typesense";
 import type { DownloadTrend, SecuritySignals } from "./enrichment";
 

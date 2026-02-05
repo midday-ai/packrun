@@ -3,6 +3,11 @@
   "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnSave": true,
 
+  // Run Biome fixes on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit"
+  },
+
   // Language-specific formatter settings
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"

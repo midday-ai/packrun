@@ -5,7 +5,8 @@
  * Run with: bun run src/worker.ts
  */
 
-import { getConnectionInfo } from "@v1/queue";
+import { colors, worker as log } from "@packrun/logger";
+import { getConnectionInfo } from "@packrun/queue";
 import { ensureCollection } from "./clients/typesense";
 import { config } from "./config";
 import { createWorkers, getQueueStats } from "./jobs";
@@ -15,20 +16,20 @@ let workers: ReturnType<typeof createWorkers> | null = null;
 async function logStats() {
   const stats = await getQueueStats();
 
-  console.log(
-    `[Stats] Sync: ${stats.sync.waiting} waiting, ${stats.sync.active} active, ${stats.sync.failed} failed | ` +
+  log.info(
+    `Sync: ${stats.sync.waiting} waiting, ${stats.sync.active} active, ${stats.sync.failed} failed | ` +
       `Bulk: ${stats.bulk.waiting} waiting, ${stats.bulk.active} active`,
   );
 }
 
 async function shutdown() {
-  console.log("\nShutting down workers...");
+  log.warn("Shutting down workers...");
 
   if (workers) {
     await workers.close();
   }
 
-  console.log("Workers closed");
+  log.success("Workers closed");
   process.exit(0);
 }
 
@@ -36,15 +37,16 @@ process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
 async function main() {
-  console.log("Worker Processor starting...");
-  console.log(
-    `Typesense: ${config.typesense.nearestNode.host}:${config.typesense.nearestNode.port}`,
-  );
-  console.log(
-    `Typesense API Key: ${config.typesense.apiKey ? `${config.typesense.apiKey.slice(0, 4)}...${config.typesense.apiKey.slice(-4)}` : "(empty)"}`,
-  );
   const redisInfo = getConnectionInfo();
-  console.log(`Redis: ${redisInfo.host}:${redisInfo.port}`);
+
+  const c = colors;
+  log.box({
+    title: c.bold("Worker Processor"),
+    message: [
+      `${c.cyan("Typesense")} ${c.gray("→")} ${c.whiteBright(`${config.typesense.nearestNode.host}:${config.typesense.nearestNode.port}`)}`,
+      `${c.red("Redis")}     ${c.gray("→")} ${c.whiteBright(`${redisInfo.host}:${redisInfo.port}`)}`,
+    ].join("\n"),
+  });
 
   // Ensure Typesense collection exists
   await ensureCollection();
@@ -52,7 +54,7 @@ async function main() {
   // Create and start workers
   workers = createWorkers();
 
-  console.log("Workers ready, processing jobs...");
+  log.ready("Workers ready, processing jobs...");
 
   // Log stats every minute
   setInterval(logStats, 60000);
@@ -62,6 +64,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("Fatal error:", error);
+  log.error("Fatal error:", error);
   process.exit(1);
 });

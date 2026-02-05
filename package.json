@@ -1,5 +1,5 @@
 {
-  "name": "v1.run",
+  "name": "packrun.dev",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -12,6 +12,8 @@
     "dev:sync": "turbo run dev --filter=sync",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "lint:turbo": "turbo run lint",
+    "lint:turbo:fix": "turbo run lint:fix",
     "format": "biome format --write .",
     "check-types": "turbo run check-types"
   },

@@ -1,15 +1,15 @@
 /**
- * @v1/data - Shared data fetching clients for external services
+ * @packrun/data - Shared data fetching clients for external services
  *
  * Usage:
- *   import { fetchPackageMetadata } from "@v1/data/npm";
- *   import { fetchGitHubRepoData } from "@v1/data/github";
- *   import { fetchVulnerabilities } from "@v1/data/osv";
- *   import { fetchNpmsScores } from "@v1/data/npms";
- *   import { fetchBundleData } from "@v1/data/bundlephobia";
+ *   import { fetchPackageMetadata } from "@packrun/data/npm";
+ *   import { fetchGitHubRepoData } from "@packrun/data/github";
+ *   import { fetchVulnerabilities } from "@packrun/data/osv";
+ *   import { fetchNpmsScores } from "@packrun/data/npms";
+ *   import { fetchBundleData } from "@packrun/data/bundlephobia";
  *
  * Or import all:
- *   import * as npm from "@v1/data/npm";
+ *   import * as npm from "@packrun/data/npm";
  */
 
 export * from "./bundlephobia";

@@ -4,20 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-
-const footerLinks = {
-  product: [
-    { label: "Search", href: "/" },
-    { label: "MCP Server", href: "/mcp" },
-    { label: "API", href: "https://api.v1.run/docs", external: true },
-    { label: "Live Updates", href: "/updates" },
-  ],
-  resources: [
-    { label: "Sign in", href: "/profile" },
-    { label: "GitHub", href: "https://github.com/midday-ai/v1", external: true },
-  ],
-  company: [{ label: "Midday", href: "https://midday.ai", external: true }],
-};
+import { useCommandSearch } from "@/components/command-search";
+import { useSignInModal } from "@/components/sign-in-modal";
 
 function GitHubIcon() {
   return (
@@ -38,6 +26,8 @@ function XIcon() {
 export function Footer() {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { setOpen: openSearch } = useCommandSearch();
+  const { openSignIn } = useSignInModal();
 
   useEffect(() => {
     setMounted(true);
@@ -57,7 +47,7 @@ export function Footer() {
             <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
               <Image
                 src="/logo.svg"
-                alt="V1"
+                alt="Packrun"
                 width={32}
                 height={22}
                 className="brightness-0 dark:brightness-100"
@@ -76,28 +66,41 @@ export function Footer() {
           <div>
             <h3 className="label mb-3">Product</h3>
             <ul className="space-y-2">
-              {footerLinks.product.map((link) => (
-                <li key={link.href}>
-                  {"external" in link && link.external ? (
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted text-xs hover:text-foreground transition-colors inline-flex items-center gap-1"
-                    >
-                      {link.label}
-                      <span className="text-subtle">↗</span>
-                    </a>
-                  ) : (
-                    <Link
-                      href={link.href}
-                      className="text-muted text-xs hover:text-foreground transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  )}
-                </li>
-              ))}
+              <li>
+                <button
+                  onClick={() => openSearch(true)}
+                  className="text-muted text-xs hover:text-foreground transition-colors"
+                >
+                  Search
+                </button>
+              </li>
+              <li>
+                <Link
+                  href="/mcp"
+                  className="text-muted text-xs hover:text-foreground transition-colors"
+                >
+                  MCP Server
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="https://api.packrun.dev/docs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted text-xs hover:text-foreground transition-colors inline-flex items-center gap-1"
+                >
+                  API
+                  <span className="text-subtle">↗</span>
+                </a>
+              </li>
+              <li>
+                <Link
+                  href="/updates"
+                  className="text-muted text-xs hover:text-foreground transition-colors"
+                >
+                  Live Updates
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -105,28 +108,25 @@ export function Footer() {
           <div>
             <h3 className="label mb-3">Resources</h3>
             <ul className="space-y-2">
-              {footerLinks.resources.map((link) => (
-                <li key={link.href}>
-                  {"external" in link && link.external ? (
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted text-xs hover:text-foreground transition-colors inline-flex items-center gap-1"
-                    >
-                      {link.label}
-                      <span className="text-subtle">↗</span>
-                    </a>
-                  ) : (
-                    <Link
-                      href={link.href}
-                      className="text-muted text-xs hover:text-foreground transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  )}
-                </li>
-              ))}
+              <li>
+                <button
+                  onClick={() => openSignIn()}
+                  className="text-muted text-xs hover:text-foreground transition-colors"
+                >
+                  Sign in
+                </button>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/midday-ai/packrun"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted text-xs hover:text-foreground transition-colors inline-flex items-center gap-1"
+                >
+                  GitHub
+                  <span className="text-subtle">↗</span>
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -134,34 +134,23 @@ export function Footer() {
           <div>
             <h3 className="label mb-3">Company</h3>
             <ul className="space-y-2">
-              {footerLinks.company.map((link) => (
-                <li key={link.href}>
-                  {"external" in link && link.external ? (
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted text-xs hover:text-foreground transition-colors inline-flex items-center gap-1"
-                    >
-                      {link.label}
-                      <span className="text-subtle">↗</span>
-                    </a>
-                  ) : (
-                    <Link
-                      href={link.href}
-                      className="text-muted text-xs hover:text-foreground transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  )}
-                </li>
-              ))}
+              <li>
+                <a
+                  href="https://midday.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted text-xs hover:text-foreground transition-colors inline-flex items-center gap-1"
+                >
+                  Midday
+                  <span className="text-subtle">↗</span>
+                </a>
+              </li>
             </ul>
 
             {/* Social Icons */}
             <div className="flex items-center gap-3 mt-4">
               <a
-                href="https://github.com/midday-ai/v1"
+                href="https://github.com/midday-ai/packrun"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-subtle hover:text-foreground transition-colors"
@@ -186,7 +175,7 @@ export function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-border">
         <div className="container-page py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <p className="text-subtle">© {new Date().getFullYear()} v1.run</p>
+          <p className="text-subtle">© {new Date().getFullYear()} packrun.dev</p>
 
           <div className="flex items-center gap-6">
             {mounted && (

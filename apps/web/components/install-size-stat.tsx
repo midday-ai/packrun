@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchInstallSize } from "@/lib/api";
-import { formatBytes } from "@/lib/packages";
 import { Spinner } from "@/components/ui/spinner";
+import { orpc } from "@/lib/orpc/query";
+import { formatBytes } from "@/lib/packages";
 
 interface InstallSizeStatCellProps {
   name: string;
@@ -21,12 +21,13 @@ const GC_TIME_MS = SEVEN_DAYS_MS;
  * First number from health (unpackedSize); second number from API via React Query.
  */
 export function InstallSizeStatCell({ name, version, unpackedSize }: InstallSizeStatCellProps) {
-  const { data, isPending } = useQuery({
-    queryKey: ["install-size", name, version],
-    queryFn: () => fetchInstallSize(name, version),
-    staleTime: STALE_TIME_MS,
-    gcTime: GC_TIME_MS,
-  });
+  const { data, isPending } = useQuery(
+    orpc.package.getInstallSize.queryOptions({
+      input: { name, version },
+      staleTime: STALE_TIME_MS,
+      gcTime: GC_TIME_MS,
+    }),
+  );
 
   const first = unpackedSize != null ? formatBytes(unpackedSize) : "—";
 

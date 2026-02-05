@@ -5,10 +5,10 @@
  * security status, and safety assessment.
  */
 
+import { fetchVulnerabilities } from "@packrun/data/osv";
 import { z } from "zod";
 import { getPackageHealth } from "./health";
 import { getPackageVersion } from "./version";
-import { fetchVulnerabilities } from "../lib/clients/osv";
 
 export const getLatestWithHealthSchema = z.object({
   name: z.string().describe("The npm package name"),

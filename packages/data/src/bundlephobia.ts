@@ -25,7 +25,7 @@ export async function fetchBundleData(packageName: string): Promise<BundleData |
   try {
     const response = await fetch(`${BUNDLEPHOBIA_API}?package=${encodeURIComponent(packageName)}`, {
       headers: {
-        "User-Agent": "v1.run",
+        "User-Agent": "packrun.dev",
         Accept: "application/json",
       },
     });

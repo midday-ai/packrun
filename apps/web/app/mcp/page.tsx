@@ -1,33 +1,33 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import { Header } from "@/components/header";
+import Link from "next/link";
 import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
 
 export const metadata: Metadata = {
-  title: "Model Context Protocol (MCP) Integration | v1.run",
+  title: "Model Context Protocol (MCP) Integration | packrun.dev",
   description:
     "Give your AI agent fast, accurate npm data via MCP. Always use latest versions, check security vulnerabilities, and get comprehensive package health assessments.",
   alternates: {
-    canonical: "https://v1.run/mcp",
+    canonical: "https://packrun.dev/mcp",
   },
   openGraph: {
-    title: "Model Context Protocol (MCP) Integration | v1.run",
+    title: "Model Context Protocol (MCP) Integration | packrun.dev",
     description:
       "Give your AI agent fast, accurate npm data via MCP. Always use latest versions, check security vulnerabilities, and get comprehensive package health assessments.",
-    url: "https://v1.run/mcp",
+    url: "https://packrun.dev/mcp",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Model Context Protocol (MCP) Integration | v1.run",
+    title: "Model Context Protocol (MCP) Integration | packrun.dev",
     description:
       "Give your AI agent fast, accurate npm data via MCP. Always use latest versions, check security vulnerabilities, and get comprehensive package health assessments.",
   },
 };
 
-// Cursor deeplink - config is base64 encoded JSON: {"url":"https://mcp.v1.run/mcp"}
-// Note: Using mcp.v1.run subdomain to bypass Cloudflare SSE timeout
+// Cursor deeplink - config is base64 encoded JSON: {"url":"https://mcp.packrun.dev/mcp"}
+// Note: Using mcp.packrun.dev subdomain to bypass Cloudflare SSE timeout
 const CURSOR_DEEPLINK =
-  "cursor://anysphere.cursor-deeplink/mcp/install?name=v1&config=eyJ1cmwiOiJodHRwczovL21jcC52MS5ydW4vbWNwIn0=";
+  "cursor://anysphere.cursor-deeplink/mcp/install?name=packrun&config=eyJ1cmwiOiJodHRwczovL21jcC5wYWNrcnVuLmRldi9tY3AifQ==";
 
 export default function MCPPage() {
   return (
@@ -47,7 +47,7 @@ export default function MCPPage() {
           <h2 className="text-xs uppercase tracking-widest text-subtle mb-4">Why</h2>
           <div className="space-y-3 text-sm text-muted">
             <p>
-              <span className="text-foreground">Fast</span> — &lt;100ms globally
+              <span className="text-foreground">Fast</span> — &lt;50ms globally
             </p>
             <p>
               <span className="text-foreground">Accurate</span> — Real-time version data, no
@@ -98,8 +98,8 @@ export default function MCPPage() {
             <pre className="text-sm text-muted">
               {`{
   "mcpServers": {
-    "v1": {
-      "url": "https://mcp.v1.run/mcp"
+    "packrun": {
+      "url": "https://mcp.packrun.dev/mcp"
     }
   }
 }`}
@@ -202,7 +202,7 @@ export default function MCPPage() {
           <h2 className="text-xs uppercase tracking-widest text-subtle mb-4">Links</h2>
           <div className="space-y-2 text-sm">
             <Link
-              href="https://mcp.v1.run/mcp"
+              href="https://mcp.packrun.dev/mcp"
               target="_blank"
               className="block text-muted hover:text-foreground transition-colors"
             >

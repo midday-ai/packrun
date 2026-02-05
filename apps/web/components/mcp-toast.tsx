@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "v1.run:mcp-toast-dismissed";
+const STORAGE_KEY = "packrun.dev:mcp-toast-dismissed";
 const CURSOR_DEEPLINK =
-  "cursor://anysphere.cursor-deeplink/mcp/install?name=v1&config=eyJ1cmwiOiJodHRwczovL2FwaS52MS5ydW4vbWNwIn0=";
+  "cursor://anysphere.cursor-deeplink/mcp/install?name=packrun&config=eyJ1cmwiOiJodHRwczovL2FwaS5wYWNrcnVuLmRldi9tY3AifQ==";
 
 const MESSAGE =
   "Give your AI agent fast, accurate npm packages — vulnerabilities, and health signals.";
@@ -357,7 +357,7 @@ export function MCPToast() {
 
         {/* Header */}
         <div className="flex items-center justify-between mb-3 relative z-20">
-          <span className="text-xs crt-text-dim tracking-wide">v1.run/mcp</span>
+          <span className="text-xs crt-text-dim tracking-wide">packrun.dev/mcp</span>
           <button
             onClick={handleDismiss}
             className="crt-text-dim hover:crt-text transition-colors text-sm leading-none"

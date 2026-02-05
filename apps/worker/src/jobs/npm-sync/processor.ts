@@ -2,9 +2,12 @@
  * npm Sync Processor
  *
  * Job processing logic for npm package sync.
+ * Now includes notification creation for package updates
+ * and auto-detection of upcoming releases.
  */
 
-import { inferCategory } from "@v1/decisions";
+import { db, isDatabaseAvailable } from "@packrun/db/client";
+import { inferCategory } from "@packrun/decisions";
 import type { Job } from "bullmq";
 import {
   deletePackage,
@@ -16,6 +19,10 @@ import {
   upsertPackages,
 } from "../../clients";
 import { extractCompatibility } from "../../lib/compatibility";
+import { dispatchNotifications } from "../../lib/notification-dispatcher";
+import { enrichPackageUpdate } from "../../lib/notification-enrichment";
+import { checkAndDispatchReleases } from "../../lib/release-detector";
+import { getPreviousVersion } from "../../lib/version-tracker";
 import type { BulkSyncJobData, SyncJobData } from "./types";
 
 /**
@@ -204,6 +211,9 @@ export async function processSyncJob(job: Job<SyncJobData>): Promise<void> {
     return;
   }
 
+  // Get previous version BEFORE updating Typesense (for notification comparison)
+  const previousVersion = isDatabaseAvailable(db) ? await getPreviousVersion(name) : null;
+
   const metadata = await fetchPackageMetadata(name);
   if (!metadata) {
     console.log(`[${job.id}] Skipped (not found): ${name}`);
@@ -219,6 +229,51 @@ export async function processSyncJob(job: Job<SyncJobData>): Promise<void> {
   console.log(
     `[${job.id}] Synced: ${name} v${doc.version} (${doc.downloads.toLocaleString()} downloads/wk)`,
   );
+
+  // Create notifications if version changed
+  if (isDatabaseAvailable(db) && previousVersion && previousVersion !== doc.version) {
+    try {
+      // Enrich the update with security/changelog information
+      const enrichment = await enrichPackageUpdate(
+        name,
+        previousVersion,
+        doc.version,
+        doc.repository,
+      );
+
+      // Dispatch notifications to users who follow this package
+      const { notified, skipped } = await dispatchNotifications(
+        name,
+        enrichment,
+        previousVersion,
+        doc.version,
+      );
+
+      if (notified > 0) {
+        console.log(
+          `[${job.id}] Notifications: ${notified} sent, ${skipped} skipped (${enrichment.severity})`,
+        );
+      }
+    } catch (error) {
+      // Don't fail the sync job if notifications fail
+      console.error(`[${job.id}] Notification error for ${name}:`, error);
+    }
+  }
+
+  // Check for matching upcoming releases and dispatch notifications
+  if (isDatabaseAvailable(db)) {
+    try {
+      const releasesMatched = await checkAndDispatchReleases(name, doc.version);
+      if (releasesMatched > 0) {
+        console.log(
+          `[${job.id}] Release detected: ${releasesMatched} release(s) marked as launched`,
+        );
+      }
+    } catch (error) {
+      // Don't fail the sync job if release detection fails
+      console.error(`[${job.id}] Release detection error for ${name}:`, error);
+    }
+  }
 }
 
 /**
