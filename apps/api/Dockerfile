@@ -8,7 +8,7 @@ WORKDIR /app
 FROM base AS pruner
 RUN bun add -g turbo
 COPY . .
-RUN turbo prune api --docker
+RUN turbo prune @packrun/api-server --docker
 
 # Stage 2: Install dependencies (cached layer)
 FROM base AS installer
