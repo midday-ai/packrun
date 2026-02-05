@@ -25,6 +25,7 @@
     "@packrun/db": "workspace:*",
     "@packrun/decisions": "workspace:*",
     "@packrun/email": "workspace:*",
+    "@packrun/logger": "workspace:*",
     "@packrun/queue": "workspace:*",
     "@paralleldrive/cuid2": "^3.3.0",
     "better-auth": "^1.4.18",

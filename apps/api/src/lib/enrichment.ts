@@ -5,6 +5,7 @@
  * No caching here - Cloudflare caches final API responses.
  */
 
+import { api as log } from "@packrun/logger";
 import { getPackageDownloads } from "./clients/typesense";
 
 const NPM_REGISTRY = "https://registry.npmjs.org";
@@ -294,8 +295,8 @@ async function fetchWithRetry(
         const retryAfter = response.headers.get("Retry-After");
         const waitTime = retryAfter ? Number.parseInt(retryAfter) * 1000 : delay;
 
-        console.warn(
-          `[Enrichment] Rate limited (429), retrying in ${waitTime}ms (attempt ${attempt + 1}/${maxRetries})`,
+        log.warn(
+          `Rate limited (429), retrying in ${waitTime}ms (attempt ${attempt + 1}/${maxRetries})`,
         );
         await sleep(waitTime);
         continue;

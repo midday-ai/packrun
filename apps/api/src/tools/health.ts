@@ -9,7 +9,10 @@
  * Caching: Cloudflare edge cache handles all response caching (24h for health endpoint).
  */
 
+import { fetchNpmsScores, type NpmsScores } from "@packrun/data/npms";
+import { fetchVulnerabilities } from "@packrun/data/osv";
 import { inferCategory } from "@packrun/decisions";
+import { api as log } from "@packrun/logger";
 import { healthCache } from "../lib/cache";
 import {
   fetchGitHubDataForPackage,
@@ -32,8 +35,6 @@ import {
   isESM as npmIsESM,
   type PackageMetadata,
 } from "../lib/clients/npm";
-import { fetchNpmsScores, type NpmsScores } from "../lib/clients/npms";
-import { fetchVulnerabilities } from "../lib/clients/osv";
 import { findAlternativesByCategory, type PackageDocument } from "../lib/clients/typesense";
 import {
   type DownloadTrend,
@@ -219,9 +220,7 @@ export async function getPackageHealth(name: string): Promise<PackageHealthRespo
   if (!npmPkg) return null;
 
   // Queue for Typesense indexing (async, for search only)
-  queuePackageSync(name).catch((err) =>
-    console.error(`[Health] Failed to queue ${name} for sync:`, err),
-  );
+  queuePackageSync(name).catch((err) => log.error(`Failed to queue ${name} for sync:`, err));
 
   // 2. Extract basic data from npm
   const version = getLatestVersion(npmPkg);

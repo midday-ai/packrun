@@ -2,6 +2,7 @@
  * Job Registry
  */
 
+import { worker as log } from "@packrun/logger";
 import { createWorker } from "@packrun/queue";
 import {
   type BulkSyncJobData,
@@ -32,35 +33,35 @@ export function createWorkers() {
 
   // Initialize digest scheduler (schedules daily/weekly digest jobs)
   initializeDigestScheduler().catch((error) => {
-    console.error("Failed to initialize digest scheduler:", error);
+    log.error("Failed to initialize digest scheduler:", error);
   });
 
   syncWorker.on("failed", (job, error) => {
-    console.error(`[${job?.id}] Failed:`, error.message);
+    log.error(`[${job?.id}] Failed:`, error.message);
   });
 
   syncWorker.on("error", (error) => {
-    console.error("Sync worker error:", error);
+    log.error("Sync worker error:", error);
   });
 
   bulkSyncWorker.on("completed", (job) => {
-    console.log(`[${job.id}] Bulk job completed`);
+    log.success(`[${job.id}] Bulk job completed`);
   });
 
   bulkSyncWorker.on("failed", (job, error) => {
-    console.error(`[${job?.id}] Bulk job failed:`, error.message);
+    log.error(`[${job?.id}] Bulk job failed:`, error.message);
   });
 
   bulkSyncWorker.on("error", (error) => {
-    console.error("Bulk sync worker error:", error);
+    log.error("Bulk sync worker error:", error);
   });
 
   emailWorker.on("failed", (job, error) => {
-    console.error(`[Email ${job?.id}] Failed:`, error.message);
+    log.error(`[Email ${job?.id}] Failed:`, error.message);
   });
 
   digestWorker.on("failed", (job, error) => {
-    console.error(`[Digest ${job?.id}] Failed:`, error.message);
+    log.error(`[Digest ${job?.id}] Failed:`, error.message);
   });
 
   return {

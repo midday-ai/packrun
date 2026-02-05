@@ -1,16 +1,12 @@
 {
-  "name": "@packrun/decisions",
+  "name": "@packrun/logger",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./schema": "./src/schema.ts",
-    "./categories": "./src/categories.ts",
-    "./comparisons": "./src/comparisons.ts",
-    "./health": "./src/health.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "lint": "biome check .",
@@ -18,7 +14,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@packrun/data": "workspace:*"
+    "consola": "^3.4.2"
   },
   "devDependencies": {
     "@packrun/typescript-config": "workspace:*",

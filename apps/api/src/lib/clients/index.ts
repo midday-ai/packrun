@@ -2,6 +2,7 @@
  * External API Clients
  *
  * Re-exports all external service clients.
+ * For OSV and npms, import directly from @packrun/data packages.
  */
 
 export * from "./github";
@@ -19,8 +20,6 @@ export {
   isESM,
   type PackageMetadata,
 } from "./npm";
-export * from "./npms";
-export * from "./osv";
 
 export {
   findAlternativesByCategory,

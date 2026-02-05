@@ -23,6 +23,7 @@
         "@packrun/db": "workspace:*",
         "@packrun/decisions": "workspace:*",
         "@packrun/email": "workspace:*",
+        "@packrun/logger": "workspace:*",
         "@packrun/queue": "workspace:*",
         "@paralleldrive/cuid2": "^3.3.0",
         "better-auth": "^1.4.18",
@@ -97,6 +98,7 @@
         "@packrun/db": "workspace:*",
         "@packrun/decisions": "workspace:*",
         "@packrun/email": "workspace:*",
+        "@packrun/logger": "workspace:*",
         "@packrun/queue": "workspace:*",
         "ioredis": "^5.6.1",
         "semver": "^7.6.3",
@@ -147,6 +149,9 @@
     "packages/decisions": {
       "name": "@packrun/decisions",
       "version": "0.1.0",
+      "dependencies": {
+        "@packrun/data": "workspace:*",
+      },
       "devDependencies": {
         "@packrun/typescript-config": "workspace:*",
         "typescript": "^5.9.3",
@@ -166,6 +171,17 @@
         "@react-email/preview-server": "^5.2.6",
         "@types/react": "^19.2.11",
         "react-email": "^5.2.6",
+        "typescript": "^5.9.3",
+      },
+    },
+    "packages/logger": {
+      "name": "@packrun/logger",
+      "version": "0.1.0",
+      "dependencies": {
+        "consola": "^3.4.2",
+      },
+      "devDependencies": {
+        "@packrun/typescript-config": "workspace:*",
         "typescript": "^5.9.3",
       },
     },
@@ -198,21 +214,6 @@
     "packages/typescript-config": {
       "name": "@packrun/typescript-config",
       "version": "0.0.0",
-    },
-    "packages/ui": {
-      "name": "@packrun/ui",
-      "version": "0.0.0",
-      "dependencies": {
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4",
-      },
-      "devDependencies": {
-        "@packrun/typescript-config": "workspace:*",
-        "@types/node": "^25.2.0",
-        "@types/react": "19.2.10",
-        "@types/react-dom": "19.2.3",
-        "typescript": "5.9.3",
-      },
     },
   },
   "packages": {
@@ -526,13 +527,13 @@
 
     "@packrun/email": ["@packrun/email@workspace:packages/email"],
 
+    "@packrun/logger": ["@packrun/logger@workspace:packages/logger"],
+
     "@packrun/queue": ["@packrun/queue@workspace:packages/queue"],
 
     "@packrun/readme-renderer": ["@packrun/readme-renderer@workspace:packages/readme-renderer"],
 
     "@packrun/typescript-config": ["@packrun/typescript-config@workspace:packages/typescript-config"],
-
-    "@packrun/ui": ["@packrun/ui@workspace:packages/ui"],
 
     "@paralleldrive/cuid2": ["@paralleldrive/cuid2@3.3.0", "", { "dependencies": { "@noble/hashes": "^2.0.1", "bignumber.js": "^9.3.1", "error-causes": "^3.0.2" }, "bin": { "cuid2": "bin/cuid2.js" } }, "sha512-OqiFvSOF0dBSesELYY2CAMa4YINvlLpvKOz/rv6NeZEqiyttlHgv98Juwv4Ch+GrEV7IZ8jfI2VcEoYUjXXCjw=="],
 
@@ -1615,8 +1616,6 @@
     "@esbuild-kit/core-utils/esbuild": ["esbuild@0.18.20", "", { "optionalDependencies": { "@esbuild/android-arm": "0.18.20", "@esbuild/android-arm64": "0.18.20", "@esbuild/android-x64": "0.18.20", "@esbuild/darwin-arm64": "0.18.20", "@esbuild/darwin-x64": "0.18.20", "@esbuild/freebsd-arm64": "0.18.20", "@esbuild/freebsd-x64": "0.18.20", "@esbuild/linux-arm": "0.18.20", "@esbuild/linux-arm64": "0.18.20", "@esbuild/linux-ia32": "0.18.20", "@esbuild/linux-loong64": "0.18.20", "@esbuild/linux-mips64el": "0.18.20", "@esbuild/linux-ppc64": "0.18.20", "@esbuild/linux-riscv64": "0.18.20", "@esbuild/linux-s390x": "0.18.20", "@esbuild/linux-x64": "0.18.20", "@esbuild/netbsd-x64": "0.18.20", "@esbuild/openbsd-x64": "0.18.20", "@esbuild/sunos-x64": "0.18.20", "@esbuild/win32-arm64": "0.18.20", "@esbuild/win32-ia32": "0.18.20", "@esbuild/win32-x64": "0.18.20" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-ceqxoedUrcayh7Y7ZX6NdbbDzGROiyVBgC4PriJThBKSVPWnnFHZAkfI1lJT8QFkOwH4qOS2SJkS4wvpGl8BpA=="],
 
     "@isaacs/cliui/string-width": ["string-width@5.1.2", "", { "dependencies": { "eastasianwidth": "^0.2.0", "emoji-regex": "^9.2.2", "strip-ansi": "^7.0.1" } }, "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA=="],
-
-    "@packrun/ui/@types/react": ["@types/react@19.2.10", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-WPigyYuGhgZ/cTPRXB2EwUw+XvsRA3GqHlsP4qteqrnnjDrApbS7MxcGr/hke5iUoeB7E/gQtrs9I37zAJ0Vjw=="],
 
     "@radix-ui/react-alert-dialog/@radix-ui/react-slot": ["@radix-ui/react-slot@1.2.3", "", { "dependencies": { "@radix-ui/react-compose-refs": "1.1.2" }, "peerDependencies": { "@types/react": "*", "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react"] }, "sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A=="],
 

@@ -108,7 +108,7 @@ export async function fetchPackageHealth(name: string): Promise<PackageHealthRes
 
     // Use absolute URL - Next.js will cache this response
     // Cloudflare caches the API response (24h), then Next.js ISR caches the page (24h)
-    const url = `${API_URL}/api/package/${encodeURIComponent(name)}`;
+    const url = `${API_URL}/v1/package/${encodeURIComponent(name)}`;
     const res = await fetch(url, {
       // Use Next.js fetch caching - respects Cache-Control headers from API
       // API sets s-maxage=86400 (24h) for Cloudflare, Next.js will respect this
@@ -126,6 +126,54 @@ export async function fetchPackageHealth(name: string): Promise<PackageHealthRes
     return res.json();
   } catch (error) {
     console.error(`[api] Failed to fetch health for ${name}:`, error);
+    return null;
+  }
+}
+
+// Vulnerability API
+export interface VulnerabilityData {
+  total: number;
+  critical: number;
+  high: number;
+  moderate: number;
+  low: number;
+}
+
+export interface VulnerabilityResponse {
+  name: string;
+  version: string;
+  vulnerabilities: VulnerabilityData;
+  hasVulnerabilities: boolean;
+  severity: "none" | "low" | "moderate" | "high" | "critical";
+}
+
+export async function fetchVulnerabilities(
+  name: string,
+  version?: string,
+): Promise<VulnerabilityResponse | null> {
+  try {
+    if (!API_URL) {
+      console.warn("[api] NEXT_PUBLIC_API_URL not configured");
+      return null;
+    }
+
+    const params = version ? `?version=${encodeURIComponent(version)}` : "";
+    const url = `${API_URL}/v1/package/${encodeURIComponent(name)}/vulnerabilities${params}`;
+    const res = await fetch(url, {
+      next: { revalidate: 3600 }, // 1 hour - shorter than health since vulns change more often
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      throw new Error(`API returned ${res.status}`);
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error(`[api] Failed to fetch vulnerabilities for ${name}:`, error);
     return null;
   }
 }

@@ -32,12 +32,12 @@ export async function purgeCloudflareCache(packageName: string): Promise<boolean
 
   const encodedName = encodeURIComponent(packageName);
   const urls = [
-    `${API_DOMAIN}/api/package/${encodedName}`,
-    `${API_DOMAIN}/api/package/${encodedName}/version`,
-    `${API_DOMAIN}/api/package/${encodedName}/vulnerabilities`,
-    `${API_DOMAIN}/api/package/${encodedName}/alternatives`,
-    `${API_DOMAIN}/api/package/${encodedName}/deprecated`,
-    `${API_DOMAIN}/api/package/${encodedName}/types`,
+    `${API_DOMAIN}/v1/package/${encodedName}`,
+    `${API_DOMAIN}/v1/package/${encodedName}/version`,
+    `${API_DOMAIN}/v1/package/${encodedName}/vulnerabilities`,
+    `${API_DOMAIN}/v1/package/${encodedName}/alternatives`,
+    `${API_DOMAIN}/v1/package/${encodedName}/deprecated`,
+    `${API_DOMAIN}/v1/package/${encodedName}/types`,
   ];
 
   try {

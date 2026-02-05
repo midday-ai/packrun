@@ -41,6 +41,7 @@ export function UserProfile() {
                   height={24}
                   className="border border-border"
                   unoptimized
+                  loading="eager"
                 />
               ) : (
                 <div className="w-6 h-6 bg-surface border border-border flex items-center justify-center text-xs text-muted">

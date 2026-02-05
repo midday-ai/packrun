@@ -12,6 +12,7 @@
  */
 
 import { StreamableHTTPTransport } from "@hono/mcp";
+import { mcp as log } from "@packrun/logger";
 import { Hono } from "hono";
 import { createMcpServer } from "../mcp/server";
 
@@ -111,7 +112,7 @@ mcpApp.all("/mcp", async (c) => {
       headers,
     });
   } catch (error) {
-    console.error("[MCP] Error handling request:", error);
+    log.error("Error handling request:", error);
     return c.json(
       {
         error: "Internal server error",

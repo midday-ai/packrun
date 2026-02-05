@@ -26,7 +26,7 @@ async function processEmailDelivery(job: Job<EmailDeliveryJobData>): Promise<voi
 
   // Generate unsubscribe URL
   const unsubscribeToken = generateUnsubscribeToken(userId);
-  const unsubscribeUrl = `https://packrun.dev/api/unsubscribe?token=${unsubscribeToken}`;
+  const unsubscribeUrl = `https://api.packrun.dev/v1/unsubscribe?token=${unsubscribeToken}`;
 
   // Create React element for the email
   const emailElement = React.createElement(CriticalAlert, {

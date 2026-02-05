@@ -278,6 +278,7 @@ function ProfileContent() {
                   height={64}
                   className="border border-border"
                   unoptimized
+                  loading="eager"
                 />
               )}
               <div>

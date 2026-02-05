@@ -5,6 +5,7 @@
  */
 
 import type { BundleData, PackageMetrics } from "@packrun/decisions/schema";
+import { api as log } from "@packrun/logger";
 import { fetchGitHubData } from "./clients/github";
 import { fetchPackageMetadata } from "./clients/npm";
 
@@ -36,7 +37,7 @@ export async function fetchPackageMetrics(packageName: string): Promise<PackageM
 
     return metrics;
   } catch (error) {
-    console.error(`Error fetching metrics for ${packageName}:`, error);
+    log.error(`Error fetching metrics for ${packageName}:`, error);
     return null;
   }
 }

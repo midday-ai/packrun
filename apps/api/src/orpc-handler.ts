@@ -7,12 +7,14 @@
  */
 
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
 import { RPCHandler } from "@orpc/server/fetch";
 import { CORSPlugin } from "@orpc/server/plugins";
 import { ZodSmartCoercionPlugin } from "@orpc/zod";
+import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import type { Context, User } from "@packrun/api";
 import { auth } from "./lib/auth";
-import { type AppRouter, appRouter } from "./procedures";
+import { type AppRouter, appRouter, publicRouter } from "./procedures";
 
 /**
  * Create context from incoming request
@@ -63,6 +65,26 @@ const corsPlugin = new CORSPlugin({
 });
 
 /**
+ * OpenAPI Reference Plugin for docs UI and spec
+ */
+const openAPIReferencePlugin = new OpenAPIReferencePlugin({
+  docsPath: "/docs",
+  specPath: "/openapi.json",
+  schemaConverters: [new ZodToJsonSchemaConverter()],
+  specGenerateOptions: {
+    info: {
+      title: "packrun.dev API",
+      version: "1.0.0",
+      description: "npm package health, security, and comparison API",
+    },
+    servers: [
+      { url: "https://api.packrun.dev", description: "Production" },
+      { url: "http://localhost:3001", description: "Development" },
+    ],
+  },
+});
+
+/**
  * RPC Handler for type-safe internal clients
  */
 export const rpcHandler = new RPCHandler(appRouter, {
@@ -70,10 +92,11 @@ export const rpcHandler = new RPCHandler(appRouter, {
 });
 
 /**
- * OpenAPI Handler for REST consumers
+ * OpenAPI Handler for REST consumers (includes docs plugin)
+ * Uses publicRouter to exclude admin routes from documentation
  */
-export const openApiHandler = new OpenAPIHandler(appRouter, {
-  plugins: [corsPlugin, new ZodSmartCoercionPlugin()],
+export const openApiHandler = new OpenAPIHandler(publicRouter, {
+  plugins: [corsPlugin, new ZodSmartCoercionPlugin(), openAPIReferencePlugin],
 });
 
 /**
@@ -96,7 +119,7 @@ export async function handleRPC(request: Request): Promise<Response | null> {
 
 /**
  * Handle OpenAPI requests (REST consumers)
- * Note: Routes already include /api prefix in their paths
+ * Also serves /docs and /openapi.json via the OpenAPIReferencePlugin
  */
 export async function handleOpenAPI(request: Request): Promise<Response | null> {
   const context = await createContext(request);

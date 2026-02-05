@@ -5,6 +5,7 @@
  * Special handlers for SSE streaming, MCP, and unsubscribe pages.
  */
 
+import { colors, api as log } from "@packrun/logger";
 import { handleMcp, handleUnsubscribe, handleUpdatesStream } from "./handlers";
 import { auth } from "./lib/auth";
 import { getReplacementStats, initReplacements } from "./lib/replacements";
@@ -19,8 +20,8 @@ const PORT = process.env.PORT || 3001;
 // Initialize replacements data
 initReplacements();
 const replacementStats = getReplacementStats();
-console.log(
-  `[Startup] Loaded ${replacementStats.totalModules} modules (${replacementStats.nativeModules} native)`,
+log.ready(
+  `Loaded ${replacementStats.totalModules} modules (${replacementStats.nativeModules} native)`,
 );
 
 // =============================================================================
@@ -90,12 +91,12 @@ async function routeRequest(request: Request, url: URL): Promise<Response> {
   }
 
   // Updates SSE stream
-  if (url.pathname === "/api/updates/stream") {
+  if (url.pathname === "/v1/updates/stream") {
     return handleUpdatesStream(request);
   }
 
   // Unsubscribe HTML pages
-  if (url.pathname === "/api/unsubscribe") {
+  if (url.pathname === "/v1/unsubscribe") {
     return handleUnsubscribe(request);
   }
 
@@ -103,7 +104,7 @@ async function routeRequest(request: Request, url: URL): Promise<Response> {
   // Better Auth
   // ==========================================================================
 
-  if (url.pathname.startsWith("/api/auth/") && auth) {
+  if (url.pathname.startsWith("/v1/auth/") && auth) {
     const response = await auth.handler(request);
     response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
     response.headers.set("Pragma", "no-cache");
@@ -123,8 +124,13 @@ async function routeRequest(request: Request, url: URL): Promise<Response> {
   }
 
   // OpenAPI endpoint (REST consumers)
-  // Matches /api/* and /search for REST API routes
-  if (url.pathname.startsWith("/api/") || url.pathname === "/search") {
+  // Matches /v1/*, /search, /docs, /openapi.json
+  if (
+    url.pathname.startsWith("/v1/") ||
+    url.pathname === "/search" ||
+    url.pathname === "/docs" ||
+    url.pathname === "/openapi.json"
+  ) {
     const response = await handleOpenAPI(request);
     if (response) {
       return response;
@@ -169,14 +175,24 @@ async function routeRequest(request: Request, url: URL): Promise<Response> {
 // Server Startup
 // =============================================================================
 
-console.log(`packrun.dev API server starting on port ${PORT}...`);
-console.log(`  Health:  http://localhost:${PORT}/health`);
-console.log(`  MCP:     http://localhost:${PORT}/mcp`);
-console.log(`  RPC:     http://localhost:${PORT}/rpc`);
-console.log(`  REST:    http://localhost:${PORT}/api/package/:name`);
+const c = colors;
+const endpoints = [
+  `${c.cyan("Docs")}    ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/docs`)}`,
+  `${c.green("Health")}  ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/health`)}`,
+  `${c.magenta("MCP")}     ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/mcp`)}`,
+  `${c.blue("RPC")}     ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/rpc`)}`,
+  `${c.yellow("REST")}    ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/v1/*`)}`,
+];
 if (auth) {
-  console.log(`  Auth:    http://localhost:${PORT}/api/auth/*`);
+  endpoints.push(
+    `${c.red("Auth")}    ${c.gray("→")} ${c.whiteBright(`http://localhost:${PORT}/v1/auth/*`)}`,
+  );
 }
+
+log.box({
+  title: c.bold(`packrun.dev API :${PORT}`),
+  message: endpoints.join("\n"),
+});
 
 export default {
   port: PORT,

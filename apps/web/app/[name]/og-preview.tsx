@@ -40,7 +40,7 @@ async function generateOGImage(packageName: string) {
 
   try {
     // Try to fetch from packrun.dev API first for richer data
-    const healthRes = await fetch(`${apiUrl}/api/package/${encodeURIComponent(decodedName)}`, {
+    const healthRes = await fetch(`${apiUrl}/v1/package/${encodeURIComponent(decodedName)}`, {
       headers: { Accept: "application/json" },
     });
 

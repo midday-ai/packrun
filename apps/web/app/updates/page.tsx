@@ -50,7 +50,7 @@ export default function UpdatesPage() {
     const connect = () => {
       if (!isMounted) return;
 
-      eventSource = new EventSource(`${API_URL}/api/updates/stream`);
+      eventSource = new EventSource(`${API_URL}/v1/updates/stream`);
 
       eventSource.addEventListener("connected", () => {
         setConnected(true);

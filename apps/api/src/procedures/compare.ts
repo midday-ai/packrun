@@ -32,7 +32,7 @@ import { comparePackages } from "../tools/compare";
 export const listCategories = publicProcedure
   .route({
     method: "GET",
-    path: "/api/compare/categories",
+    path: "/v1/compare/categories",
     summary: "List categories",
     description: "List all available package categories for comparison",
     tags: ["Compare"],
@@ -62,7 +62,7 @@ export const listCategories = publicProcedure
 export const getCategory = publicProcedure
   .route({
     method: "GET",
-    path: "/api/compare/category/{category}",
+    path: "/v1/compare/category/{category}",
     summary: "Get category comparison",
     description: "Get a curated comparison of packages in a category",
     tags: ["Compare"],
@@ -73,7 +73,7 @@ export const getCategory = publicProcedure
     const curated = getCuratedComparison(input.category);
     if (!curated) {
       throw new ORPCError("NOT_FOUND", {
-        message: "Category not found. Use /api/compare/categories to see available categories.",
+        message: "Category not found. Use /v1/compare/categories to see available categories.",
       });
     }
 
@@ -110,7 +110,7 @@ export const getCategory = publicProcedure
 export const getAlternatives = publicProcedure
   .route({
     method: "GET",
-    path: "/api/compare/alternatives/{name}",
+    path: "/v1/compare/alternatives/{name}",
     summary: "Find alternatives",
     description: "Find alternative packages for a given package",
     tags: ["Compare"],
@@ -182,7 +182,7 @@ export const getAlternatives = publicProcedure
 export const comparePackagesProcedure = publicProcedure
   .route({
     method: "POST",
-    path: "/api/compare",
+    path: "/v1/compare",
     summary: "Compare specific packages",
     description: "Compare 2-5 npm packages side by side",
     tags: ["Compare"],
@@ -209,7 +209,7 @@ export const comparePackagesProcedure = publicProcedure
 export const compareByNames = publicProcedure
   .route({
     method: "GET",
-    path: "/api/compare/packages",
+    path: "/v1/compare/packages",
     summary: "Compare packages by names",
     description: "Compare specific packages by providing comma-separated names",
     tags: ["Compare"],

@@ -5,8 +5,8 @@
  * security status, and safety assessment.
  */
 
+import { fetchVulnerabilities } from "@packrun/data/osv";
 import { z } from "zod";
-import { fetchVulnerabilities } from "../lib/clients/osv";
 import { getPackageHealth } from "./health";
 import { getPackageVersion } from "./version";
 

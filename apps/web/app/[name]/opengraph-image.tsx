@@ -62,7 +62,7 @@ export default async function OGImage({ params }: Props) {
 
   try {
     // Try to fetch from packrun.dev API first for richer data
-    const healthRes = await fetch(`${apiUrl}/api/package/${encodeURIComponent(decodedName)}`, {
+    const healthRes = await fetch(`${apiUrl}/v1/package/${encodeURIComponent(decodedName)}`, {
       headers: { Accept: "application/json" },
       next: { revalidate: 3600 }, // Cache for 1 hour
     });

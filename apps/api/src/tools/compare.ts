@@ -2,6 +2,7 @@
  * compare_packages - Compare multiple packages side by side
  */
 
+import { fetchVulnerabilities } from "@packrun/data/osv";
 import { comparePackages as comparePackagesFromDecisions } from "@packrun/decisions/comparisons";
 import { z } from "zod";
 import { compareCache } from "../lib/cache";
@@ -13,7 +14,6 @@ import {
   isCJS,
   isESM,
 } from "../lib/clients/npm";
-import { fetchVulnerabilities } from "../lib/clients/osv";
 
 export const comparePackagesSchema = z.object({
   packages: z

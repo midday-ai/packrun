@@ -4,7 +4,6 @@
  * oRPC procedures for user notifications (protected routes).
  */
 
-import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "@packrun/api";
 import {
   NotificationPreferencesResponseSchema,
@@ -31,7 +30,7 @@ import { z } from "zod";
 export const list = protectedProcedure
   .route({
     method: "GET",
-    path: "/api/notifications",
+    path: "/v1/notifications",
     summary: "Get notifications",
     description: "Get the user's notifications with optional filtering",
     tags: ["Notifications"],
@@ -46,15 +45,9 @@ export const list = protectedProcedure
   )
   .output(NotificationsListResponseSchema)
   .handler(async ({ input, context }) => {
-    if (!db) {
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Database not configured",
-      });
-    }
-
     const severities = input.severity?.split(",").filter(Boolean);
 
-    const result = await listNotifications(db, context.user.id, {
+    const result = await listNotifications(db!, context.user.id, {
       severity: severities,
       unreadOnly: input.unreadOnly,
       limit: input.limit ?? 20,
@@ -77,18 +70,14 @@ export const list = protectedProcedure
 export const unreadCount = protectedProcedure
   .route({
     method: "GET",
-    path: "/api/notifications/unread-count",
+    path: "/v1/notifications/unread-count",
     summary: "Get unread count",
     description: "Get the count of unread notifications (for badge display)",
     tags: ["Notifications"],
   })
   .output(UnreadCountResponseSchema)
   .handler(async ({ context }) => {
-    if (!db) {
-      return { total: 0, critical: 0 };
-    }
-
-    return getUnreadCount(db, context.user.id);
+    return getUnreadCount(db!, context.user.id);
   });
 
 /**
@@ -97,7 +86,7 @@ export const unreadCount = protectedProcedure
 export const markAsRead = protectedProcedure
   .route({
     method: "PATCH",
-    path: "/api/notifications/{id}/read",
+    path: "/v1/notifications/{id}/read",
     summary: "Mark notification as read",
     description: "Mark a single notification as read",
     tags: ["Notifications"],
@@ -105,13 +94,7 @@ export const markAsRead = protectedProcedure
   .input(z.object({ id: z.string() }))
   .output(SuccessResponseSchema)
   .handler(async ({ input, context }) => {
-    if (!db) {
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Database not configured",
-      });
-    }
-
-    await markNotificationRead(db, context.user.id, input.id);
+    await markNotificationRead(db!, context.user.id, input.id);
     return { success: true };
   });
 
@@ -121,20 +104,14 @@ export const markAsRead = protectedProcedure
 export const markAllAsRead = protectedProcedure
   .route({
     method: "POST",
-    path: "/api/notifications/read-all",
+    path: "/v1/notifications/read-all",
     summary: "Mark all as read",
     description: "Mark all notifications as read",
     tags: ["Notifications"],
   })
   .output(SuccessResponseSchema)
   .handler(async ({ context }) => {
-    if (!db) {
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Database not configured",
-      });
-    }
-
-    await markAllNotificationsRead(db, context.user.id);
+    await markAllNotificationsRead(db!, context.user.id);
     return { success: true };
   });
 
@@ -144,20 +121,14 @@ export const markAllAsRead = protectedProcedure
 export const getPreferences = protectedProcedure
   .route({
     method: "GET",
-    path: "/api/notifications/preferences",
+    path: "/v1/notifications/preferences",
     summary: "Get notification preferences",
     description: "Get the user's notification preferences",
     tags: ["Notifications"],
   })
   .output(NotificationPreferencesResponseSchema)
   .handler(async ({ context }) => {
-    if (!db) {
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Database not configured",
-      });
-    }
-
-    const prefs = await getNotificationPreferences(db, context.user.id);
+    const prefs = await getNotificationPreferences(db!, context.user.id);
 
     return {
       preferences: {
@@ -178,7 +149,7 @@ export const getPreferences = protectedProcedure
 export const updatePreferences = protectedProcedure
   .route({
     method: "PUT",
-    path: "/api/notifications/preferences",
+    path: "/v1/notifications/preferences",
     summary: "Update notification preferences",
     description: "Update the user's notification preferences",
     tags: ["Notifications"],
@@ -186,13 +157,7 @@ export const updatePreferences = protectedProcedure
   .input(NotificationPreferencesSchema.partial())
   .output(NotificationPreferencesResponseSchema)
   .handler(async ({ input, context }) => {
-    if (!db) {
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Database not configured",
-      });
-    }
-
-    const updated = await upsertNotificationPreferences(db, createId(), context.user.id, input);
+    const updated = await upsertNotificationPreferences(db!, createId(), context.user.id, input);
 
     return {
       preferences: {

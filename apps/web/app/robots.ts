@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/profile/"],
+        disallow: ["/api/", "/v1/", "/profile/"],
       },
     ],
     sitemap: "https://packrun.dev/sitemap.xml",

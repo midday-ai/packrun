@@ -5,6 +5,7 @@
  * Contains curated replacement mappings from the community.
  */
 
+import { api as log } from "@packrun/logger";
 import { all, type ModuleReplacement, nativeReplacements } from "module-replacements";
 
 // In-memory maps for O(1) lookup
@@ -31,9 +32,7 @@ export function initReplacements(): void {
   }
 
   initialized = true;
-  console.log(
-    `[Replacements] Loaded ${moduleToReplacement.size} modules, ${nativeModules.size} native`,
-  );
+  log.success(`Loaded ${moduleToReplacement.size} modules, ${nativeModules.size} native`);
 }
 
 /**

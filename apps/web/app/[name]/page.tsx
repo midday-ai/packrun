@@ -570,21 +570,13 @@ function getGradeColor(grade: string): string {
 }
 
 async function VulnStatCell({ packageName, version }: { packageName: string; version: string }) {
+  const { fetchVulnerabilities } = await import("@/lib/api");
+
   try {
-    const res = await fetch("https://api.osv.dev/v1/query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        package: { name: packageName, ecosystem: "npm" },
-        version,
-      }),
-      next: { revalidate: 3600 },
-    });
+    const response = await fetchVulnerabilities(packageName, version);
+    if (!response) return <StatCell label="vulns" value="—" />;
 
-    if (!res.ok) return <StatCell label="vulns" value="—" />;
-
-    const data = await res.json();
-    const count = data.vulns?.length || 0;
+    const count = response.vulnerabilities.total;
 
     return (
       <div className="flex-1 min-w-[64px] sm:min-w-[80px] px-3 py-3">

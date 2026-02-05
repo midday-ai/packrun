@@ -4,6 +4,7 @@
  * Adds jobs to the worker's sync queue with BullMQ deduplication via job IDs.
  */
 
+import { api as log } from "@packrun/logger";
 import {
   closeAllQueues,
   getConnectionInfo,
@@ -24,7 +25,7 @@ function getSyncQueue(): Queue<SyncJobData> {
     });
     if (!logged) {
       const info = getConnectionInfo();
-      console.log(`[Queue] Connected to ${info.host}:${info.port}`);
+      log.ready(`Queue connected to ${info.host}:${info.port}`);
       logged = true;
     }
   }
@@ -54,10 +55,10 @@ export async function queuePackageSync(name: string): Promise<boolean> {
       { name, deleted: false, seq: `api-${Date.now()}` },
       { jobId, priority: 1 },
     );
-    console.log(`[Queue] Queued: ${name}`);
+    log.info(`Queued: ${name}`);
     return true;
   } catch (error) {
-    console.error(`[Queue] Failed to queue ${name}:`, error);
+    log.error(`Failed to queue ${name}:`, error);
     return false;
   }
 }

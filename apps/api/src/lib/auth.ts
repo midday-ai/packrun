@@ -16,7 +16,7 @@ const isProduction = process.env.BETTER_AUTH_URL?.includes("packrun.dev");
 export const auth = db
   ? betterAuth({
       baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3001",
-      basePath: "/api/auth",
+      basePath: "/v1/auth",
       database: drizzleAdapter(db, { provider: "pg", schema }),
       trustedOrigins: ["http://localhost:3000", "https://packrun.dev", "https://www.packrun.dev"],
 
@@ -25,8 +25,8 @@ export const auth = db
           clientId: process.env.GITHUB_CLIENT_ID!,
           clientSecret: process.env.GITHUB_CLIENT_SECRET!,
           redirectURI: process.env.BETTER_AUTH_URL
-            ? `${process.env.BETTER_AUTH_URL}/api/auth/callback/github`
-            : "http://localhost:3001/api/auth/callback/github",
+            ? `${process.env.BETTER_AUTH_URL}/v1/auth/callback/github`
+            : "http://localhost:3001/v1/auth/callback/github",
         },
       },
 

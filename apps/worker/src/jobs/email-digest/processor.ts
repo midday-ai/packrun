@@ -77,7 +77,7 @@ async function processUserDigest(
 
   // Generate unsubscribe URL
   const unsubscribeToken = generateUnsubscribeToken(userId, "digest");
-  const unsubscribeUrl = `https://packrun.dev/api/unsubscribe?token=${unsubscribeToken}`;
+  const unsubscribeUrl = `https://api.packrun.dev/v1/unsubscribe?token=${unsubscribeToken}`;
 
   // Create and send email
   const emailElement = React.createElement(Digest, {

@@ -5,9 +5,9 @@
  * health analysis, security comparison, and upgrade recommendations.
  */
 
+import { fetchVulnerabilities } from "@packrun/data/osv";
 import { z } from "zod";
 import { getLatestVersion, getPackage } from "../lib/clients/npm";
-import { fetchVulnerabilities } from "../lib/clients/osv";
 import { getPackageHealth } from "./health";
 
 export const checkVersionHealthSchema = z.object({

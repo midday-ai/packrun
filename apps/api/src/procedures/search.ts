@@ -6,6 +6,7 @@
 
 import { publicProcedure } from "@packrun/api";
 import { type SearchHitSchema, SearchResponseSchema } from "@packrun/api/schemas";
+import { api as log } from "@packrun/logger";
 import { z } from "zod";
 import { searchNpmRegistry } from "../lib/clients/npm";
 import { searchPackages as typesenseSearch } from "../lib/clients/typesense";
@@ -71,7 +72,7 @@ export const search = publicProcedure
       }));
       typesenseWorked = true;
     } catch (error) {
-      console.error("Typesense search failed, falling back to npm:", error);
+      log.warn("Typesense search failed, falling back to npm:", error);
     }
 
     // Fallback to npm search if Typesense failed or has few results (only on page 1)

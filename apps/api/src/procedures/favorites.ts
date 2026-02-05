@@ -4,7 +4,6 @@
  * oRPC procedures for user favorites (protected routes).
  */
 
-import { ORPCError } from "@orpc/server";
 import { protectedProcedure, publicProcedure } from "@packrun/api";
 import {
   FavoriteActionResponseSchema,
@@ -29,20 +28,14 @@ import { z } from "zod";
 export const list = protectedProcedure
   .route({
     method: "GET",
-    path: "/api/favorites",
+    path: "/v1/favorites",
     summary: "Get user favorites",
     description: "Get the list of favorited packages for the authenticated user",
     tags: ["Favorites"],
   })
   .output(FavoritesListResponseSchema)
   .handler(async ({ context }) => {
-    if (!db) {
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Database not configured",
-      });
-    }
-
-    const favorites = await listFavorites(db, context.user.id);
+    const favorites = await listFavorites(db!, context.user.id);
     return { favorites };
   });
 
@@ -52,7 +45,7 @@ export const list = protectedProcedure
 export const add = protectedProcedure
   .route({
     method: "POST",
-    path: "/api/favorites/{name}",
+    path: "/v1/favorites/{name}",
     summary: "Add favorite",
     description: "Add a package to the user's favorites",
     tags: ["Favorites"],
@@ -60,15 +53,8 @@ export const add = protectedProcedure
   .input(z.object({ name: z.string() }))
   .output(FavoriteActionResponseSchema)
   .handler(async ({ input, context }) => {
-    if (!db) {
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Database not configured",
-      });
-    }
-
     const packageName = decodeURIComponent(input.name);
-    await addFavorite(db, createId(), context.user.id, packageName);
-
+    await addFavorite(db!, createId(), context.user.id, packageName);
     return { success: true, packageName };
   });
 
@@ -78,7 +64,7 @@ export const add = protectedProcedure
 export const remove = protectedProcedure
   .route({
     method: "DELETE",
-    path: "/api/favorites/{name}",
+    path: "/v1/favorites/{name}",
     summary: "Remove favorite",
     description: "Remove a package from the user's favorites",
     tags: ["Favorites"],
@@ -86,15 +72,8 @@ export const remove = protectedProcedure
   .input(z.object({ name: z.string() }))
   .output(FavoriteActionResponseSchema)
   .handler(async ({ input, context }) => {
-    if (!db) {
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Database not configured",
-      });
-    }
-
     const packageName = decodeURIComponent(input.name);
-    await removeFavorite(db, context.user.id, packageName);
-
+    await removeFavorite(db!, context.user.id, packageName);
     return { success: true, packageName };
   });
 
@@ -105,7 +84,7 @@ export const remove = protectedProcedure
 export const check = publicProcedure
   .route({
     method: "GET",
-    path: "/api/favorites/check/{name}",
+    path: "/v1/favorites/check/{name}",
     summary: "Check favorite status",
     description: "Check if a package is in the user's favorites",
     tags: ["Favorites"],
@@ -113,12 +92,12 @@ export const check = publicProcedure
   .input(z.object({ name: z.string() }))
   .output(FavoriteCheckResponseSchema)
   .handler(async ({ input, context }) => {
-    if (!context.user || !db) {
+    if (!context.user) {
       return { isFavorite: false };
     }
 
     const packageName = decodeURIComponent(input.name);
-    const isFavorite = await checkFavorite(db, context.user.id, packageName);
+    const isFavorite = await checkFavorite(db!, context.user.id, packageName);
 
     return { isFavorite };
   });
@@ -129,21 +108,14 @@ export const check = publicProcedure
 export const deleteAccount = protectedProcedure
   .route({
     method: "DELETE",
-    path: "/api/account",
+    path: "/v1/account",
     summary: "Delete account",
     description: "Delete the authenticated user's account and all associated data",
     tags: ["Account"],
   })
   .output(SuccessResponseSchema)
   .handler(async ({ context }) => {
-    if (!db) {
-      throw new ORPCError("INTERNAL_SERVER_ERROR", {
-        message: "Database not configured",
-      });
-    }
-
-    await deleteUser(db, context.user.id);
-
+    await deleteUser(db!, context.user.id);
     return { success: true };
   });
 

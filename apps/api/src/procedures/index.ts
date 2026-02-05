@@ -23,7 +23,7 @@ import { searchRouter } from "./search";
  * Main application router
  *
  * This is the oRPC router that combines all domain routers.
- * It provides both RPC and OpenAPI endpoints.
+ * Used by RPC handler for internal type-safe calls.
  */
 export const appRouter = {
   package: packageRouter,
@@ -35,3 +35,18 @@ export const appRouter = {
 };
 
 export type AppRouter = typeof appRouter;
+
+/**
+ * Public router for OpenAPI documentation
+ *
+ * Excludes admin routes from the public API documentation.
+ */
+export const publicRouter = {
+  package: packageRouter,
+  search: searchRouter,
+  compare: compareRouter,
+  favorites: favoritesRouter,
+  notifications: notificationsRouter,
+};
+
+export type PublicRouter = typeof publicRouter;

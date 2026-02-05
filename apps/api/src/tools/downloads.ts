@@ -9,6 +9,7 @@
  * 4. npm token authentication (increases rate limits when configured)
  */
 
+import { api as log } from "@packrun/logger";
 import { downloadsCache } from "../lib/cache";
 
 const NPM_DOWNLOADS_API = "https://api.npmjs.org/downloads";
@@ -195,8 +196,8 @@ async function fetchWithRetry(
         const retryAfter = response.headers.get("Retry-After");
         const waitTime = retryAfter ? Number.parseInt(retryAfter) * 1000 : delay;
 
-        console.warn(
-          `[Downloads] Rate limited (429), retrying in ${waitTime}ms (attempt ${attempt + 1}/${maxRetries})`,
+        log.warn(
+          `Rate limited (429), retrying in ${waitTime}ms (attempt ${attempt + 1}/${maxRetries})`,
         );
         await sleep(waitTime);
         continue;
@@ -241,20 +242,18 @@ export async function getWeeklyDownloads(
 
     const response = await throttleRequest(() => fetchWithRetry(url));
     if (!response) {
-      console.error(
-        `[Downloads] Failed to fetch downloads for ${name}: fetch failed after retries`,
-      );
+      log.error(`Failed to fetch downloads for ${name}: fetch failed after retries`);
       return null;
     }
 
     if (!response.ok) {
       // 404 = package not found, 429 = rate limited after retries - both return null gracefully
       if (response.status === 404 || response.status === 429) {
-        console.error(`[Downloads] Failed to fetch downloads for ${name}:`, response.status);
+        log.error(`Failed to fetch downloads for ${name}:`, response.status);
         return null;
       }
       // Other errors - log and return null
-      console.error(`[Downloads] npm API returned ${response.status} for ${name}`);
+      log.error(`npm API returned ${response.status} for ${name}`);
       return null;
     }
 
@@ -285,7 +284,7 @@ export async function getWeeklyDownloads(
 
     return result;
   } catch (error) {
-    console.error(`[Downloads] Failed to fetch downloads for ${name}:`, error);
+    log.error(`Failed to fetch downloads for ${name}:`, error);
     return null;
   }
 }

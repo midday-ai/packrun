@@ -23,6 +23,7 @@
     "@packrun/db": "workspace:*",
     "@packrun/decisions": "workspace:*",
     "@packrun/email": "workspace:*",
+    "@packrun/logger": "workspace:*",
     "@packrun/queue": "workspace:*",
     "ioredis": "^5.6.1",
     "semver": "^7.6.3",

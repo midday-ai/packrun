@@ -6,8 +6,8 @@ import { describe, expect, test } from "bun:test";
 import { request } from "./helpers";
 
 describe("Package API", () => {
-  test("GET /api/package/:name returns package with health data", async () => {
-    const res = await request("/api/package/lodash");
+  test("GET /v1/package/:name returns package with health data", async () => {
+    const res = await request("/v1/package/lodash");
     expect(res.status).toBe(200);
 
     const data = (await res.json()) as {
@@ -23,13 +23,13 @@ describe("Package API", () => {
     expect(data.health.grade).toMatch(/^[A-F]$/);
   });
 
-  test("GET /api/package/:name returns 404 for unknown package", async () => {
-    const res = await request("/api/package/this-package-definitely-does-not-exist-xyz-123");
+  test("GET /v1/package/:name returns 404 for unknown package", async () => {
+    const res = await request("/v1/package/this-package-definitely-does-not-exist-xyz-123");
     expect(res.status).toBe(404);
   });
 
-  test("GET /api/package/:name/downloads returns weekly history", async () => {
-    const res = await request("/api/package/react/downloads");
+  test("GET /v1/package/:name/downloads returns weekly history", async () => {
+    const res = await request("/v1/package/react/downloads");
     expect(res.status).toBe(200);
 
     const data = (await res.json()) as {

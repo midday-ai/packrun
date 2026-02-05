@@ -38,7 +38,7 @@ import { getPackageVersion } from "../tools/version";
 export const getVersion = publicProcedure
   .route({
     method: "GET",
-    path: "/api/package/{name}/version",
+    path: "/v1/package/{name}/version",
     summary: "Get package version",
     description: "Get the latest version of an npm package",
     tags: ["Package"],
@@ -62,7 +62,7 @@ export const getVersion = publicProcedure
 export const checkDeprecatedProcedure = publicProcedure
   .route({
     method: "GET",
-    path: "/api/package/{name}/deprecated",
+    path: "/v1/package/{name}/deprecated",
     summary: "Check if package is deprecated",
     description: "Check if a package is deprecated and get alternatives",
     tags: ["Package"],
@@ -86,7 +86,7 @@ export const checkDeprecatedProcedure = publicProcedure
 export const checkTypesProcedure = publicProcedure
   .route({
     method: "GET",
-    path: "/api/package/{name}/types",
+    path: "/v1/package/{name}/types",
     summary: "Check TypeScript types",
     description: "Check if a package has TypeScript types (bundled or via @types)",
     tags: ["Package"],
@@ -110,7 +110,7 @@ export const checkTypesProcedure = publicProcedure
 export const checkVulnerabilitiesProcedure = publicProcedure
   .route({
     method: "GET",
-    path: "/api/package/{name}/vulnerabilities",
+    path: "/v1/package/{name}/vulnerabilities",
     summary: "Check vulnerabilities",
     description: "Check for known security vulnerabilities in a package version",
     tags: ["Package"],
@@ -139,7 +139,7 @@ export const checkVulnerabilitiesProcedure = publicProcedure
 export const findAlternativesProcedure = publicProcedure
   .route({
     method: "GET",
-    path: "/api/package/{name}/alternatives",
+    path: "/v1/package/{name}/alternatives",
     summary: "Find alternatives",
     description: "Find alternative packages with recommendations",
     tags: ["Package"],
@@ -163,7 +163,7 @@ export const findAlternativesProcedure = publicProcedure
 export const getDownloads = publicProcedure
   .route({
     method: "GET",
-    path: "/api/package/{name}/downloads",
+    path: "/v1/package/{name}/downloads",
     summary: "Get download statistics",
     description: "Get weekly download history with sparkline data",
     tags: ["Package"],
@@ -194,7 +194,7 @@ export const getDownloads = publicProcedure
 export const getInstallSizeProcedure = publicProcedure
   .route({
     method: "GET",
-    path: "/api/package/{name}/install-size",
+    path: "/v1/package/{name}/install-size",
     summary: "Get install size",
     description:
       "Get package unpacked size and total install size including all transitive dependencies",
@@ -225,7 +225,7 @@ export const getInstallSizeProcedure = publicProcedure
 export const getHealth = publicProcedure
   .route({
     method: "GET",
-    path: "/api/package/{name}",
+    path: "/v1/package/{name}",
     summary: "Get package health",
     description:
       "Get comprehensive package health assessment including security, quality, compatibility, popularity, alternatives, and AI recommendations",

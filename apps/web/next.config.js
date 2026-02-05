@@ -7,7 +7,7 @@ const __dirname = dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  transpilePackages: ["@packrun/ui", "@packrun/readme-renderer"],
+  transpilePackages: ["@packrun/readme-renderer"],
   turbopack: {
     // Set root to monorepo root for turbo prune Docker builds
     root: resolve(__dirname, "../.."),

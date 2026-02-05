@@ -1,7 +1,7 @@
 /**
  * Admin Schemas
  *
- * Zod schemas for admin-related API responses (health check, test email, etc.).
+ * Zod schemas for admin-related API responses (health check).
  */
 
 import { z } from "zod";
@@ -16,21 +16,5 @@ export const HealthResponseSchema = z.object({
   service: z.string(),
 });
 
-// =============================================================================
-// Test Email
-// =============================================================================
-
-export const TestEmailInputSchema = z.object({
-  email: z.string().email(),
-  package: z.string().optional(),
-});
-
-export const TestEmailResponseSchema = z.object({
-  success: z.boolean(),
-  result: z.unknown().optional(),
-});
-
 // Type exports
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
-export type TestEmailInput = z.infer<typeof TestEmailInputSchema>;
-export type TestEmailResponse = z.infer<typeof TestEmailResponseSchema>;

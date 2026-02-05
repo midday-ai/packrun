@@ -2,9 +2,9 @@
  * check_vulnerabilities - Check for security vulnerabilities in a package
  */
 
+import { fetchVulnerabilities, type VulnerabilityData } from "@packrun/data/osv";
 import { z } from "zod";
 import { getLatestVersion, getPackage } from "../lib/clients/npm";
-import { fetchVulnerabilities, type VulnerabilityData } from "../lib/clients/osv";
 
 export const checkVulnerabilitiesSchema = z.object({
   name: z.string().describe("The npm package name"),

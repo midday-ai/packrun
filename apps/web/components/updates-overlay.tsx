@@ -62,10 +62,10 @@ export default function UpdatesOverlay() {
     const connect = () => {
       if (!isMounted) return;
 
-      console.log(`[SSE] Connecting to ${API_URL}/api/updates/stream...`);
+      console.log(`[SSE] Connecting to ${API_URL}/v1/updates/stream...`);
 
       try {
-        eventSource = new EventSource(`${API_URL}/api/updates/stream`);
+        eventSource = new EventSource(`${API_URL}/v1/updates/stream`);
       } catch (e) {
         console.error("[SSE] Failed to create EventSource:", e);
         return;
