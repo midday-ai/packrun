@@ -2,7 +2,9 @@
   "name": "packrun.dev",
   "private": true,
   "workspaces": [
-    "apps/*",
+    "apps/api",
+    "apps/web",
+    "apps/worker",
     "packages/*"
   ],
   "scripts": {
